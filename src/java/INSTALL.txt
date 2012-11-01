@@ -13,9 +13,9 @@ If you downloaded X-Trace from GitHub, you can build it from the source using
 Maven. Let <xtrace> be the directory of the repository.
 
 $ cd <xtrace>/src/java
-$ mvn package
+$ mvn package appassembler:assemble
 
-The JAR will be generated in <xtrace>/java/src/target. Yyou can now run the
+The JAR will be generated in <xtrace>/java/src/target. You can now run the
 X-Trace backend (check that you have all necessary dependencies, see
 Dependencies below).
 
@@ -38,7 +38,7 @@ Run the backend with the following:
 $ bin/backend.sh
 
 Once the backend is running, the X-Trace reporting interface can be accessed by
-visiting http://localhost:8080.
+visiting http://localhost:4080.
 
 Dependencies
 ------------
@@ -46,3 +46,10 @@ Dependencies
 All of the dependencies to run X-Trace are included in the distribution. For
 visualizing the results you will need a recent version of Graphviz. You will
 also need to have Java 1.5, Maven, Ruby, and Perl.
+
+To use the Thrift client and server, you will need Apache Thrift 0.8.0.
+Set LD_LIBRARY_PATH to include thrift if you want to use the C++ client.
+
+For the visualization, you will need a Browser that can run Java Applets,
+and Perl LWP::Simple.
+

@@ -1,24 +1,24 @@
 #!/bin/bash
 
-BASE=`dirname ${0}`/..
+HERE=`dirname ${0}`
+export XTRACE_BASE=`cd "$HERE"/../.. >/dev/null; pwd`
+LAUNCHER_DIR=$XTRACE_BASE/java/target/appassembler/bin
 
 if [ $# != 0 ]; then
   if [ $1 == "-h" ]; then
-    echo -e "Usage: backend.sh [X-Trace/data/dir]\nNOTE: default directory is ../data"
+    echo -e "Usage: backend.sh [X-Trace/data/dir]\nNOTE: default directory is $XTRACE_BASE/data"
     exit
   else
     if [ -d $1 ]; then  
       DATA_DIR=$1
     else
-      echo "WARNING: Invalid data directory provided, using default ($BASE/data) instead"
-      DATA_DIR=$BASE/data
+      echo "WARNING: Invalid data directory provided, using default ($XTRACE_BASE/data) instead"
+      DATA_DIR=$XTRACE_BASE/data
     fi
   fi
 else
-  echo "Using default data directory: $BASE/data"
-  DATA_DIR=$BASE/data
+  echo "Using default data directory: $XTRACE_BASE/data"
+  DATA_DIR=$XTRACE_BASE/data
 fi
 
-CLASSPATH=$BASE/build/jar/xtrace-2.0.jar:$BASE/lib/
-
-java -Dlog4j.configuration=log4j-server.properties -Dxtrace.backend.webui.dir=$BASE/webui -cp $CLASSPATH edu.berkeley.xtrace.server.XTraceServer $DATA_DIR
+$LAUNCHER_DIR/backend $DATA_DIR

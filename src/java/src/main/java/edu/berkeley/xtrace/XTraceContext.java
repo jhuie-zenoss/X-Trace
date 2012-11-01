@@ -317,11 +317,18 @@ public class XTraceContext {
 		}
 	}
 
+	/* If there is no current valid context, start a new trace, 
+	 * otherwise log an event on the existing task.
+	 */
 	public static void startTrace(String agent, String title, String... tags) {
-		TaskID taskId = new TaskID(8);
-		setThreadContext(new XTraceMetadata(taskId, 0L));
+		if (!isValid()) {
+			TaskID taskId = new TaskID(8);
+			setThreadContext(new XTraceMetadata(taskId, 0L));
+		}
 		XTraceEvent event = createEvent(agent, "Start Trace: " + title);
-		event.put("Title", title);
+		if (!isValid()) {
+			event.put("Title", title);
+		}
 		for (String tag: tags) {
 			event.put("Tag", tag);
 		}

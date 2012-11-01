@@ -34,12 +34,12 @@ import java.net.Socket;
 
 import org.apache.log4j.Logger;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.protocol.TBinaryProtocol;
-import com.facebook.thrift.protocol.TProtocol;
-import com.facebook.thrift.transport.TSocket;
-import com.facebook.thrift.transport.TTransport;
-import com.facebook.thrift.transport.TTransportException;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 
 import edu.berkeley.xtrace.reporting.XTraceReporter.Client;
 

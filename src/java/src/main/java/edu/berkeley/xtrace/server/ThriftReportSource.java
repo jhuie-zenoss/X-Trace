@@ -4,11 +4,11 @@ import java.util.concurrent.BlockingQueue;
 
 import org.apache.log4j.Logger;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.server.TThreadPoolServer;
-import com.facebook.thrift.transport.TServerSocket;
-import com.facebook.thrift.transport.TServerTransport;
-import com.facebook.thrift.transport.TTransportException;
+import org.apache.thrift.TException;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TServerTransport;
+import org.apache.thrift.transport.TTransportException;
 
 import edu.berkeley.xtrace.XTraceException;
 import edu.berkeley.xtrace.reporting.XTraceReporter;
@@ -39,7 +39,8 @@ public class ThriftReportSource implements ReportSource {
 		} catch (TTransportException e) {
 			throw new XTraceException("Unable to open Thrift server", e);
 		}
-	    server = new TThreadPoolServer(processor, serverTransport);
+	    server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).
+	    								   processor(processor));
 	}
 
 	public void setReportQueue(BlockingQueue<String> q) {

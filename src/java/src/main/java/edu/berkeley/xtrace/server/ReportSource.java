@@ -32,6 +32,9 @@ import java.util.concurrent.BlockingQueue;
 
 import edu.berkeley.xtrace.XTraceException;
 
+/**
+ * A ReportSource listens for X-Trace reports.
+ */
 public interface ReportSource extends Runnable {
 	
 	public void setReportQueue(BlockingQueue<String> q);

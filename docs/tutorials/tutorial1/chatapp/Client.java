@@ -8,15 +8,17 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-//import edu.berkeley.xtrace.XTraceContext;
-//import edu.berkeley.xtrace.XTraceMetadata;
+import edu.berkeley.xtrace.XTraceContext;
+import edu.berkeley.xtrace.XTraceMetadata;
+import edu.berkeley.xtrace.XTraceEvent;
 
 public class Client{
 	public static int PORT=8888;
 	public static void main(String argv[]) throws IOException, ClassNotFoundException{
 
 		/* Setting up X-Tracing */
-		//XTraceContext.startTrace("ChatClient", "Run Tutorial 1" , "tutorial");
+		XTraceContext.startTrace("ChatClient", "Run Tutorial 1" , "tutorial");
+		XTraceMetadata sendContext;
 		
 		/* Set up the connection to the server */
 		Socket s = new Socket("localhost", PORT);
@@ -35,8 +37,12 @@ public class Client{
 			/* Get input from user and send it */
 			System.out.print("YOU: ");
 			ChatMessage msgObjOut = new ChatMessage(stdin.readLine());
-			//XTraceContext.logEvent("ChatClient", "SendUsersMessage", "Message", msgObjOut.message);
-			//msgObjOut.xtraceMD = XTraceContext.getThreadContext().pack();
+
+			XTraceContext.logEvent("ChatClient", "SendUsersMessage", "Message", msgObjOut.message);
+			sendContext = XTraceContext.getThreadContext();	
+
+			msgObjOut.xtraceMD = XTraceContext.getThreadContext().pack();
+
 			out.writeObject(msgObjOut);
 			
 			msgObjOut = null;
@@ -44,8 +50,10 @@ public class Client{
 			/* Collect reply message from server and display it to user */
 			try{
 				msgObjIn = (ChatMessage) in.readObject();
-				//XTraceContext.setThreadContext(XTraceMetadata.createFromBytes(msgObjIn.xtraceMD,0,16));
-				//XTraceContext.logEvent("ChatClient", "ReceivedServersMessage");
+				XTraceContext.setThreadContext(XTraceMetadata.createFromBytes(msgObjIn.xtraceMD,0,16));
+				XTraceEvent xte = XTraceContext.createEvent("ChatClient", "ReceivedServersMessage");
+				xte.addEdge(sendContext);
+				xte.sendReport();
 				input = msgObjIn.message;
 				System.out.println("SERVER: " + input);
 			} catch (EOFException e){

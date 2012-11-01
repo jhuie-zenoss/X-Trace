@@ -1,7 +1,7 @@
 #!/usr/local/bin/thrift -cpp -java
 
-cpp_namespace xtrace
-java_package edu.berkeley.xtrace.reporting
+namespace cpp xtrace
+namespace java edu.berkeley.xtrace.reporting
 
 service XTraceReporter {
   

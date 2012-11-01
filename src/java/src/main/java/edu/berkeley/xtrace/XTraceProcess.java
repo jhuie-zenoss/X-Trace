@@ -24,4 +24,8 @@ public class XTraceProcess {
 		this.agent = agent;
 		this.name = name;
 	}
+	
+	public XTraceMetadata getContext() {
+		return startCtx;
+	}
 }

@@ -31,7 +31,7 @@ my $applet_h = 600;
 
 my $DB_CONFIG_FILE = "db.conf";
 
-my $REPORTS_URL = "http://localhost:8080/reports";
+my $REPORTS_URL = "http://localhost:4080/reports";
 my $DOT_CMD = "dot";
 
 ###############
@@ -448,7 +448,7 @@ sub create_graphviz {
    undef $g->{'printed'} if (defined $g->{'printed'});
    print $fh <<EOT ;
 digraph G {
-        rankdir = LR;
+        /* rankdir = LR; */
         node [URL = "javascript:showInfo(\\N)", fontsize="8", fontname="Arial"];
 EOT
     #nodes
