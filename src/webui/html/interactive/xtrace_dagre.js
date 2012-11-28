@@ -3,34 +3,45 @@ var flatten = function(array) {
     return empty.concat.apply(empty, array);
 }
 
-var extractLinks = function(root, tail) {
-    if (tail == root) {
+var extractLinks = function(tail) {
+    if (tail.extracted) {
+        console.log("Extracting links from ", tail, "already been extracted");
         return [];
+    } else if (tail.parents.length==0) {
+        console.log("Extracting links from ", tail, "no parents");
+        return [];        
     } else {
-        var sharedRoot;
+        tail.extracted = true;
+        
+        var links = [];
+        var sharedRoot
         if (tail.parents.length > 1 && (sharedRoot=getSharedRoot(tail))) {
-            var sublinks = flatten(tail.parents.map(function(parent) {
+            console.log("Extracting links from ", tail, "shared root");
+            // There is a shared root.  Continue from the shared root
+            links = extractLinks(sharedRoot);
+            
+            // Now get the sublinks
+            var sublinks = [];
+            tail.parents.forEach(function(parent) {
                 if (parent!=sharedRoot) {
-                    var links = extractLinks(sharedRoot, parent);
-                    links.push(new ExpandableLink(parent, tail));
-                    return links;
-                } else {
-                    return [];
-                }
-            }));
-            var sharedLink = new ExpandableLink(sharedRoot, tail, sublinks);
-            var subsequentLinks = extractLinks(root, sharedRoot);
-            subsequentLinks.push(sharedLink);
-            return subsequentLinks;
+                    sublinks = sublinks.concat(extractLinks(parent));
+                    sublinks.push(new ExpandableLink(parent, tail));
+                }                
+            });
+            
+            // Put the shared link
+            links.push(new ExpandableLink(sharedRoot, tail, sublinks));            
         } else {
-            var blah = flatten(tail.parents.map(function(parent) {
-                var links = extractLinks(root, parent);
+            console.log("Extracting links from ", tail, "no shared root");
+            // No shared root or just one parent.  Simply get the links
+            tail.parents.forEach(function(parent) {
+                links = links.concat(extractLinks(parent));
                 links.push(new ExpandableLink(parent, tail));
-                return links;
-            }));
-            return blah;
+            });
         }
         
+        console.log("extracted", links);
+        return links;
     }
 }
 
@@ -127,7 +138,12 @@ var ExpandableGraph = function(graph) {
      *  graph - the full, source graph representation
      */
     this.graph = graph;
-    this.links = extractLinks(graph.source(), graph.sink());
+    var links = [];
+    graph.getTails().forEach(function(tail) {
+        links = links.concat(extractLinks(tail));
+    });
+    this.links = links;
+    console.log("links: ", this.links);
 }
 
 ExpandableGraph.prototype.layout = function() {
@@ -174,6 +190,19 @@ var Graph = function(reports) {
     for (var i = 0; i < reports.length; i++) {
         this.addNode(new Node(this, i, reports[i]));
     }
+    
+    // Make sure everyone points to tail and root
+    for (var i = 1; i < this.nodelist.length; i++) {
+        if (this.nodelist[i].parents==[]) {
+            this.nodelist[i].parents = [ this.nodelist[0] ];
+        }
+    }
+    
+    for (var i = 0; i < this.nodelist.length-1; i++) {
+        if (this.nodelist[i].children==[]) {
+            this.nodelist[i].children = [ this.nodelist[this.nodelist.length-1] ];
+        }
+    }
 }
 
 Graph.prototype.addNode = function(node) {
@@ -185,12 +214,26 @@ Graph.prototype.getNode = function(id) {
     return this.nodes[id];
 }
 
-Graph.prototype.source = function() {
-    return this.nodelist[0];
+Graph.prototype.getRoots = function() {
+    /* Find all nodes that have no parents */
+    var roots = [];
+    this.nodelist.forEach(function (node) {
+        if (node.parents.length==0) {
+            roots.push(node);
+        }
+    });
+    return roots;
 }
 
-Graph.prototype.sink = function() {
-    return this.nodelist[this.nodelist.length-1];
+Graph.prototype.getTails = function() {
+    /* Find all nodes that have no children */
+    var tails = [];
+    this.nodelist.forEach(function (node) {
+        if (node.children.length==0) {
+            tails.push(node);
+        }
+    });
+    return tails;
 }
 
 
@@ -210,12 +253,18 @@ var Node = function(graph, n, report) {
 
     // Extract the edges and save the parents to this node, as well as adding this node to the parent's children list
     var child = this;
-    report["Edge"].map(function(parentid) {
+    var parentids = {};
+    // remove duplicates
+    report["Edge"].forEach(function(parentid) {
+        parentids[parentid] = true;
+    });
+    // create edges
+    Object.keys(parentids).forEach(function(parentid) {
         var parent = graph.getNode(parentid);
         if (parent) {
             child.addParent(parent);
             parent.addChild(child);
-        }
+        } 
     });
 }
 
@@ -242,10 +291,16 @@ var displayGraph = function(svg, egraph) {
     var nodedata = egraph.getNodes();
     var linkdata = egraph.getLinks();
 
+    console.log(nodedata);
+    console.log(linkdata);
+    window.nodedata = nodedata;
+    window.linkdata = linkdata;
+    window.egraph = egraph;
+
     var nodePadding = 10;
     
     // Save the current position of the root node
-    var root = egraph.graph.source();
+    var root = egraph.graph.getRoots()[0];
     var root_position = { x: svg.attr("width")/2, y: 50 };
     if (root.dagre) 
         root_position = { x: root.dagre.x, y: root.dagre.y };
@@ -481,6 +536,8 @@ var drawGraph = function(reports) {
     var graph = new Graph(reports);
     var egraph = new ExpandableGraph(graph);
     
+    console.log(egraph);
+    
     // Now start laying things out.
     var svg = d3.select("body").append("svg").attr("width", window.innerWidth).attr("height", window.innerHeight);
     displayGraph(svg, egraph);
@@ -518,7 +575,6 @@ var drawGraph = function(reports) {
                                             d.width = bbox.width + 2 * nodePadding;
                                             d.height = bbox.height + 2 * nodePadding;
                                         });
-                                        console.log(nodes.selectAll("rect"));
                                         nodes.selectAll("rect").attr("x", function(d) { return -(d.bbox.width / 2 + nodePadding); })
                                                                .attr("y", function(d) { return -(d.bbox.height / 2 + nodePadding); })
                                                                .attr("width", function(d) { return d.width; })
