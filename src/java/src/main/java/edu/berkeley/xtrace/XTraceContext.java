@@ -178,6 +178,11 @@ public class XTraceContext {
 		}
 
 		Collection<XTraceMetadata> oldContext = getThreadContext();
+		if (oldContext.size()==1) {
+			// Don't need to create a new event if we are already at a single metadata
+			return oldContext.iterator().next();
+		}
+		
 		int opIdLength = defaultOpIdLength;
 		if (oldContext.size()!=0) {
 			opIdLength = oldContext.iterator().next().getOpIdLength();
