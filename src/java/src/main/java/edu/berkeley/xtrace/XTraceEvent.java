@@ -64,6 +64,7 @@ public class XTraceEvent {
 	private Report report;
 	private byte[] myOpId;
 	private boolean willReport;
+	private Class<?> msgclass; 
 
 	/**
 	 * Initialize a new XTraceEvent.  This should be done for each
@@ -71,10 +72,15 @@ public class XTraceEvent {
 	 *
 	 */
 	public XTraceEvent(int opIdLength) {
+		this(XTraceLogLevel.DEFAULT, opIdLength);
+	}
+	
+	public XTraceEvent(Class<?> msgclass, int opIdLength) {
 		report = new Report();
 		myOpId = new byte[opIdLength];
 		random.get().nextBytes(myOpId);
 		willReport = true;
+		this.msgclass = msgclass;
 	}
 	/**
 	* If any edge added to this event has a higher severity than the threshold (default),
@@ -155,6 +161,8 @@ public class XTraceEvent {
 	public void sendReport() {
 		setTimestamp();
 		if (!willReport) { return; }
-		Reporter.getReporter().sendReport(report);
+		if (XTraceLogLevel.isOn(msgclass)) {
+			Reporter.getReporter().sendReport(report);
+		}
 	}
 }

@@ -1,10 +1,11 @@
 package edu.berkeley.xtrace;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.Collection;
+
 
 /**
- * An X-Trace process, returned from {@link XTraceContext#startProcess(String, String)}.
+ * An X-Trace process, returned from
+ * {@link XTraceContext#startProcess(String, String)}.
  * 
  * For use with the {@link XTraceContext#startProcess(String, String)} and
  * {@link XTraceContext#endProcess(XTraceProcess)} methods.
@@ -15,17 +16,23 @@ import java.io.StringWriter;
  * @author Matei Zaharia
  */
 public class XTraceProcess {
-	final XTraceMetadata startCtx;
+	final Collection<XTraceMetadata> startCtx;
 	final String agent;
 	final String name;
+	final Class<?> msgclass;
 
-	XTraceProcess(XTraceMetadata startCtx, String agent, String name) {
+	XTraceProcess(Collection<XTraceMetadata> startCtx, String agent, String name) {
+		this(XTraceLogLevel.DEFAULT, startCtx, agent, name);
+	}
+
+	XTraceProcess(Class<?> msgclass, Collection<XTraceMetadata> startCtx, String agent, String name) {
+		this.msgclass = msgclass;
 		this.startCtx = startCtx;
 		this.agent = agent;
 		this.name = name;
 	}
-	
-	public XTraceMetadata getContext() {
+
+	public Collection<XTraceMetadata> getContext() {
 		return startCtx;
 	}
 }
