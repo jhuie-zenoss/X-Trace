@@ -36,6 +36,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
@@ -683,4 +689,34 @@ public class MetadataTest {
 			assertTrue(m.isValid());
 		}
 	}
+	
+	@Test
+	public void testEqualityOperator() throws IOException {
+		for (int i = 0; i < validBytes.length; i++) {
+			XTraceMetadata m1 = XTraceMetadata.createFromBytes(validBytes[i], 0, validBytes[i].length);
+			assertTrue(m1.isValid());
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutput out = new DataOutputStream(baos);
+			XTraceMetadata.write(m1, out);
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			DataInput in = new DataInputStream(bais);
+			XTraceMetadata m2 = XTraceMetadata.read(in);
+			assertEquals(m2, m1);
+		}
+		for (int i = 0; i < goodOps.length; i++) {
+			XTraceMetadata m1 = new XTraceMetadata(goodTasks[0], goodOps[i]);
+			assertTrue(m1.isValid());
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutput out = new DataOutputStream(baos);
+			XTraceMetadata.write(m1, out);
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			DataInput in = new DataInputStream(bais);
+			XTraceMetadata m2 = XTraceMetadata.read(in);
+			assertEquals(m2, m1);
+		}
+		XTraceMetadata m1 = XTraceMetadata.createFromString("1954BC991231EA984D6B44CA8E9F7F3CCB");
+		XTraceMetadata m2 = XTraceMetadata.createFromString("1954BC991231EA984D6B44CA8E9F7F3CCB");
+		assertEquals(m1, m2);
+	}
+	
 }

@@ -624,19 +624,17 @@ public final class XTraceMetadata {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final XTraceMetadata other = (XTraceMetadata) obj;
-		if (numOptions != other.numOptions)
+		final XTraceMetadata a = this;
+		final XTraceMetadata b = (XTraceMetadata) obj;
+		if (a.getNumOptions() != b.getNumOptions())
 			return false;
-		if (!Arrays.equals(opId, other.opId))
+		if (!Arrays.equals(a.getOpId(), b.getOpId()))
 			return false;
-		if (!Arrays.equals(options, other.options))
+		if (!Arrays.equals(a.getOptions(), b.getOptions()))
 			return false;
-		if (taskid == null) {
-			if (other.taskid != null)
-				return false;
-		} else if (!taskid.equals(other.taskid))
-			return false;
-		return true;
+		if (a.getTaskId()==null)
+			return b.getTaskId()==null;
+		return a.getTaskId().equals(b.getTaskId());
 	}
 
 	/**

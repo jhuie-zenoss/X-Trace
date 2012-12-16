@@ -40,8 +40,10 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * High-level API for maintaining a per-thread X-Trace context (task and
@@ -108,7 +110,8 @@ public class XTraceContext {
 	 *            the new context
 	 */
 	public static void setThreadContext(Collection<XTraceMetadata> ctxs) {
-		contexts.set(ctxs);
+		clearThreadContext();
+		joinContext(ctxs);
 	}
 	
 	/**
@@ -136,28 +139,23 @@ public class XTraceContext {
 		if (ctxs == null) {
 			return;
 		}
-		Collection<XTraceMetadata> metadata = contexts.get();
-		for (XTraceMetadata m : ctxs) {
-			if (m!=null && m.isValid()) {
-				metadata.add(m);
-			}
-		}
+		contexts.get().addAll(ctxs);
 	}
 
 	/**
 	 * Get the current thread's X-Trace context, that is, the metadata for the
 	 * last event to have been logged by this thread.
 	 * 
-	 * @return current thread's X-Trace context
+	 * @return a *copy* of the collection of this thread's current context
 	 */
 	public static Collection<XTraceMetadata> getThreadContext() {
-		return contexts.get();
+		return new ArrayList<XTraceMetadata>(contexts.get());
 	}
 
 	/**
 	 * Clear current thread's X-Trace context.
 	 */
-	public synchronized static void clearThreadContext() {
+	public static void clearThreadContext() {
 		contexts.get().clear();
 	}
 
@@ -177,20 +175,20 @@ public class XTraceContext {
 			return null;
 		}
 
-		Collection<XTraceMetadata> oldContext = getThreadContext();
-		if (oldContext.size()==1) {
+		Collection<XTraceMetadata> metadatas = contexts.get();
+		if (metadatas.size()==1) {
 			// Don't need to create a new event if we are already at a single metadata
-			return oldContext.iterator().next();
+			return metadatas.iterator().next();
 		}
 		
 		int opIdLength = defaultOpIdLength;
-		if (oldContext.size()!=0) {
-			opIdLength = oldContext.iterator().next().getOpIdLength();
+		if (metadatas.size()!=0) {
+			opIdLength = metadatas.iterator().next().getOpIdLength();
 		}
 		
 		XTraceEvent event = new XTraceEvent(opIdLength);
 
-		for (XTraceMetadata m : oldContext) {
+		for (XTraceMetadata m : metadatas) {
 			event.addEdge(m);
 		}
 
@@ -345,7 +343,7 @@ public class XTraceContext {
 			return null;
 		}
 
-		Collection<XTraceMetadata> oldContext = getThreadContext();
+		Collection<XTraceMetadata> oldContext = contexts.get();
 		int opIdLength = defaultOpIdLength;
 		if (oldContext.size()!=0) {
 			opIdLength = oldContext.iterator().next().getOpIdLength();
@@ -381,7 +379,8 @@ public class XTraceContext {
 	 * @return true if there is a current context
 	 */
 	public static boolean isValid() {
-		return getThreadContext()!=null && !getThreadContext().isEmpty();
+		Collection<XTraceMetadata> ctxs = contexts.get();
+		return ctxs!=null && !ctxs.isEmpty();
 	}
 
 	/**
@@ -413,7 +412,7 @@ public class XTraceContext {
 	public static XTraceProcess startProcess(String agent, String process,
 			Object... args) {
 		logEvent(agent, process + " start", args);
-		return new XTraceProcess(getThreadContext(), agent, process);
+		return new XTraceProcess(contexts.get(), agent, process);
 	}
 
 	/**
@@ -576,8 +575,7 @@ public class XTraceContext {
 	 *            The context to replace the current one with.
 	 * @return
 	 */
-	public synchronized static Collection<XTraceMetadata> switchThreadContext(
-			XTraceMetadata newContext) {
+	public static Collection<XTraceMetadata> switchThreadContext(XTraceMetadata newContext) {
 		Collection<XTraceMetadata> oldContext = getThreadContext();
 		setThreadContext(newContext);
 		return oldContext;
@@ -596,6 +594,39 @@ public class XTraceContext {
 		Collection<XTraceMetadata> oldContext = getThreadContext();
 		setThreadContext(newContext);
 		return oldContext;
+	}
+	
+	/**
+	 * Returns true if the current thread context is equal to the provided context
+	 * @param ctx the context we want to test
+	 * @return true if the current thread context is equal to ctx
+	 */
+	public static boolean is(XTraceMetadata ctx) {
+		Collection<XTraceMetadata> current = contexts.get();
+		return ctx!=null && current!=null && current.size()==1 && ctx.equals(current.iterator().next());
+	}
+	
+	/**
+	 * Returns true if the set of current thread contexts are equal to the provided set of contexts
+	 * @param ctx the contexts we want to test
+	 * @return true if the current thread contexts are equal to ctx
+	 */
+	public static boolean is(Collection<XTraceMetadata> ctxs) {
+		Collection<XTraceMetadata> current = contexts.get();
+		if (ctxs==null || current==null || ctxs.size()==0 || current.size()==0) {
+			return false;
+		}
+		for (XTraceMetadata m : ctxs) {
+			if (!current.contains(m)) {
+				return false;
+			}
+		}
+		for (XTraceMetadata m : current) {
+			if (!ctxs.contains(m)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	/**
