@@ -527,21 +527,39 @@ var displayMinimap = function(svg, egraph){
 }
 
 var processReports = function(reports) {
-    var replacement_parents = {};
+    var id_remap = {};
+    var filtered_reports = [];
     for (var i = 0; i < reports.length; i++) {
         var report = reports[i];
         if (report["Operation"] && report["Operation"]=="merge") {
-            
+            id_remap[report["X-Trace"][0].substr(18)] = report["Edge"];
         } else {
-            processed_reports.push(report);
-        }        
+            filtered_reports.push(report);
+        }
     }
+    for (var i = 0; i < filtered_reports.length; i++) {
+        var report = reports[i];
+        var edges = report["Edge"];
+        var remapped_edges = {};
+        for (var j = 0; j < edges.length; j++) {
+            var remap = id_remap[edges[j]];
+            if (remap) {
+                for (var k = 0; k < remap.length; k++) {
+                    remapped_edges[remap[k]] = true;
+                }
+            } else {
+                remapped_edges[edges[j]] = true;
+            }
+        }
+        report["Edge"] = Object.keys(remapped_edges);
+    }
+    return filtered_reports;
 }
 
 
 var drawGraph = function(reports) {
     // Preprocess reports
-    //reports = processReports(reports);
+    reports = processReports(reports);
     
     // Get the size of the window
     var w = window.innerWidth, h = window.innerHeight;
