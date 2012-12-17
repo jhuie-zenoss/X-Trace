@@ -347,7 +347,7 @@ var displayGraph = function(svg, egraph) {
     newtexts.append("tspan").attr("x", 0).attr("dy", "1em").text(function(d) { return d.id; });
     newtexts.append("tspan").attr("x", 0)
                             .attr("dy", "1.1em")
-                            .text(function(d) { return d.report["Agent"][0]; });
+                            .text(function(d) { return d.report["Agent"] ? d.report["Agent"][0] : ""; });
     
     // Calculate bounding box of texts                
     newtexts.each(function(d) {
@@ -526,8 +526,22 @@ var displayMinimap = function(svg, egraph){
     
 }
 
+var processReports = function(reports) {
+    var replacement_parents = {};
+    for (var i = 0; i < reports.length; i++) {
+        var report = reports[i];
+        if (report["Operation"] && report["Operation"]=="merge") {
+            
+        } else {
+            processed_reports.push(report);
+        }        
+    }
+}
+
 
 var drawGraph = function(reports) {
+    // Preprocess reports
+    //reports = processReports(reports);
     
     // Get the size of the window
     var w = window.innerWidth, h = window.innerHeight;
