@@ -15,12 +15,11 @@ public class XTraceTest extends TestCase {
 	public void testSingleContext() {
 		// null context
 		XTraceContext.setThreadContext((XTraceMetadata) null);
-		assertNotNull(XTraceContext.getThreadContext());
-		assertEquals(0, XTraceContext.getThreadContext().size());
+		assertNull(XTraceContext.getThreadContext());
 		
 		// invalid context
 		XTraceContext.setThreadContext(new XTraceMetadata());
-		assertEquals(0, XTraceContext.getThreadContext().size());
+		assertNull(XTraceContext.getThreadContext());
 		
 		// valid context 1
 		TaskID task = new TaskID(4);
@@ -41,8 +40,7 @@ public class XTraceTest extends TestCase {
 	public void testMultiContext() {		
 		// null context 1
 		XTraceContext.setThreadContext((XTraceMetadata) null);
-		assertNotNull(XTraceContext.getThreadContext());
-		assertEquals(0, XTraceContext.getThreadContext().size());
+		assertNull(XTraceContext.getThreadContext());
 		
 		// valid context 1
 		TaskID task = new TaskID(4);
@@ -75,8 +73,7 @@ public class XTraceTest extends TestCase {
 		assertNotNull(XTraceContext.getThreadContext());
 		assertEquals(1, XTraceContext.getThreadContext().size());
 		XTraceContext.clearThreadContext();
-		assertNotNull(XTraceContext.getThreadContext());
-		assertEquals(0, XTraceContext.getThreadContext().size());
+		assertNull(XTraceContext.getThreadContext());
 	}
 
 	@Test

@@ -145,11 +145,16 @@ public class XTraceContext {
 	/**
 	 * Get the current thread's X-Trace context, that is, the metadata for the
 	 * last event to have been logged by this thread.
+	 * If there is no context or the context is not valid, this method returns
+	 * null (as opposed to an empty collection)
 	 * 
 	 * @return a *copy* of the collection of this thread's current context
 	 */
 	public static Collection<XTraceMetadata> getThreadContext() {
-		return new ArrayList<XTraceMetadata>(contexts.get());
+		if (XTraceContext.isValid()) {
+			return new ArrayList<XTraceMetadata>(contexts.get());
+		}
+		return null;
 	}
 
 	/**
