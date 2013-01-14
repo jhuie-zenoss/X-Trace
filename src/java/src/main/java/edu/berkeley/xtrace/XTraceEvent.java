@@ -81,6 +81,7 @@ public class XTraceEvent {
 		random.get().nextBytes(myOpId);
 		willReport = true;
 		this.msgclass = msgclass;
+		this.put("Class", msgclass.getName());
 	}
 	/**
 	* If any edge added to this event has a higher severity than the threshold (default),
