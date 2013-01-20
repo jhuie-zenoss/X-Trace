@@ -1,311 +1,15 @@
-var flatten = function(array) {
-    var empty = [];
-    return empty.concat.apply(empty, array);
-}
-
-var extractLinks = function(tail) {
-    if (tail.extracted) {
-        console.log("Extracting links from ", tail, "already been extracted");
-        return [];
-    } else if (tail.parents.length==0) {
-        console.log("Extracting links from ", tail, "no parents");
-        return [];        
-    } else {
-        tail.extracted = true;
-        
-        var links = [];
-        var sharedRoot
-        if (tail.parents.length > 1 && (sharedRoot=getSharedRoot(tail))) {
-            console.log("Extracting links from ", tail, "shared root");
-            // There is a shared root.  Continue from the shared root
-            links = extractLinks(sharedRoot);
-            
-            // Now get the sublinks
-            var sublinks = [];
-            tail.parents.forEach(function(parent) {
-                if (parent!=sharedRoot) {
-                    sublinks = sublinks.concat(extractLinks(parent));
-                    sublinks.push(new ExpandableLink(parent, tail));
-                }                
-            });
-            
-            // Put the shared link
-            links.push(new ExpandableLink(sharedRoot, tail, sublinks));            
-        } else {
-            console.log("Extracting links from ", tail, "no shared root");
-            // No shared root or just one parent.  Simply get the links
-            tail.parents.forEach(function(parent) {
-                links = links.concat(extractLinks(parent));
-                links.push(new ExpandableLink(parent, tail));
-            });
-        }
-        
-        console.log("extracted", links);
-        return links;
-    }
-}
-
-var getSharedRoot = function(sharedTail) {
-    // Find the parent with the lowest sequence number
-    var earliestParent = sharedTail;
-    sharedTail.parents.map(function(parent) { if (parent.n < earliestParent.n) { earliestParent = parent; }});
-    
-    // See whether the earliest parent is a root of all the parent nodes
-    var checkRootConvergence = function(root, node) {
-        if (node == root) {
-            return true;
-        } else if (node.n < root.n) {
-            return false;
-        } else {
-            for (var i = 0; i < node.parents.length; i++) {
-                if (!checkRootConvergence(root, node.parents[i])) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-    
-    // Also make sure that the sharedTail is a tail of all of the earliestParent's children    
-    var checkTailConvergence = function(tail, node) {
-        if (node == tail) {
-            return true;
-        } else if (node.n > tail.n) {
-            return false;
-        } else {
-            for (var i = 0; i < node.children.length; i++) {
-                if (!checkTailConvergence(tail, node.children[i])) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-    
-    if (earliestParent!=sharedTail && checkRootConvergence(earliestParent, sharedTail) && checkTailConvergence(sharedTail, earliestParent)) {
-        return earliestParent;
-    }
-}
-
-
-
-var ExpandableLink = function(source, target, links) {
-    this.expanded = false;
-    this.source = source;
-    this.target = target;
-    this.links = links || [];
-}
-
-ExpandableLink.prototype.isExpandable = function() {
-    return this.links.length > 0;
-}
-
-ExpandableLink.prototype.isExpanded = function() {
-    return this.isExpandable() && this.expanded;
-}
-
-ExpandableLink.prototype.expand = function() {
-    if (this.isExpandable()) {
-        this.expanded = true;
-    }
-}
-
-ExpandableLink.prototype.contract = function() {
-    this.expanded = false;
-}
-
-ExpandableLink.prototype.getLinks = function() {
-    var links = [];
-    if (this.isExpanded()) {
-        links = flatten(this.links.map(function(link) { return link.getLinks(); }));
-    }
-    links.push(this);
-    return links;
-}
-
-ExpandableLink.prototype.clearLayout = function() {
-    this.source.clearLayout();
-    this.target.clearLayout();
-    delete this.dagre;
-    this.links.forEach(function(link) { link.clearLayout(); });
-}
-
-
-
-var ExpandableGraph = function(graph) {
-    /**
-     *  Represents an expandable graph
-     *  graph - the full, source graph representation
-     */
-    this.graph = graph;
-    var links = [];
-    graph.getTails().forEach(function(tail) {
-        links = links.concat(extractLinks(tail));
-    });
-    this.links = links;
-    console.log("links: ", this.links);
-}
-
-ExpandableGraph.prototype.layout = function() {
-    /** Lays out the graph. */
-    // First, clear the old layout
-    //this.links.forEach(function(link) { link.clearLayout(); });
-    
-    // Then, get all the links
-    var links = this.getLinks();
-    
-    // Extract the nodes from the links
-    var nodes = this.getNodes();
-    
-    // Do the layout with dagre
-    dagre.layout()
-         .nodeSep(50)
-         .edgeSep(10)
-         .rankSep(30)
-         .nodes(nodes)
-         .edges(links)
-         .run();
-}
-
-ExpandableGraph.prototype.getNodes = function() {
-    // Extract the nodes from the links
-    var nodemap = {};
-    this.getLinks().forEach(function(link) { nodemap[link.source.id] = link.source; nodemap[link.target.id] = link.target; });
-    return Object.keys(nodemap).map(function(id) { return nodemap[id]; });
-}
-
-ExpandableGraph.prototype.getLinks = function() {
-    return flatten(this.links.map(function(link) { return link.getLinks(); }));
-}
-
-
-
-
-var Graph = function(reports) {
-    // Variables to hold graph nodes and such
-    this.nodes = {};
-    this.nodelist = [];
-    
-    // Extract the nodes from the reports
-    for (var i = 0; i < reports.length; i++) {
-        this.addNode(new Node(this, i, reports[i]));
-    }
-    
-    // Make sure everyone points to tail and root
-    for (var i = 1; i < this.nodelist.length; i++) {
-        if (this.nodelist[i].parents==[]) {
-            this.nodelist[i].parents = [ this.nodelist[0] ];
-        }
-    }
-    
-    for (var i = 0; i < this.nodelist.length-1; i++) {
-        if (this.nodelist[i].children==[]) {
-            this.nodelist[i].children = [ this.nodelist[this.nodelist.length-1] ];
-        }
-    }
-}
-
-Graph.prototype.addNode = function(node) {
-    this.nodes[node.id] = node;
-    this.nodelist.push(node);
-}
-
-Graph.prototype.getNode = function(id) {
-    return this.nodes[id];
-}
-
-Graph.prototype.getRoots = function() {
-    /* Find all nodes that have no parents */
-    var roots = [];
-    this.nodelist.forEach(function (node) {
-        if (node.parents.length==0) {
-            roots.push(node);
-        }
-    });
-    return roots;
-}
-
-Graph.prototype.getTails = function() {
-    /* Find all nodes that have no children */
-    var tails = [];
-    this.nodelist.forEach(function (node) {
-        if (node.children.length==0) {
-            tails.push(node);
-        }
-    });
-    return tails;
-}
-
-
-
-
-var Node = function(graph, n, report) {
-    // Save the arguments
-    this.n = n;
-    this.report = report;
-    
-    // Extract id from the report
-    this.id = report["X-Trace"][0].substr(18);
-    
-    // Default values
-    this.children = [];
-    this.parents = [];
-
-    // Extract the edges and save the parents to this node, as well as adding this node to the parent's children list
-    var child = this;
-    var parentids = {};
-    // remove duplicates
-    report["Edge"].forEach(function(parentid) {
-        parentids[parentid] = true;
-    });
-    // create edges
-    Object.keys(parentids).forEach(function(parentid) {
-        var parent = graph.getNode(parentid);
-        if (parent) {
-            child.addParent(parent);
-            parent.addChild(child);
-        } 
-    });
-}
-
-Node.prototype.addChild = function(child) {
-    this.children.push(child);
-}
-
-Node.prototype.addParent = function(parent) {
-    this.parents.push(parent);
-}
-
-Node.prototype.clearLayout = function() {
-    delete this.dagre;
-}
-
-var displayGraph = function(svg, egraph) {
-//    displayGraph2(svg, egraph);
-//    var gv = new GraphVisualization(svg, egraph);
-//    gv.updateGraph();
- 
-    console.log(svg);
-    d3.select(svg.node()).datum(egraph).call(DirectedAcyclicGraph());
-    
-}
-
-var displayGraph2 = function(svg, egraph) {    
-    // Append the graph and containers if it hasn't been added yet
+var displayGraph = function(svg, graph) {    
+    // This adds a graphics element onto which we will draw the graph, but only if one doesn't already exist
     var firstTimeGraph = svg.selectAll(".graph").data([{}]).enter().append("g").attr("class", "graph")
     firstTimeGraph.append("g").attr("class", "edges");
     firstTimeGraph.append("g").attr("class", "nodes");
     
-    var graph = svg.select(".graph");
+    // Get a handle to the graphics element
+    var g = svg.select(".graph");
     
-    var nodedata = egraph.getNodes();
-    var linkdata = egraph.getLinks();
-
-    console.log(nodedata);
-    console.log(linkdata);
-    window.nodedata = nodedata;
-    window.linkdata = linkdata;
-    window.egraph = egraph;
+    // Get the node and link data from the graph
+    var nodedata = graph.getVisibleNodes();
+    var linkdata = graph.getVisibleLinks();
 
     var nodePadding = 10;
     
@@ -316,20 +20,22 @@ var displayGraph2 = function(svg, egraph) {
         root_position = { x: root.dagre.x, y: root.dagre.y };
 
     // Get the edges
-    var newedges = graph.select(".edges").selectAll(".edge").data(linkdata, function(e) { return e.source.id + e.target.id; }).enter().append("path").attr("class", "edge");
-    var oldedges = graph.select(".edges").selectAll(".edge").data(linkdata, function(e) { return e.source.id + e.target.id; }).exit();
     var edges = graph.select(".edges").selectAll(".edge").data(linkdata, function(e) { return e.source.id + e.target.id; });
     
     // Add new edges
-    newedges
-            .on("click", function(d) { 
-                if (d.isExpanded()) { 
-                    d.contract(); 
-                } else { 
-                    d.expand(); 
-                }
-                refreshGraph(svg, egraph);
-            });
+    var newedges = edges.enter().append("path").attr("class", "edge")
+                                .attr("opacity", 1e-6)
+                                .on("click", function(d) { 
+                                    if (d.isExpanded()) { 
+                                        d.contract(); 
+                                    } else { 
+                                        d.expand(); 
+                                    }
+                                    refreshGraph(svg, egraph);
+                                });
+
+    // Fade out and remove hidden edges
+    edges.exit().transition().duration(500).attr("opacity", 1e-6).remove();
     
     // Get the nodes
     var nodes = graph.select(".nodes").selectAll(".node").data(nodedata, function(d) { return d.id; });
@@ -436,7 +142,7 @@ var displayGraph2 = function(svg, egraph) {
                                               return t < 1 ? "M" + points.map(function(p) { return p(t); }).join("L") : d1;
                                           };
                                        });
-    newedges.attr("stroke", function(d) { 
+    edges.attr("stroke", function(d) { 
                              if (d.isExpanded()) {
                                  return "red";
                              } else if (d.isExpandable()) {
@@ -453,11 +159,7 @@ var displayGraph2 = function(svg, egraph) {
         points.splice(0, 0, dagre.util.intersectRect(e.source.dagre, points[0]));
         return line(points);
     });
-    newedges.attr("opacity", 1e-6).transition().delay(function() { return Math.random() * 200 + 200; }).duration(800).attr("opacity", 1);
-
-
-    // Fade out and remove hidden edges
-    oldedges.transition().duration(500).attr("opacity", 1e-6).remove();
+    newedges.transition().delay(function() { return Math.random() * 200 + 200; }).duration(800).attr("opacity", 1);
 }
 
 var displayMinimap = function(svg, egraph){
@@ -538,64 +240,21 @@ var displayMinimap = function(svg, egraph){
     
 }
 
-var processReports = function(reports) {
-    var id_remap = {};
-    var filtered_reports = [];
-    for (var i = 0; i < reports.length; i++) {
-        var report = reports[i];
-        if (report["Operation"] && report["Operation"]=="merge") {
-            id_remap[report["X-Trace"][0].substr(18)] = report["Edge"];
-        } else {
-            filtered_reports.push(report);
-        }
-    }
-    for (var i = 0; i < filtered_reports.length; i++) {
-        var report = reports[i];
-        var edges = report["Edge"];
-        var remapped_edges = {};
-        for (var j = 0; j < edges.length; j++) {
-            var remap = id_remap[edges[j]];
-            if (remap) {
-                for (var k = 0; k < remap.length; k++) {
-                    remapped_edges[remap[k]] = true;
-                }
-            } else {
-                remapped_edges[edges[j]] = true;
-            }
-        }
-        report["Edge"] = Object.keys(remapped_edges);
-    }
-    return filtered_reports;
-}
-
-
-var drawGraph = function(reports) {
-    // Preprocess reports
-    reports = processReports(reports);
+/*
+ * Draws the interactive graph on the provided SVG element using the provided reports
+ */
+var drawGraph = function(svg, reports) {
+    // Create the graph representation
+    var graph = createGraphFromReports(reports);
     
-    // Get the size of the window
-    var w = window.innerWidth, h = window.innerHeight;
+    // Create the graph display
+    displayGraph(svg, graph);
     
-    // Create the graphs from the reports
-    var graph = new Graph(reports);
-    var egraph = new ExpandableGraph(graph);
-    
-    console.log(egraph);
-    
-    // Now start laying things out.
-    var svg = d3.select("body").append("svg").attr("width", window.innerWidth).attr("height", window.innerHeight);
-    displayGraph(svg, egraph);
-    displayMinimap(svg, egraph);
+    // Create the minimap
+    displayMinimap(svg, graph);
     
     var graph = svg.select(".graph");
     var minimap = svg.select(".minimap");
-    
-    window.addEventListener("resize", function() {            // Set resize behaviour for the graph
-        console.log("window resized)"); 
-        svg.attr("width", window.innerWidth)
-           .attr("height", window.innerHeight);
-        
-    });
     
     // Set the pan-zoom behaviour
     var panzoom = d3.behavior.zoom().translate ([0, 0])
