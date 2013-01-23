@@ -9,8 +9,8 @@ var drawGraph = function(attachPoint, reports) {
     
     // Twiddle the attach point a little bit
     var rootSVG = d3.select(attachPoint).append("svg");
-    var graphSVG = rootSVG.append("svg").attr("width", "100%").attr("height", "100%");
-    var minimapSVG = rootSVG.append("svg");
+    var graphSVG = rootSVG.append("svg").attr("width", "100%").attr("height", "100%").attr("class", "graph-attach");
+    var minimapSVG = rootSVG.append("svg").attr("class", "minimap-attach");
     
     // Create a vanilla DAG
     var nodedata = [];
@@ -46,31 +46,19 @@ var drawGraph = function(attachPoint, reports) {
     var draw = function() {
         graphSVG.datum(graph).call(dag);
         minimapSVG.datum(graphSVG.node()).call(minimap);
-                
-        // Add tooltips
-        graphSVG.selectAll(".node").each(function(d) {
-           $(this).tipsy({
-               gravity: $.fn.tipsy.autoWE, 
-               html: true, 
-               delayIn: 500,
-               delayOut: 500,
-               title: function() {
-                   return createTooltipHTML(d.report);
-               }
-           });
-            
-        });
-        $(".graph .node").tipsy({ 
-            gravity: $.fn.tipsy.autoWE, 
-            html: true, 
-            title: function() {
-              return 'Hi there! My color is blaaahh'; 
-            }
-        });
+        drawTooltips(graphSVG);
     }
     draw();
     
-    // Set the pan-zoom behaviour
+    setupPanZoom(rootSVG, dag);
+}
+
+var setupPanZoom = function(rootSVG, dag) {
+    var graphSVG = rootSVG.select(".graph-attach");
+    var minimapSVG = rootSVG.select(".minimap-attach");
+    var graph = graphSVG.select(".graph");
+    var minimap = minimapSVG.select(".minimap");
+    
     var scale = 1;
     var tx = 0;
     var ty = 0;
@@ -78,7 +66,7 @@ var drawGraph = function(attachPoint, reports) {
     var h = window.innerHeight;
     
     var refreshViewport = function() {
-        graphSVG.select('.graph').attr("transform","translate("+(tx*scale)+","+(ty*scale)+") scale("+scale+")");
+        graph.attr("transform","translate("+(tx*scale)+","+(ty*scale)+") scale("+scale+")");
         minimapSVG.select('.viewfinder').attr("x", -tx).attr("y", -ty).attr("width", w).attr("height", h);
         mainZoom.translate([tx*scale, ty*scale]).scale(scale);
         minimapZoom.translate([0,0]).scale(1);
@@ -87,7 +75,7 @@ var drawGraph = function(attachPoint, reports) {
     var zoomCB = function() {
         if (d3.event.scale!=scale) {
             scale = d3.event.scale;
-            graphSVG.selectAll(".node").each(dag.refreshnode());
+            graph.selectAll(".node").each(dag.refreshnode());
         }
         tx = d3.event.translate[0] / scale;
         ty = d3.event.translate[1] / scale;
@@ -97,7 +85,7 @@ var drawGraph = function(attachPoint, reports) {
     }
     
     var minimapZoomCB = function() {
-        var mouse = d3.mouse(minimapSVG.select('.minimap').node());
+        var mouse = d3.mouse(minimap.node());
         tx = w/2-mouse[0];
         ty = h/2-mouse[1];
         refreshViewport();
@@ -111,35 +99,52 @@ var drawGraph = function(attachPoint, reports) {
     minimapSVG.call(minimapZoom);
 }
 
-var createTooltipHTML = function(report) {
-    var tooltip = $("<div>").attr("class", "xtrace-tooltip");
-    
+var drawTooltips = function(graphSVG) {
     var reserved = ["X-Trace", "Agent", "Class", "Timestamp", "Host", "Label"];
-    var seen = {"Operation": true, "Edge": true, "version": true};
     
-    function appendRow(key) {
-        if (key in report && !seen[key]) {
-            var value = report[key].join(", ");
-            var keyrow = $("<div>").attr("class", "key").append(key);
-            var valrow = $("<div>").attr("class", "value").append(value);
-            var clearrow = $("<div>").attr("class", "clear");
-            tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
-            seen[key] = true;
+    function appendRow(key, value, tooltip) {
+        var keyrow = $("<div>").attr("class", "key").append(key);
+        var valrow = $("<div>").attr("class", "value").append(value);
+        var clearrow = $("<div>").attr("class", "clear");
+        tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
+    }
+    
+    function createTooltipHTML(report) {
+        var tooltip = $("<div>").attr("class", "xtrace-tooltip");
+        var seen = {"Operation": true, "Edge": true, "version": true};
+        
+        // Do the reserved first
+        for (var i = 0; i < reserved.length; i++) {
+            var key = reserved[i];
+            if (key in report) {
+                appendRow(key, report[key].join(", "), tooltip);
+                seen[key] = true;
+            }
         }
+        
+        // Do the remainder
+        for (var key in report) {
+            if (!seen[key]) {
+                appendRow(key, report[key].join(", "), tooltip);
+            }
+        }
+        
+        return tooltip.outerHTML();
     }
     
-    // Do the reserved first
-    for (var i = 0; i < reserved.length; i++) {
-        appendRow(key);
-    }
-    
-    // Do the remainder
-    for (var key in report) {
-        appendRow(key);
-    }
-    
-    return tooltip.outerHTML();
+    graphSVG.selectAll(".node").each(function(d) {
+        $(this).tipsy({
+            gravity: $.fn.tipsy.autoWE,
+            html: true,
+            delayIn: 500,
+            delayOut: 500,
+            title: function() {
+                return createTooltipHTML(d.report);
+            }
+        });
+    });
 }
+
 
 var createGraphFromReports = function(reports) {
     var nodes = {};

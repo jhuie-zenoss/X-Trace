@@ -54,7 +54,7 @@ function DirectedAcyclicGraph() {
     var height = d3.functor("100%");
     var edgeid = function(d) { return d.source.id + d.target.id; }
     var nodeid = function(d) { return d.id; }
-    var nodename = function(d) { console.log(d); return d.report["Agent"] ? d.report["Agent"][0] : ""; }
+    var nodename = function(d) { return d.report["Agent"] ? d.report["Agent"][0] : ""; }
     var getnodes = function(d) { return d.getNodes(); }
     var getedges = function(d) { return d.getLinks(); }
     var bbox = function(d) {
@@ -74,7 +74,6 @@ function DirectedAcyclicGraph() {
         refreshnode.call(this, d);
     }    
     var refreshnode = function(d) {
-        console.log("refreshing node");
         // Just update the position as this can be finnicky
         var node_bbox = bbox.call(this, d);
         var rect = d3.select(this).select('rect'), text = d3.select(this).select('text');
