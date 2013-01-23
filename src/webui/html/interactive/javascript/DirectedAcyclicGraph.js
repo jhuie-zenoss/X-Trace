@@ -1,5 +1,4 @@
 function DirectedAcyclicGraph() {
-    
     /*
      * Main rendering function
      */
@@ -8,6 +7,10 @@ function DirectedAcyclicGraph() {
             // Select the g element that we draw to, or add it if it doesn't exist
             var svg = d3.select(this).selectAll("svg").data([data]);
             svg.enter().append("svg").append("g").attr("class", "graph");
+            
+            // Size the chart
+            svg.attr("width", width.call(this, data));
+            svg.attr("height", height.call(this, data));            
             
             // Get the edges and nodes from the data.  Can have user-defined accessors
             var edges = getedges.call(this, data);
@@ -20,27 +23,8 @@ function DirectedAcyclicGraph() {
             var removed_edges = existing_edges.exit();
             var removed_nodes = existing_nodes.exit();
             
-            var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge");
+            var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge").attr("stroke", "#333");
             var new_nodes = existing_nodes.enter().append("g").attr("class", "node");
-            
-            var ge = d3.select(this);
-            new_edges.on("click", function(d) { 
-                        if (d.isExpanded()) { 
-                            d.contract(); 
-                        } else { 
-                            d.expand(); 
-                        }
-                        refreshGraph(ge, data);
-                    });
-            new_nodes.on("mouseover", function(d){ 
-                d3.select(this).select("rect").style("fill", "aliceblue"); 
-            }).on("mouseout", function(d){ 
-                d3.select(this).select("rect").style("fill", ""); 
-            }).on("click", function(d){
-               for (var key in d.report) {
-                   console.log(key + ": ", d.report[key]);
-               }
-            });
             
             // Draw new nodes and remove anything that on longer exists
             new_nodes.each(drawnode);
@@ -50,15 +34,13 @@ function DirectedAcyclicGraph() {
             // Do the layout
             layout.call(svg.select(".graph").node(), nodes, edges);
             
-            // Draw the new edges and then animate them into position
-            new_edges.each(drawedge);
-
-            existing_edges.transition().delay(100).attrTween("d", edgeTween);
-            existing_nodes.transition().delay(100).attr("transform", transform);
+            // Animate into new positions
+            existing_edges.transition().delay(100).attrTween("d", graph.edgeTween);
+            existing_nodes.transition().delay(100).attr("transform", graph.nodeTranslate);
             
-            new_edges.attr("d", splineGenerator).attr("opacity", 1e-6)
+            new_edges.attr("d", graph.splineGenerator).attr("opacity", 1e-6)
                      .transition().delay(random(200, 400)).duration(800).attr("opacity", 1);
-            new_nodes.attr("transform", transform).attr("opacity", 1e-6)
+            new_nodes.attr("transform", graph.nodeTranslate).attr("opacity", 1e-6)
                      .transition().delay(random(50, 350)).duration(700).attr("opacity", 1);
         });
         
@@ -68,9 +50,11 @@ function DirectedAcyclicGraph() {
     /*
      * Settable variables and functions
      */
+    var width = d3.functor("100%");
+    var height = d3.functor("100%");
     var edgeid = function(d) { return d.source.id + d.target.id; }
     var nodeid = function(d) { return d.id; }
-    var nodename = function(d) { return d.report["Agent"] ? d.report["Agent"][0] : ""; }
+    var nodename = function(d) { console.log(d); return d.report["Agent"] ? d.report["Agent"][0] : ""; }
     var getnodes = function(d) { return d.getNodes(); }
     var getedges = function(d) { return d.getLinks(); }
     var bbox = function(d) {
@@ -86,16 +70,18 @@ function DirectedAcyclicGraph() {
         text.append("tspan").attr("x", 0).attr("dy", "1em").text(nodeid);
         text.append("tspan").attr("x", 0).attr("dy", "1.1em").text(nodename);
         
-        // Size and position the DOM elements
+        // Update the size and position
+        refreshnode.call(this, d);
+    }    
+    var refreshnode = function(d) {
+        console.log("refreshing node");
+        // Just update the position as this can be finnicky
         var node_bbox = bbox.call(this, d);
+        var rect = d3.select(this).select('rect'), text = d3.select(this).select('text');
         var text_bbox = text.node().getBBox();
         rect.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2)
         rect.attr("width", node_bbox.width).attr("height", node_bbox.height);
         text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
-    }    
-    var drawedge = function(d) {
-        // Just style the edge for now
-        d3.select(this).attr("stroke", "#333");
     }
     var layout = function(nodes_d, edges_d) {
         // Dagre requires the width, height, and bbox of each node to be attached to that node's data
@@ -116,12 +102,12 @@ function DirectedAcyclicGraph() {
             p[0].y -= 5; p[p.length-1].y += 5; 
         });
     }
-    var transform = function(d) {
-        // Function to return the 'transform' value of nodes after layout
-        return "translate(" + d.dagre.x + "," + d.dagre.y +")";
+    var nodepos = function(d) {
+        // Returns the {x, y} location of a node after layout
+        return d.dagre;
     }
-    var points = function(d) {
-        // Get the points of an edge after layout
+    var edgepos = function(d) {
+        // Returns a list of {x, y} control points of an edge after layout
         return d.dagre.points; 
     }
     
@@ -129,12 +115,12 @@ function DirectedAcyclicGraph() {
     /*
      * A couple of private non-settable functions
      */
-    function splineGenerator(d) {
-        return d3.svg.line().x(function(d) { return d.x }).y(function(d) { return d.y }).interpolate("basis")(points.call(this, d));
+    graph.splineGenerator = function(d) {
+        return d3.svg.line().x(function(d) { return d.x }).y(function(d) { return d.y }).interpolate("basis")(edgepos.call(this, d));
     }
     
-    function edgeTween(d) {
-        var d1 = splineGenerator.call(this, d);
+    graph.edgeTween = function(d) {
+        var d1 = graph.splineGenerator.call(this, d);
         var path0 = this, path1 = path0.cloneNode();                           
         var n0 = path0.getTotalLength(), n1 = (path1.setAttribute("d", d1), path1).getTotalLength();
 
@@ -155,6 +141,11 @@ function DirectedAcyclicGraph() {
         };
     }
     
+    graph.nodeTranslate = function(d) {
+        var pos = nodepos.call(this, d);
+        return "translate(" + pos.x + "," + pos.y + ")";
+    }
+    
     function random(min, max) {
         return function() { return min + (Math.random() * (max-min)); }
     }
@@ -163,17 +154,19 @@ function DirectedAcyclicGraph() {
     /*
      * Getters and setters for settable variables and function
      */
+    graph.width = function(_) { if (!arguments.length) return width; width = d3.functor(_); return graph; }
+    graph.height = function(_) { if (!arguments.length) return height; height = d3.functor(_); return graph; }
     graph.edgeid = function(_) { if (!arguments.length) return edgeid; edgeid = _; return graph; }
     graph.nodeid = function(_) { if (!arguments.length) return nodeid; nodeid = _; return graph; }
     graph.nodename = function(_) { if (!arguments.length) return nodename; nodename = _; return graph; }
-    graph.nodes = function(_) { if (!arguments.length) return getnodes; getnodes = _; return graph; }
-    graph.edges = function(_) { if (!arguments.length) return getedges; getedges = _; return graph; }
-    graph.bbox = function(_) { if (!arguments.length) return bbox; bbox = _; return graph; }
+    graph.nodes = function(_) { if (!arguments.length) return getnodes; getnodes = d3.functor(_); return graph; }
+    graph.edges = function(_) { if (!arguments.length) return getedges; getedges = d3.functor(_); return graph; }
+    graph.bbox = function(_) { if (!arguments.length) return bbox; bbox = d3.functor(_); return graph; }
     graph.drawnode = function(_) { if (!arguments.length) return drawnode; drawnode = _; return graph; }
-    graph.drawedge = function(_) { if (!arguments.length) return drawedge; drawedge = _; return graph; }
+    graph.refreshnode = function(_) { if (!arguments.length) return refreshnode; refreshnode = _; return graph; }
     graph.layout = function(_) { if (!arguments.length) return layout; layout = _; return graph; }
-    graph.transform = function(_) { if (!arguments.length) return transform; transform = _; return graph; }
-    graph.points = function(_) { if (!arguments.length) return points; points = _; return graph; }
+    graph.nodepos = function(_) { if (!arguments.length) return nodepos; nodepos = _; return graph; }
+    graph.edgepos = function(_) { if (!arguments.length) return edgepos; edgepos = _; return graph; }
     
     return graph;
 }

@@ -1,0 +1,50 @@
+
+.node rect {
+  stroke-width: 1.5px;
+  stroke: #333;
+  fill: #fff;
+}
+
+#node-CLOSED rect {
+  stroke-width: 3px;
+  fill: #f88;
+}
+
+.node text {
+  font-family: Verdana;
+}
+
+path.edge {
+  fill: none;
+  stroke-width: 4px;
+}
+
+.minimap path.edge {
+  stroke-width: 2px;
+  stroke: black;
+}
+
+.minimap .node rect {
+  fill: #ddd;
+  stroke-width: 2px;
+}
+
+.xtrace-tooltip {
+	text-align: left;
+}
+
+.xtrace-tooltip .key {
+	display: inline-block;
+	float: left;
+	width: 90px;
+    font-weight: bold;	
+}
+
+.xtrace-tooltip .value {
+	display: inline-block;
+	float: left;
+}
+
+.xtrace-tooltip .clear {
+	clear: both;
+}
