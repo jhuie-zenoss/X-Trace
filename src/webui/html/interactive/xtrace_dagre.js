@@ -72,7 +72,6 @@ function drawXTraceGraph(attachPoint, reports) {
             $(this).tipsy({
                 gravity: $.fn.tipsy.autoWE,
                 html: true,
-                fade: true,
                 delayIn: 1000,
                 title: function() {
                     return createTooltipHTMLFromReport(d.report);
@@ -132,13 +131,13 @@ function drawXTraceGraph(attachPoint, reports) {
         }).on("mouseout", function(d){
             d3.select(this).classed("hovered", false)
             graphSVG.classed("hovering", false);
-            edges.classed("hoverpath", false);
-            nodes.classed("hoverpath", false);
+            edges.attr("opacity", 0.9);
+            nodes.attr("opacity", 0.9);
         });
         
         function getNodesBetween(a, b) {
             var between = {};
-            var nodesBetween = [];
+            var nodesBetween = [a, b];
             var get = function(p) {
                 if (between[p.id] == null) {
                     if (p==b) {
@@ -196,12 +195,12 @@ function drawXTraceGraph(attachPoint, reports) {
             }
             selectParents(center);
             selectChildren(center);
-            edges.classed("hoverpath", function(d) {
+            edges.attr("opacity", 0.1).filter(function(d) {
                 return selectedEdges[d.source.id+d.target.id]==true;
-            });
-            nodes.classed("hoverpath", function(d) {
+            }).attr("opacity", 0.9);
+            nodes.attr("opacity", 0.1).filter(function(d) {
                 return visitedParents[d.id] || visitedChildren[d.id];
-            })
+            }).attr("opacity", 0.9)
         }
     }
     

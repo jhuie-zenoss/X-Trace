@@ -43,18 +43,19 @@ function DirectedAcyclicGraph() {
             var edges = getedges.call(this, data);
             var nodes = getnodes.call(this, data);
             
-            // Get the nodes and edges
+            // Get the existing nodes and edges, and recalculate the node size
             var existing_edges = svg.select(".graph").selectAll(".edge").data(edges, edgeid);
             var existing_nodes = svg.select(".graph").selectAll(".node").data(nodes, nodeid);
             
             var removed_edges = existing_edges.exit();
             var removed_nodes = existing_nodes.exit();
             
-            var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge visible").attr("stroke", "#333");
-            var new_nodes = existing_nodes.enter().append("g").attr("class", "node visible");
+            var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge visible").attr("stroke", "#333").attr("opacity", 1e-6);
+            var new_nodes = existing_nodes.enter().append("g").attr("class", "node visible").attr("opacity", 1e-6);
             
             // Draw new nodes
             new_nodes.each(drawnode);
+            existing_nodes.each(sizenode);
             removed_edges.classed("visible", false).transition().duration(200).attr("opacity", 1e-6).remove();
             removed_nodes.classed("visible", false).transition().duration(200).attr("opacity", 1e-6).remove();
             
@@ -96,15 +97,16 @@ function DirectedAcyclicGraph() {
         var text = d3.select(this).append("text").attr("text-anchor", "middle").attr("x", 0);
         text.append("tspan").attr("x", 0).attr("dy", "1em").text(nodeid);
         text.append("tspan").attr("x", 0).attr("dy", "1.1em").text(nodename);
-
-        // Set the node position
+    }    
+    var sizenode = function(d) {
+        // Because of SVG weirdness, call sizenode as necessary to ensure a node's size is correct
         var node_bbox = bbox.call(this, d);
         var rect = d3.select(this).select('rect'), text = d3.select(this).select('text');
         var text_bbox = text.node().getBBox();
         rect.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2)
         rect.attr("width", node_bbox.width).attr("height", node_bbox.height);
         text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
-    }    
+    }
     var layout = function(nodes_d, edges_d) {
         // Dagre requires the width, height, and bbox of each node to be attached to that node's data
         d3.select(this).selectAll(".node").each(function(d) {
