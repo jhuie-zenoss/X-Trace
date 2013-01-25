@@ -21,6 +21,7 @@ function drawXTraceGraph(attachPoint, reports) {
     
     // Sets the pan-zoom state of the graph and minimap according to the pan-zoom variables
     var refreshViewport = function() {
+        console.log("refreshing", tx, ty, w, h, scale);
         graphSVG.select(".graph").attr("transform","translate("+(tx*scale)+","+(ty*scale)+") scale("+scale+")");
         minimapSVG.select('.viewfinder').attr("x", -tx).attr("y", -ty).attr("width", w).attr("height", h);
         graphZoom.translate([tx*scale, ty*scale]).scale(scale);
@@ -31,11 +32,12 @@ function drawXTraceGraph(attachPoint, reports) {
     // Resets the viewport by zooming all the way out
     var resetViewport = function() {
         var bbox = graphSVG.select(".graph").node().getBBox();
-        w = bbox.width+50;
-        h = bbox.height+50;
-        scale = Math.min(window.innerWidth/w, window.innerHeight/h);
-        tx = (window.innerWidth - w*scale)/(2*scale) - bbox.x + 25;
-        ty = (window.innerHeight - h*scale)/(2*scale) - bbox.y + 25;
+        bbox.width += 50; bbox.height += 50;
+        scale = Math.min(window.innerWidth/bbox.width, window.innerHeight/bbox.height);
+        w = window.innerWidth/scale;
+        h = window.innerHeight/scale;
+        tx = (w - bbox.width)/2 - bbox.x + 25;
+        ty = (h - bbox.height)/2 - bbox.y + 25;
         refreshViewport();
     }
     
@@ -221,6 +223,10 @@ function drawXTraceGraph(attachPoint, reports) {
     
     d3.select("body").on("keyup", function(d) {
         if (d3.event.keyCode==46) {
+            d3.select(this).classed("hovered", false)
+            graphSVG.classed("hovering", false);
+            graphSVG.selectAll(".edge").attr("opacity", 0.9);
+            graphSVG.selectAll(".node").attr("opacity", 0.9);
             graphSVG.selectAll(".node.selected").each(function(d) { d.visible = false; });
             draw();
         }

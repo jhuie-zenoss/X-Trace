@@ -15,7 +15,7 @@ function Minimap() {
             var contents = firsttime.append("svg").attr("class", "minimap");
             contents.append("g").attr("class", "contents")
             contents.append("rect").attr("class", "viewfinder").attr("stroke", "black")
-                                   .attr("fill", "black").attr("opacity", 0.3);
+                                   .attr("fill", "black").attr("opacity", 0.1);
             
             // Size the minimap as appropriate
             svg.attr("width", width.call(this, data));
@@ -30,6 +30,9 @@ function Minimap() {
             var bbox = svg.select('.contents').node().getBBox();
             var x1 = bbox.x, y1 = bbox.y, x2 = bbox.x+bbox.width, y2 = bbox.y+bbox.height;
             svg.select(".minimap").attr("viewBox", x1 + " " + y1 + " " + x2 + " " + y2);
+            
+            // Set the viewfinder to view everything
+            contents.select(".viewfinder").attr("x", x1).attr("y", y1).attr("width", x2-x1).attr("height", y2-y1);
         });
     }
     
