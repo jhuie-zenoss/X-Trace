@@ -1,3 +1,30 @@
+function DirectedAcyclicGraphMinimap(DAG) {
+    /*
+     * Specifies the draw function for the Minimap class, for a DAG
+     */
+    return Minimap().draw(function(d) {
+        var edgedata = d3.select(d).selectAll(".edge.visible").data();
+        var nodedata = d3.select(d).selectAll(".node.visible").data();
+        
+        var edges = d3.select(this).selectAll(".edge").data(edgedata, DAG.edgeid());
+        edges.enter().append("path").attr("class", "edge");
+        edges.exit().remove();
+        
+        var nodes = d3.select(this).selectAll(".node").data(nodedata, DAG.nodeid());
+        nodes.enter().append("g").attr("class", "node")
+                     .append("rect").attr("x", function(d) { return -(d.bbox.width/2); })
+                                    .attr("y", function(d) { return -(d.bbox.height/2); })
+                                    .attr("width", function(d) { return d.width; })
+                                    .attr("height", function(d) { return d.height; });
+        nodes.exit().remove();
+        
+        // Set positions of nodes and edges
+        nodes.attr("transform", DAG.nodeTranslate);
+        edges.attr("d", DAG.splineGenerator);
+    });
+}
+
+
 function DirectedAcyclicGraph() {
     /*
      * Main rendering function
@@ -23,25 +50,25 @@ function DirectedAcyclicGraph() {
             var removed_edges = existing_edges.exit();
             var removed_nodes = existing_nodes.exit();
             
-            var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge").attr("stroke", "#333");
-            var new_nodes = existing_nodes.enter().append("g").attr("class", "node");
+            var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge visible").attr("stroke", "#333");
+            var new_nodes = existing_nodes.enter().append("g").attr("class", "node visible");
             
-            // Draw new nodes and remove anything that on longer exists
+            // Draw new nodes
             new_nodes.each(drawnode);
-            removed_edges.transition().duration(200).attr("opacity", 1e-6).remove();
-            removed_nodes.transition().duration(200).attr("opacity", 1e-6).remove();
+            removed_edges.classed("visible", false).transition().duration(200).attr("opacity", 1e-6).remove();
+            removed_nodes.classed("visible", false).transition().duration(200).attr("opacity", 1e-6).remove();
             
             // Do the layout
             layout.call(svg.select(".graph").node(), nodes, edges);
             
             // Animate into new positions
-            existing_edges.transition().delay(100).attrTween("d", graph.edgeTween);
-            existing_nodes.transition().delay(100).attr("transform", graph.nodeTranslate);
+            existing_edges.transition().duration(1000).attr("d", graph.splineGenerator);
+            existing_nodes.transition().duration(1000).attr("transform", graph.nodeTranslate);
             
             new_edges.attr("d", graph.splineGenerator).attr("opacity", 1e-6)
-                     .transition().delay(random(200, 400)).duration(800).attr("opacity", 1);
+                     .transition().delay(random(1000, 400)).duration(800).attr("opacity", 1);
             new_nodes.attr("transform", graph.nodeTranslate).attr("opacity", 1e-6)
-                     .transition().delay(random(50, 350)).duration(700).attr("opacity", 1);
+                     .transition().delay(random(1000, 350)).duration(700).attr("opacity", 1);
         });
         
     }
@@ -55,8 +82,8 @@ function DirectedAcyclicGraph() {
     var edgeid = function(d) { return d.source.id + d.target.id; }
     var nodeid = function(d) { return d.id; }
     var nodename = function(d) { return d.report["Agent"] ? d.report["Agent"][0] : ""; }
-    var getnodes = function(d) { return d.getNodes(); }
-    var getedges = function(d) { return d.getLinks(); }
+    var getnodes = function(d) { return d.getVisibleNodes(); }
+    var getedges = function(d) { return d.getVisibleLinks(); }
     var bbox = function(d) {
         var nodePadding = 10;
         var bbox = d3.select(this).select("text").node().getBBox();
@@ -69,19 +96,15 @@ function DirectedAcyclicGraph() {
         var text = d3.select(this).append("text").attr("text-anchor", "middle").attr("x", 0);
         text.append("tspan").attr("x", 0).attr("dy", "1em").text(nodeid);
         text.append("tspan").attr("x", 0).attr("dy", "1.1em").text(nodename);
-        
-        // Update the size and position
-        refreshnode.call(this, d);
-    }    
-    var refreshnode = function(d) {
-        // Just update the position as this can be finnicky
+
+        // Set the node position
         var node_bbox = bbox.call(this, d);
         var rect = d3.select(this).select('rect'), text = d3.select(this).select('text');
         var text_bbox = text.node().getBBox();
         rect.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2)
         rect.attr("width", node_bbox.width).attr("height", node_bbox.height);
         text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
-    }
+    }    
     var layout = function(nodes_d, edges_d) {
         // Dagre requires the width, height, and bbox of each node to be attached to that node's data
         d3.select(this).selectAll(".node").each(function(d) {
@@ -98,7 +121,7 @@ function DirectedAcyclicGraph() {
             var p = d.dagre.points;
             p.push(dagre.util.intersectRect(d.target.dagre, p.length > 0 ? p[p.length - 1] : d.source.dagre));
             p.splice(0, 0, dagre.util.intersectRect(d.source.dagre, p[0]));
-            p[0].y -= 5; p[p.length-1].y += 5; 
+            p[0].y -= 0.5; p[p.length-1].y += 0.5; 
         });
     }
     var nodepos = function(d) {
@@ -162,7 +185,6 @@ function DirectedAcyclicGraph() {
     graph.edges = function(_) { if (!arguments.length) return getedges; getedges = d3.functor(_); return graph; }
     graph.bbox = function(_) { if (!arguments.length) return bbox; bbox = d3.functor(_); return graph; }
     graph.drawnode = function(_) { if (!arguments.length) return drawnode; drawnode = _; return graph; }
-    graph.refreshnode = function(_) { if (!arguments.length) return refreshnode; refreshnode = _; return graph; }
     graph.layout = function(_) { if (!arguments.length) return layout; layout = _; return graph; }
     graph.nodepos = function(_) { if (!arguments.length) return nodepos; nodepos = _; return graph; }
     graph.edgepos = function(_) { if (!arguments.length) return edgepos; edgepos = _; return graph; }

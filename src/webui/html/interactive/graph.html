@@ -4,8 +4,8 @@
 <script type="text/javascript" src="javascript/jquery-1.9.0.js"></script>
 <script type="text/javascript" src="javascript/jquery.tipsy.js"></script>
 <script type="text/javascript" src="javascript/dagre.js"></script>
-<script type="text/javascript" src="javascript/DirectedAcyclicGraph.js"></script>
 <script type="text/javascript" src="javascript/Minimap.js"></script>
+<script type="text/javascript" src="javascript/DirectedAcyclicGraph.js"></script>
 <script type="text/javascript" src="javascript/Graph.js"></script>
 <script type="text/javascript" src="xtrace_utils.js"></script>
 <script type="text/javascript" src="xtrace_dagre.js"></script>
@@ -30,7 +30,7 @@
 window.onload = function() {    
 	var callback = function(reports) {
 		console.log("Reports received!", reports);
-		drawGraph(document.body, reports.reports);
+		drawXTraceGraph(document.body, reports.reports);
 	};
 	var errback = function(message, error) {
 		console.log("Error retrieving reports", error);

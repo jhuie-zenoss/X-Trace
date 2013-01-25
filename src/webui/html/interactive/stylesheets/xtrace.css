@@ -1,22 +1,51 @@
 
 .node rect {
-  stroke-width: 1.5px;
-  stroke: #333;
-  fill: #fff;
-}
-
-#node-CLOSED rect {
-  stroke-width: 3px;
-  fill: #f88;
+  fill: #FFF2CC;
+  stroke-width: 2px;
+  stroke: #A16D00;
 }
 
 .node text {
   font-family: Verdana;
 }
 
+.node.selected rect,
+.hovering .node.selected rect {
+  stroke: #0F4BFF;
+  fill: #B3ECFF;
+  stroke-width: 2.5px;
+}
+
 path.edge {
   fill: none;
-  stroke-width: 4px;
+  stroke-width: 2.5px;
+  stroke: #D19D00;
+}
+
+path.edge.selected {
+  stroke-width: 3.5px;
+  stroke: #386AFF;
+}
+
+.node,
+.hovering .node.hoverpath,
+.hovering .node.selected,
+.edge,
+.hovering .edge.hoverpath,
+.hovering .edge.selected {
+  opacity: 1;
+}
+
+.hovering .node.hoverpath,
+.hovering .node.selected,
+.hovering .edge.hoverpath,
+.hovering .edge.selected {
+  stroke-width: 3px;
+}
+
+.hovering .node,
+.hovering .edge {
+  opacity: 0.2;
 }
 
 .minimap path.edge {
@@ -27,6 +56,7 @@ path.edge {
 .minimap .node rect {
   fill: #ddd;
   stroke-width: 2px;
+  stroke: black;
 }
 
 .xtrace-tooltip {

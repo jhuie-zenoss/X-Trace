@@ -44,6 +44,22 @@ Node.prototype.getVisibleParents = function() {
     return values(visible_parents);
 }
 
+Node.prototype.getVisibleChildren = function() {
+    var visible_children = {};
+    for (var child_id in this.child_nodes) {
+        var child = this.child_nodes[child_id];
+        if (child.visible) {
+            visible_children[child_id] = child;
+        } else {
+            var grandchildren = child.getVisibleChildren();
+            for (var i = 0; i < grandchildren.length; i++) {
+                visible_children[grandchildren[i].id] = grandchildren[i];
+            }
+        }
+    }
+    return values(visible_children);
+}
+
 var Graph = function() {
     // Default values for internal variables
     this.nodes = []
