@@ -1,3 +1,4 @@
+<!-- Created by Jonathan Mace (jcmace@cs.brown.edu) on 12/7/2012 -->
 <html>
 <head>
 <script type="text/javascript" src="javascript/d3.v3.min.js"></script>
@@ -11,6 +12,37 @@
 <script type="text/javascript" src="javascript/xtrace_dagre.js"></script>
 <link href="stylesheets/xtrace.css" rel="stylesheet" type="text/css">
 <link href="stylesheets/tipsy.css" rel="stylesheet" type="text/css" />
+<style>
+.node rect {
+  stroke-width: 1.5px;
+  stroke: #333;
+  fill: #fff;
+}
+
+#node-CLOSED rect {
+  stroke-width: 3px;
+  fill: #f88;
+}
+
+.node text {
+  font-family: Verdana;
+}
+
+path.edge {
+  fill: none;
+  stroke-width: 4px;
+}
+
+.minimap path.edge {
+  stroke-width: 2px;
+  stroke: black;
+}
+
+.minimap .node rect {
+  fill: #ddd;
+  stroke-width: 2px;
+}
+</style>
 <svg width=0 height=0>
   <defs>
     <marker id="arrowhead"
@@ -27,15 +59,8 @@
   </defs>
 </svg>
 <script>
-window.onload = function() {    
-	var callback = function(reports) {
-		console.log("Reports received!", reports);
-		drawXTraceGraph(document.body, reports.reports);
-	};
-	var errback = function(message, error) {
-		console.log("Error retrieving reports", error);
-	};
-	getReports(callback, errback);
+window.onload = function() {
+    d3.json("static.json", function(d) { drawXTraceGraph(document.body, d.reports); });    
 }
 </script>
 </head>
