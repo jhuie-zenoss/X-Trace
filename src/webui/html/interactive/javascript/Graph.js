@@ -62,19 +62,25 @@ Node.prototype.getVisibleChildren = function() {
 
 var Graph = function() {
     // Default values for internal variables
-    this.nodes = []
+    this.nodelist = []
+    this.nodes = {};
 }
 
 Graph.prototype.addNode = function(node) {
-    this.nodes.push(node);
+    this.nodelist.push(node);
+    this.nodes[node.id] = node;
+}
+
+Graph.prototype.getNode = function(id) {
+    return this.nodes[id];
 }
 
 Graph.prototype.getNodes = function() {
-    return this.nodes;
+    return this.nodelist;
 }
 
 Graph.prototype.getVisibleNodes = function() {
-    return this.nodes.filter(function(node) { return node.visible; });
+    return this.nodelist.filter(function(node) { return node.visible; });
 }
 
 Graph.prototype.getVisibleLinks = function() {
@@ -90,11 +96,62 @@ Graph.prototype.getVisibleLinks = function() {
  * The functions below are just simple utility functions
  */
 
-var values = function(obj) {
+function getNodesBetween(a, b) {
+    // Returns a list containing all the nodes between a and b, including a and b
+    var between = {};
+    var nodesBetween = [a, b];
+    var get = function(p) {
+        if (between[p.id] == null) {
+            if (p==b) {
+                nodesBetween.push(p);
+                between[p.id] = true;
+            } else if (p.getParents().map(get).indexOf(true)!=-1) {
+                nodesBetween.push(p);
+                between[p.id] = true;
+            } else {
+                between[p.id] = false;
+            }
+        }
+        return between[p.id];
+    }
+    get(a)
+    return nodesBetween;
+}
+
+function getEntirePath(center) {
+    // Returns a list containing all edges with paths leading into or from a
+
+    var visitedParents = {};
+    var visitedChildren = {};
+    var selectedEdges = {};
+    function selectParents(node) {
+        if (!visitedParents[node.id]) {
+            visitedParents[node.id]=true;
+            node.getVisibleParents().forEach(function(p) {
+                selectedEdges[p.id+node.id] = { source: p, target: node };
+                selectParents(p);
+            });
+        }
+    }
+    function selectChildren(node) {
+        if (!visitedChildren[node.id]) {
+            visitedChildren[node.id]=true;
+            node.getVisibleChildren().forEach(function(p) {
+                selectedEdges[node.id+p.id] = { source: node, target: p } ;
+                selectChildren(p);
+            });
+        }
+    }
+    selectParents(center);
+    selectChildren(center);
+    return Object.keys(selectedEdges).map(function(id) { return selectedEdges[id]; });
+}
+
+function values(obj) {
     return Object.keys(obj).map(function(key) { return obj[key]; });
 }
 
-var flatten = function(arrays) {
+function flatten(arrays) {
     var flattened = [];
     return flattened.concat.apply(flattened, arrays);
 }

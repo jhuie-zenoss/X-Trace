@@ -1,3 +1,29 @@
+function DirectedAcyclicGraphMinimap(DAG) {
+    /*
+     * Specifies the draw function for the Minimap class, for a DAG
+     */
+    return Minimap().draw(function(d) {
+        var edgedata = d3.select(d).selectAll(".edge.visible").data();
+        var nodedata = d3.select(d).selectAll(".node.visible").data();
+        
+        var edges = d3.select(this).selectAll(".edge").data(edgedata, DAG.edgeid());
+        edges.enter().append("path").attr("class", "edge visible");
+        edges.exit().remove();
+        
+        var nodes = d3.select(this).selectAll(".node").data(nodedata, DAG.nodeid());
+        nodes.enter().append("g").attr("class", "node visible")
+                     .append("rect").attr("x", function(d) { return -(d.bbox.width/2); })
+                                    .attr("y", function(d) { return -(d.bbox.height/2); })
+                                    .attr("width", function(d) { return d.width; })
+                                    .attr("height", function(d) { return d.height; });
+        nodes.exit().remove();
+        
+        // Set positions of nodes and edges
+        nodes.attr("transform", DAG.nodeTranslate);
+        edges.attr("d", DAG.splineGenerator);
+    });
+}
+
 function Minimap() {
     var width   = d3.functor(100),
         height  = d3.functor(100),

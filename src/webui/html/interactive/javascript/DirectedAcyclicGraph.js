@@ -1,30 +1,3 @@
-function DirectedAcyclicGraphMinimap(DAG) {
-    /*
-     * Specifies the draw function for the Minimap class, for a DAG
-     */
-    return Minimap().draw(function(d) {
-        var edgedata = d3.select(d).selectAll(".edge.visible").data();
-        var nodedata = d3.select(d).selectAll(".node.visible").data();
-        
-        var edges = d3.select(this).selectAll(".edge").data(edgedata, DAG.edgeid());
-        edges.enter().append("path").attr("class", "edge");
-        edges.exit().remove();
-        
-        var nodes = d3.select(this).selectAll(".node").data(nodedata, DAG.nodeid());
-        nodes.enter().append("g").attr("class", "node")
-                     .append("rect").attr("x", function(d) { return -(d.bbox.width/2); })
-                                    .attr("y", function(d) { return -(d.bbox.height/2); })
-                                    .attr("width", function(d) { return d.width; })
-                                    .attr("height", function(d) { return d.height; });
-        nodes.exit().remove();
-        
-        // Set positions of nodes and edges
-        nodes.attr("transform", DAG.nodeTranslate);
-        edges.attr("d", DAG.splineGenerator);
-    });
-}
-
-
 function DirectedAcyclicGraph() {
     /*
      * Main rendering function
@@ -50,26 +23,25 @@ function DirectedAcyclicGraph() {
             var removed_edges = existing_edges.exit();
             var removed_nodes = existing_nodes.exit();
             
-            var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge visible").attr("stroke", "#333").attr("opacity", 1e-6);
-            var new_nodes = existing_nodes.enter().append("g").attr("class", "node visible").attr("opacity", 1e-6);
+            var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge");
+            var new_nodes = existing_nodes.enter().append("g").attr("class", "node");
             
             // Draw new nodes
             new_nodes.each(drawnode);
             existing_nodes.each(sizenode);
-            removed_edges.classed("visible", false).transition().duration(200).attr("opacity", 1e-6).remove();
-            removed_nodes.classed("visible", false).transition().duration(200).attr("opacity", 1e-6).remove();
+            removed_nodes.each(removenode);
+            removed_edges.classed("visible", false).transition().duration(500).remove();
+            existing_nodes.classed("visible", true);
             
             // Do the layout
             layout.call(svg.select(".graph").node(), nodes, edges);
             
             // Animate into new positions
-            existing_edges.transition().duration(1000).attr("d", graph.splineGenerator);
-            existing_nodes.transition().duration(1000).attr("transform", graph.nodeTranslate);
+            svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attr("d", graph.splineGenerator);
+            new_edges.transition().delay(500).attr("class", "edge visible").attr("d", graph.splineGenerator);
+            existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
             
-            new_edges.attr("d", graph.splineGenerator).attr("opacity", 1e-6)
-                     .transition().delay(random(1000, 400)).duration(800).attr("opacity", 1);
-            new_nodes.attr("transform", graph.nodeTranslate).attr("opacity", 1e-6)
-                     .transition().delay(random(1000, 350)).duration(700).attr("opacity", 1);
+            new_nodes.each(newnodetransition);
         });
         
     }
@@ -97,6 +69,10 @@ function DirectedAcyclicGraph() {
         var text = d3.select(this).append("text").attr("text-anchor", "middle").attr("x", 0);
         text.append("tspan").attr("x", 0).attr("dy", "1em").text(nodeid);
         text.append("tspan").attr("x", 0).attr("dy", "1.1em").text(nodename);
+        var prior_pos = nodepos.call(this, d);
+        if (prior_pos!=null) {
+            d3.select(this).attr("transform", graph.nodeTranslate);
+        }
     }    
     var sizenode = function(d) {
         // Because of SVG weirdness, call sizenode as necessary to ensure a node's size is correct
@@ -106,6 +82,12 @@ function DirectedAcyclicGraph() {
         rect.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2)
         rect.attr("width", node_bbox.width).attr("height", node_bbox.height);
         text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
+    }
+    var removenode = function(d) {
+        d3.select(this).classed("visible", false).transition().duration(200).remove();
+    }
+    var newnodetransition = function(d) {
+        d3.select(this).classed("visible", true).transition().duration(800).attr("transform", graph.nodeTranslate);
     }
     var layout = function(nodes_d, edges_d) {
         // Dagre requires the width, height, and bbox of each node to be attached to that node's data
@@ -187,6 +169,8 @@ function DirectedAcyclicGraph() {
     graph.edges = function(_) { if (!arguments.length) return getedges; getedges = d3.functor(_); return graph; }
     graph.bbox = function(_) { if (!arguments.length) return bbox; bbox = d3.functor(_); return graph; }
     graph.drawnode = function(_) { if (!arguments.length) return drawnode; drawnode = _; return graph; }
+    graph.removenode = function(_) { if (!arguments.length) return removenode; removenode = _; return graph; }
+    graph.newnodetransition = function(_) { if (!arguments.length) return newnodetransition; newnodetransition = _; return graph; }
     graph.layout = function(_) { if (!arguments.length) return layout; layout = _; return graph; }
     graph.nodepos = function(_) { if (!arguments.length) return nodepos; nodepos = _; return graph; }
     graph.edgepos = function(_) { if (!arguments.length) return edgepos; edgepos = _; return graph; }

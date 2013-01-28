@@ -1,18 +1,37 @@
-.graph {
+.graph,
+.list {
 	cursor: default
 }
 
-.node,
-.node rect,
-.edge {
-  transition:fill 0.5s, stroke 0.5s, stroke-width 2s, opacity 0.3s;
-  -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 2s, opacity 0.3s;	
+.node {
+  opacity: 0;
+  transition:fill 0.5s, stroke 0.5s, opacity 1s;
+  -webkit-transition:fill 0.5s, stroke 0.5s, opacity 1s;
+}
+
+.node.visible {
+  opacity: 1;
+  transition:fill 0.5s, stroke 0.5s, opacity 2s;
+  -webkit-transition:fill 0.5s, stroke 0.5s, opacity 2s;
+}
+
+.hovering .node.visible {
+  opacity: 0.2;
+  transition:fill 0.5s, stroke 0.5s, opacity 0.4s;
+  -webkit-transition:fill 0.5s, stroke 0.5s, opacity 0.4s;
+}
+
+.hovering .node.visible.hovered,
+.hovering .node.visible.selected {
+  opacity: 1;
 }
 
 .node rect {
   fill: #FFF2CC;
   stroke-width: 2px;
   stroke: #A16D00;
+  transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s;
+  -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s;
 }
 
 .node text {
@@ -25,20 +44,35 @@
   fill: #B3ECFF;
 }
 
-path.edge {
+.edge {
   fill: none;
   stroke-width: 2.5px;
   stroke: #D19D00;
+  opacity: 0;
+  transition:fill 0.1s, stroke 0.1s, stroke-width 0.1s, opacity 0.3s;
+  -webkit-transition:fill 0.1s, stroke 0.1s, stroke-width 0.1s, opacity 0.3s;
 }
 
-path.edge.selected {
+.edge.visible.selected {
   stroke-width: 6px;
   stroke: #386AFF;
 }
 
-.hovering .node.selected,
+.edge.visible {
+  opacity: 1;
+  transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
+  -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
+}
+
+.hovering .edge.visible {
+  opacity: 0.1;
+  transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.4s;
+  -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.4s;
+}
+
+.hovering .edge.visible.hovered,
 .hovering .edge.selected {
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .minimap path.edge {
@@ -50,6 +84,27 @@ path.edge.selected {
   fill: #ddd;
   stroke-width: 2px;
   stroke: black;
+}
+
+.list .item rect {
+  stroke: #0F4BFF;
+  fill: #B3ECFF;
+  fill-opacity: 0.5;
+  stroke-width: 1;
+  transition:fill 0.5s, stroke 0.5s;
+  -webkit-transition:fill 0.5s, stroke 0.5s;
+}
+
+.list .item:hover rect {
+  fill: #FFF2CC;
+  stroke: #A16D00;
+}
+
+.list .item text {
+  x: 50%;
+  dy: 1em;
+  text-anchor: middle;
+  dominant-baseline: central;
 }
 
 .xtrace-tooltip {
