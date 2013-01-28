@@ -87,7 +87,7 @@ function DirectedAcyclicGraph() {
         d3.select(this).classed("visible", false).transition().duration(200).remove();
     }
     var newnodetransition = function(d) {
-        d3.select(this).classed("visible", true).transition().duration(800).attr("transform", graph.nodeTranslate);
+        d3.select(this).classed("visible", true).attr("transform", graph.nodeTranslate);
     }
     var layout = function(nodes_d, edges_d) {
         // Dagre requires the width, height, and bbox of each node to be attached to that node's data

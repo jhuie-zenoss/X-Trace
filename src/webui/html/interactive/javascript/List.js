@@ -28,11 +28,11 @@ function List() {
             var items = svg.select(".list").selectAll(".item").data(data, function(d) { return d.id; });
             
             // Draw new items
-            var newitems = items.enter().append("svg").attr("class", "item").attr("opacity", 1e-8)
+            var newitems = items.enter().insert("svg", ":first-child").attr("class", "item").attr("opacity", 1e-8)
                                 .attr("width", itemwidth).attr("height", itemheight).attr("x", itemx).attr("y", itemy);
             newitems.each(drawitem);
 
-            items.transition().duration(300).attr("x", itemx).attr("y", itemy);
+            items.transition().duration(800).attr("x", itemx).attr("y", itemy);
             newitems.transition().delay(400).duration(600).attr("opacity", 1);
 
             
@@ -57,11 +57,15 @@ function List() {
             item.append("text").text(text).attr("x", "50%").attr("dy", "2em");
         }
     }
-    
+
     list.width = function(_) { if (!arguments.length) return width; width = d3.functor(_); return list; }
     list.height = function(_) { if (!arguments.length) return height; height = d3.functor(_); return list; }
     list.x = function(_) { if (!arguments.length) return x; x = d3.functor(_); return list; }
     list.y = function(_) { if (!arguments.length) return y; y = d3.functor(_); return list; }
+    list.itemwidth = function(_) { if (!arguments.length) return itemwidth; itemwidth = d3.functor(_); return list; }
+    list.itemheight = function(_) { if (!arguments.length) return itemheight; itemheight = d3.functor(_); return list; }
+    list.itemx = function(_) { if (!arguments.length) return itemx; itemx = d3.functor(_); return list; }
+    list.itemy = function(_) { if (!arguments.length) return itemy; itemy = d3.functor(_); return list; }
     
     return list;
 }

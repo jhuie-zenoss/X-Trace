@@ -141,7 +141,22 @@ function setupEvents(){
         graphSVG.classed("hovering", false);
     });
     
-    items.on("click", function(d) {
+    // When a list item is clicked, it will be removed from the history and added to the graph
+    // So we override the DAG node transition behaviour so that the new nodes animate from the click position
+    items.on("click", function(d, i) {
+        // Calculate the click point
+        var bbox = listSVG.node().getBBox();
+        var startx = (bbox.y + 20) / scale - ty;
+        var starty = (bbox.x + bbox.width/2 + DAGHistory.itemy().call(this, d, i)) / scale - tx;
+        var startscale = 0.8 / scale;
+        var starttransform = "translate("+startx+","+starty+") scale("+startscale+")";
+
+        // Update the new node transition to originate from this point
+        DAG.newnodetransition(function(d) {
+            d3.select(this).attr("transform", starttransform).transition().duration(800).attr("transform", DAG.nodeTranslate);
+        })
+        
+        // Now remove and redraw
         history.remove(d);
         draw();
     })
@@ -206,22 +221,7 @@ DAG.removenode(function(d) {
     
     // Slide the removed nodes over to the history
     var translate = "translate("+targetx+","+targety+") scale("+targetscale+")";
-    d3.select(this).classed("visible", false).transition().duration(500).attr("transform", translate).remove();
-}).newnodetransition(function(d) {
-    if (d.seen) {
-        // Calculate the origin point for the node translation
-        var bbox = listSVG.node().getBBox();
-        var targety = (bbox.y + 20) / scale - ty;
-        var targetx = (bbox.x + bbox.width/2) / scale - tx;
-        var targetscale = 0.8 / scale;
-        var translate = "translate("+targetx+","+targety+") scale("+targetscale+")";
-        
-        d3.select(this).attr("transform", translate)
-                       .transition().duration(800).attr("transform", DAG.nodeTranslate);
-    } else {
-        d.seen = true;
-        d3.select(this).classed("visible", true).attr("transform", DAG.nodeTranslate);
-    }
+    d3.select(this).classed("visible", false).transition().duration(800).attr("transform", translate).remove();
 });
 
 //Call the draw function
@@ -237,6 +237,20 @@ d3.select("body").on("keyup", function(d) {
         d3.select(this).classed("hovered", false)
         graphSVG.classed("hovering", false);
         draw();
+    }
+});
+
+d3.selectAll(".item").classed("context-menu-one", true);
+$.contextMenu({
+    selector: '.context-menu-one', 
+    items: {
+        "edit": {name: "Edit", icon: "edit"},
+        "cut": {name: "Cut", icon: "cut"},
+        "copy": {name: "Copy", icon: "copy"},
+        "paste": {name: "Paste", icon: "paste"},
+        "delete": {name: "Delete", icon: "delete"},
+        "sep1": "---------",
+        "quit": {name: "Quit", icon: "quit"}
     }
 });
     
