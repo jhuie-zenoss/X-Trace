@@ -84,12 +84,26 @@ Graph.prototype.getVisibleNodes = function() {
 }
 
 Graph.prototype.getVisibleLinks = function() {
+    var start = window.performance.now();
+    
+    
+    
     var links = this.getVisibleNodes().map(function(node) { 
         return node.getVisibleParents().map(function(parent) {
             return { "source": parent, "target": node };
         }); 
     });
-    return flatten(links);
+    var ret = flatten(links);
+    
+//    // First, get all nodes that have no parents
+//    var parents = {};
+//    for (var i = 0; i < this.nodelist.length; i++) {
+//        
+//    }
+    
+    
+    console.log("getting links took", (window.performance.now()-start));
+    return ret;
 }
 
 /*
@@ -98,6 +112,7 @@ Graph.prototype.getVisibleLinks = function() {
 
 function getNodesBetween(a, b) {
     // Returns a list containing all the nodes between a and b, including a and b
+    var start = window.performance.now();
     var between = {};
     var nodesBetween = [a, b];
     var get = function(p) {
@@ -115,20 +130,21 @@ function getNodesBetween(a, b) {
         return between[p.id];
     }
     get(a)
+    console.log("getting nodes between took", (window.performance.now()-start));
     return nodesBetween;
 }
 
 function getEntirePath(center) {
-    // Returns a list containing all edges with paths leading into or from a
-
+    // Returns a list containing all nodes with paths leading into or from the center node
+    var start = window.performance.now();    
     var visitedParents = {};
     var visitedChildren = {};
-    var selectedEdges = {};
+    var path = {};
     function selectParents(node) {
         if (!visitedParents[node.id]) {
             visitedParents[node.id]=true;
+            path[node.id] = true;
             node.getVisibleParents().forEach(function(p) {
-                selectedEdges[p.id+node.id] = { source: p, target: node };
                 selectParents(p);
             });
         }
@@ -136,15 +152,16 @@ function getEntirePath(center) {
     function selectChildren(node) {
         if (!visitedChildren[node.id]) {
             visitedChildren[node.id]=true;
+            path[node.id] = true;
             node.getVisibleChildren().forEach(function(p) {
-                selectedEdges[node.id+p.id] = { source: node, target: p } ;
                 selectChildren(p);
             });
         }
     }
     selectParents(center);
     selectChildren(center);
-    return Object.keys(selectedEdges).map(function(id) { return selectedEdges[id]; });
+    console.log("getting entire path took", (window.performance.now()-start));
+    return path;
 }
 
 function values(obj) {

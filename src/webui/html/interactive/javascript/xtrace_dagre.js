@@ -69,9 +69,8 @@ var graphZoom = d3.behavior.zoom().translate([0, 0]).scale(1.0).scaleExtent([0.0
 rootSVG.call(graphZoom).on("dblclick.zoom", null); // turn off double click zooming
 
 // Create and call the minimap pan-zoom behaviour
-minimapSVG.on("click", onMinimapPanzoom); // this turns on click-to-move on the minimap
 var minimapZoom = d3.behavior.zoom().translate([0, 0]).scale(1.0).scaleExtent([1.0, 1.0]).on("zoom", onMinimapPanzoom);
-minimapSVG.call(minimapZoom).on("dblclick.zoom", null); // turn off double click zooming
+minimapSVG.call(minimapZoom) // turn off double click zooming
 
 // A function to attach tipsy tooltips to the graph nodes
 function drawTooltips() {
@@ -146,8 +145,9 @@ function setupEvents(){
     items.on("click", function(d, i) {
         // Calculate the click point
         var bbox = listSVG.node().getBBox();
-        var startx = (bbox.y + 20) / scale - ty;
-        var starty = (bbox.x + bbox.width/2 + DAGHistory.itemy().call(this, d, i)) / scale - tx;
+        console.log(bbox);
+        var startx = (bbox.x + bbox.width/2) / scale - tx;
+        var starty = (bbox.y + DAGHistory.itemy().call(this, d, i) + 20) / scale - ty;
         var startscale = 0.8 / scale;
         var starttransform = "translate("+startx+","+starty+") scale("+startscale+")";
 
@@ -177,24 +177,14 @@ function setupEvents(){
         });
     }
     
-    function highlightPath(center) {
-        var containedEdges = {};
-        var containedNodes = {};
-        
+    function highlightPath(center) {        
         var path = getEntirePath(center);
         
-        for (var i = 0; i < path.length; i++) {
-            var edge = path[i];
-            containedEdges[edge.source.id+edge.target.id] = true;
-            containedNodes[edge.source.id] = true;
-            containedNodes[edge.target.id] = true;
-        }
-        
         edges.classed("hovered", function(d) {
-            return containedEdges[d.source.id+d.target.id];            
+            return path[d.source.id] && path[d.target.id];            
         })
         nodes.classed("hovered", function(d) {
-            return containedNodes[d.id];
+            return path[d.id];
         });
     }
 }

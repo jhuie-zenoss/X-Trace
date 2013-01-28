@@ -3,30 +3,30 @@
 	cursor: default
 }
 
-.node {
+.graph .node {
   opacity: 0;
   transition:fill 0.5s, stroke 0.5s, opacity 1s;
   -webkit-transition:fill 0.5s, stroke 0.5s, opacity 1s;
 }
 
-.node.visible {
+.graph .node.visible {
   opacity: 1;
   transition:fill 0.5s, stroke 0.5s, opacity 2s;
   -webkit-transition:fill 0.5s, stroke 0.5s, opacity 2s;
 }
 
-.hovering .node.visible {
+.graph.hovering .node.visible {
   opacity: 0.2;
   transition:fill 0.5s, stroke 0.5s, opacity 0.4s;
   -webkit-transition:fill 0.5s, stroke 0.5s, opacity 0.4s;
 }
 
-.hovering .node.visible.hovered,
-.hovering .node.visible.selected {
+.graph.hovering .node.visible.hovered,
+.graph.hovering .node.visible.selected {
   opacity: 1;
 }
 
-.node rect {
+.graph .node rect {
   fill: #FFF2CC;
   stroke-width: 2px;
   stroke: #A16D00;
@@ -34,17 +34,17 @@
   -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s;
 }
 
-.node text {
+.graph .node text {
   font-family: Verdana;
 }
 
-.node.selected rect,
-.hovering .node.selected rect {
+.graph .node.selected rect,
+.graph.hovering .node.selected rect {
   stroke: #0F4BFF;
   fill: #B3ECFF;
 }
 
-.edge {
+.graph .edge {
   fill: none;
   stroke-width: 2.5px;
   stroke: #D19D00;
@@ -53,31 +53,35 @@
   -webkit-transition:fill 0.1s, stroke 0.1s, stroke-width 0.1s, opacity 0.3s;
 }
 
-.edge.visible.selected {
+.graph .edge.visible.selected {
   stroke-width: 6px;
   stroke: #386AFF;
 }
 
-.edge.visible {
+.graph .edge.visible {
   opacity: 1;
   transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
+  transition-delay: 0s, 0s, 0s, 1s;
   -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
+  -webkit-transition-delay: 0s, 0s, 0s, 0.5s;
+  
 }
 
-.hovering .edge.visible {
+.graph.hovering .edge.visible {
   opacity: 0.1;
   transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.4s;
   -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.4s;
 }
 
-.hovering .edge.visible.hovered,
-.hovering .edge.selected {
+.graph.hovering .edge.visible.hovered,
+.graph.hovering .edge.selected {
   opacity: 1;
 }
 
-.minimap path.edge {
+.minimap .edge {
   stroke-width: 2px;
   stroke: black;
+  fill-opacity: 0;
 }
 
 .minimap .node rect {

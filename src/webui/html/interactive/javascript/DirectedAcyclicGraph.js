@@ -38,7 +38,7 @@ function DirectedAcyclicGraph() {
             
             // Animate into new positions
             svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attr("d", graph.splineGenerator);
-            new_edges.transition().delay(500).attr("class", "edge visible").attr("d", graph.splineGenerator);
+            new_edges.attr("class", "edge visible").attr("d", graph.splineGenerator);
             existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
             
             new_nodes.each(newnodetransition);
