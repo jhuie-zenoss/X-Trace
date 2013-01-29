@@ -1,4 +1,7 @@
 function DirectedAcyclicGraph() {
+    
+    var layout_count = 0;
+    
     /*
      * Main rendering function
      */
@@ -86,18 +89,21 @@ function DirectedAcyclicGraph() {
         d3.select(this).classed("visible", true).attr("transform", graph.nodeTranslate);
     }
     var layout = function(nodes_d, edges_d) {
-        var start = window.performance.now();
         // Dagre requires the width, height, and bbox of each node to be attached to that node's data
-        d3.select(this).selectAll(".node").each(function(d) {
+        var start = window.performance.now();
+        d3.select(this).selectAll(".node.visible").each(function(d) {
             d.bbox = bbox.call(this, d);
             d.width = d.bbox.width;
             d.height = d.bbox.height;
+            d.dagre_prev = d.dagre_id==layout_count ? d.dagre : null;
+            d.dagre_id = layout_count+1;
         });
+        layout_count++;
         console.log("layout:bbox", (window.performance.now() - start));
-        start = window.performance.now();
         
         // Call dagre layout.  Store layout data such that calls to x(), y() and points() will return them
-        dagre.layout().nodeSep(50).edgeSep(10).rankSep(30).nodes(nodes_d).edges(edges_d).run(); 
+        start = window.performance.now();
+        dagre.layout().nodeSep(20).edgeSep(5).rankSep(20).nodes(nodes_d).edges(edges_d).run(); 
         console.log("layout:dagre", (window.performance.now() - start));   
         
         // Also we want to make sure that the control points for all the edges overlap the nodes nicely
@@ -107,6 +113,31 @@ function DirectedAcyclicGraph() {
             p.splice(0, 0, dagre.util.intersectRect(d.source.dagre, p[0]));
             p[0].y -= 0.5; p[p.length-1].y += 0.5; 
         });
+        
+        // Try and put the graph as close to previous position as possible
+        var count = 0, x = 0, y = 0;
+        d3.select(this).selectAll(".node.visible").each(function(d) {
+            if (d.dagre_prev) {
+                count++;
+                x += (d.dagre_prev.x - d.dagre.x);
+                y += (d.dagre_prev.y - d.dagre.y);
+            }
+        });
+        if (count > 0) {
+            x = x / count;
+            y = y / count;
+            d3.select(this).selectAll(".node").each(function(d) {
+                d.dagre.x += x;
+                d.dagre.y += y;
+            })
+            d3.select(this).selectAll(".edge").each(function(d) {
+                d.dagre.points.forEach(function(p) {
+                    p.x += x;
+                    p.y += y;
+                })
+            })
+            console.log("offset by ", x, y);
+        }
     }
     var nodepos = function(d) {
         // Returns the {x, y} location of a node after layout
