@@ -84,25 +84,43 @@ Graph.prototype.getVisibleNodes = function() {
 }
 
 Graph.prototype.getVisibleLinks = function() {
-    var start = window.performance.now();
+    var visible_parent_map = {};
     
+    var explore_node = function(node) {
+        if (visible_parent_map[node.id]) {
+            return;
+        }
+        visible_parent_map[node.id] = {};
+        var parents = node.parent_nodes;
+        for (var pid in parents) {
+            var parent = parents[pid];
+            if (parent.visible) {
+                visible_parent_map[node.id][pid] = true;
+            } else {
+                explore_node(parent);
+                var grandparents = visible_parent_map[pid];
+                for (var gpid in grandparents) {
+                    visible_parent_map[node.id][gpid] = true;
+                }
+            }
+        }
+    }
     
+    for (var i = 0; i < this.nodelist.length; i++) {
+        explore_node(this.nodelist[i]);
+    }
     
-    var links = this.getVisibleNodes().map(function(node) { 
-        return node.getVisibleParents().map(function(parent) {
-            return { "source": parent, "target": node };
-        }); 
-    });
-    var ret = flatten(links);
-    
-//    // First, get all nodes that have no parents
-//    var parents = {};
-//    for (var i = 0; i < this.nodelist.length; i++) {
-//        
-//    }
-    
-    
-    console.log("getting links took", (window.performance.now()-start));
+    var nodes = this.nodes;
+    var ret = [];
+    var visible_nodes = this.getVisibleNodes();
+    for (var i = 0; i < visible_nodes.length; i++) {
+        var node = visible_nodes[i];
+        var parentids = visible_parent_map[node.id];
+        Object.keys(parentids).forEach(function(pid) {
+            ret.push({source: nodes[pid], target: node});
+        })
+    }
+
     return ret;
 }
 
