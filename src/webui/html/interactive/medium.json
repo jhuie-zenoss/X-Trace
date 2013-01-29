@@ -1,0 +1,5446 @@
+{
+  "reports": [
+    {
+      "X-Trace": [
+        "1954BC991231EA984D72E886B5EA4F6D9B"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapReduce Job"
+      ],
+      "Label": [
+        "Start Trace: Preparing Job"
+      ],
+      "Edge": [
+        "8F9BBAFC4EC2F543"
+      ],
+      "Timestamp": [
+        "1355614494.456"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D6B44CA8E9F7F3CCB"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "JobSubmitter"
+      ],
+      "Label": [
+        "Submitting Job start"
+      ],
+      "Edge": [
+        "72E886B5EA4F6D9B"
+      ],
+      "Timestamp": [
+        "1355614494.704"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "Operation": [
+        "merge"
+      ],
+      "Equal4": [
+        "true"
+      ],
+      "Equal5": [
+        "0 0"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "2"
+      ],
+      "Edge": [
+        "6B44CA8E9F7F3CCB",
+        "6B44CA8E9F7F3CCB"
+      ],
+      "Timestamp": [
+        "1355614494.801"
+      ],
+      "version": "X-Trace Report ver 1.0",
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D68DB7B6D5F4E6010"
+      ],
+      "String1": [
+        "1954BC991231EA984D6B44CA8E9F7F3CCB"
+      ],
+      "String2": [
+        "1954BC991231EA984D6B44CA8E9F7F3CCB"
+      ],
+      "Equal": [
+        "false"
+      ],
+      "Name2": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ],
+      "Equal3": [
+        "true"
+      ],
+      "Equal2": [
+        "true"
+      ],
+      "Name1": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ]
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DB35D0FE9ED9F0C6C"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "3"
+      ],
+      "Edge": [
+        "68DB7B6D5F4E6010",
+        "6B44CA8E9F7F3CCB",
+        "6B44CA8E9F7F3CCB"
+      ],
+      "Timestamp": [
+        "1355614494.817"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D00F1BBD200B9D543"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "JobSubmissionFiles"
+      ],
+      "Label": [
+        "Staging directory is \/tmp\/hadoop-yarn\/staging\/jon\/.staging"
+      ],
+      "Edge": [
+        "B35D0FE9ED9F0C6C",
+        "68DB7B6D5F4E6010",
+        "6B44CA8E9F7F3CCB",
+        "6B44CA8E9F7F3CCB"
+      ],
+      "Timestamp": [
+        "1355614494.867"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D4327A2306FC261D9"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ClientRMService"
+      ],
+      "Label": [
+        "Allocated new applicationId: 1"
+      ],
+      "Edge": [
+        "00F1BBD200B9D543"
+      ],
+      "Timestamp": [
+        "1355614494.964"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "Operation": [
+        "merge"
+      ],
+      "Equal4": [
+        "true"
+      ],
+      "Equal5": [
+        "0 0"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "2"
+      ],
+      "Edge": [
+        "4327A2306FC261D9",
+        "00F1BBD200B9D543"
+      ],
+      "Timestamp": [
+        "1355614494.970"
+      ],
+      "version": "X-Trace Report ver 1.0",
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D1EF4B22C8EDCFBF9"
+      ],
+      "String1": [
+        "1954BC991231EA984D4327A2306FC261D9"
+      ],
+      "String2": [
+        "1954BC991231EA984D00F1BBD200B9D543"
+      ],
+      "Equal": [
+        "false"
+      ],
+      "Name2": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ],
+      "Equal3": [
+        "true"
+      ],
+      "Equal2": [
+        "false"
+      ],
+      "Name1": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ]
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DDC8C3BBCAE970414"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ResourceMgrDelegate"
+      ],
+      "Label": [
+        "Acquired application ID 1"
+      ],
+      "Edge": [
+        "1EF4B22C8EDCFBF9",
+        "00F1BBD200B9D543"
+      ],
+      "Timestamp": [
+        "1355614495.097"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "Operation": [
+        "merge"
+      ],
+      "Equal4": [
+        "true"
+      ],
+      "Equal5": [
+        "0 0"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "2"
+      ],
+      "Edge": [
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.106"
+      ],
+      "version": "X-Trace Report ver 1.0",
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DE42B80736E7B0FC3"
+      ],
+      "String1": [
+        "1954BC991231EA984DDC8C3BBCAE970414"
+      ],
+      "String2": [
+        "1954BC991231EA984DDC8C3BBCAE970414"
+      ],
+      "Equal": [
+        "false"
+      ],
+      "Name2": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ],
+      "Equal3": [
+        "true"
+      ],
+      "Equal2": [
+        "true"
+      ],
+      "Name1": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ]
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D691DEDB037C3A512"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "3"
+      ],
+      "Edge": [
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.167"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D740F6645863F67A2"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "4"
+      ],
+      "Edge": [
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.225"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D482F9AC54EFF54DE"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "5"
+      ],
+      "Edge": [
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.238"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DC88E35101BCA0298"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "6"
+      ],
+      "Edge": [
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.392"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D7BE79546FCB67367"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "7"
+      ],
+      "Edge": [
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.410"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DF56768E9E5EE244B"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "8"
+      ],
+      "Edge": [
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.467"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DFA86A5CBA67A9BD5"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "9"
+      ],
+      "Edge": [
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.527"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D906FB5EEB84F05FD"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "10"
+      ],
+      "Edge": [
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.531"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DD78B954D5E741379"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "11"
+      ],
+      "Edge": [
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.538"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D709006B1F85A08D8"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "12"
+      ],
+      "Edge": [
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.561"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DA3409D5A764D3874"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "13"
+      ],
+      "Edge": [
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.568"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DB68368AA4B3DD4A1"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "14"
+      ],
+      "Edge": [
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.633"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D105E61A4565904CB"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "15"
+      ],
+      "Edge": [
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.687"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D1185EF8491BA568B"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "16"
+      ],
+      "Edge": [
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.856"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DD7A24C6C8F196FDB"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "17"
+      ],
+      "Edge": [
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.876"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D3E877C4610229BE2"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "18"
+      ],
+      "Edge": [
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.933"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DDB85FFAC2F6F38CD"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "19"
+      ],
+      "Edge": [
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614495.999"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DCEAC02CAF3D18E6C"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "20"
+      ],
+      "Edge": [
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.130"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D8E6606A8560D25EC"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "21"
+      ],
+      "Edge": [
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.204"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D2B09A572F5FDC5CB"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "22"
+      ],
+      "Edge": [
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.304"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D93DF17B80901F791"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "23"
+      ],
+      "Edge": [
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.414"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DDCED002459AD392C"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "24"
+      ],
+      "Edge": [
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.447"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DA51F13D84562C6CE"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "25"
+      ],
+      "Edge": [
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.490"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D074879351D24133E"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "26"
+      ],
+      "Edge": [
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.652"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DB66C104057820B3C"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "27"
+      ],
+      "Edge": [
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.659"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D37D29B006E2B289A"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "28"
+      ],
+      "Edge": [
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.666"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D5B35543A6A2BEDC9"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "29"
+      ],
+      "Edge": [
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.669"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D5F1E018D5EED0EED"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "30"
+      ],
+      "Edge": [
+        "5B35543A6A2BEDC9",
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.672"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D665417F461C57A24"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "31"
+      ],
+      "Edge": [
+        "5F1E018D5EED0EED",
+        "5B35543A6A2BEDC9",
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.675"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D1FBC94B2D457E7A0"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "32"
+      ],
+      "Edge": [
+        "665417F461C57A24",
+        "5F1E018D5EED0EED",
+        "5B35543A6A2BEDC9",
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.677"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DD46A1D88E773A3E0"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "33"
+      ],
+      "Edge": [
+        "1FBC94B2D457E7A0",
+        "665417F461C57A24",
+        "5F1E018D5EED0EED",
+        "5B35543A6A2BEDC9",
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.680"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D45FF4256C33A634D"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "34"
+      ],
+      "Edge": [
+        "D46A1D88E773A3E0",
+        "1FBC94B2D457E7A0",
+        "665417F461C57A24",
+        "5F1E018D5EED0EED",
+        "5B35543A6A2BEDC9",
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.683"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DE9733CEDC38138A4"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "35"
+      ],
+      "Edge": [
+        "45FF4256C33A634D",
+        "D46A1D88E773A3E0",
+        "1FBC94B2D457E7A0",
+        "665417F461C57A24",
+        "5F1E018D5EED0EED",
+        "5B35543A6A2BEDC9",
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.686"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D952ADE689D957588"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "36"
+      ],
+      "Edge": [
+        "E9733CEDC38138A4",
+        "45FF4256C33A634D",
+        "D46A1D88E773A3E0",
+        "1FBC94B2D457E7A0",
+        "665417F461C57A24",
+        "5F1E018D5EED0EED",
+        "5B35543A6A2BEDC9",
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.749"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D2242A080C36F2A4E"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppManager"
+      ],
+      "Label": [
+        "Submitting application with applicationId: 1"
+      ],
+      "Edge": [
+        "952ADE689D957588"
+      ],
+      "Timestamp": [
+        "1355614496.759"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D204472A8168D0D21"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppImpl"
+      ],
+      "Label": [
+        "RMAppState.NEW transitioning with event EventType: START"
+      ],
+      "Edge": [
+        "2242A080C36F2A4E"
+      ],
+      "Timestamp": [
+        "1355614496.772"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D2DB032E3FE831856"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAuditLogger"
+      ],
+      "Label": [
+        "USER=jon\tIP=127.0.0.1\tOPERATION=Submit Application Request\tTARGET=ClientRMService\tRESULT=SUCCESS\tAPPID=application_1355614423089_0001"
+      ],
+      "Edge": [
+        "2242A080C36F2A4E"
+      ],
+      "Timestamp": [
+        "1355614496.774"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "Operation": [
+        "merge"
+      ],
+      "Equal4": [
+        "true"
+      ],
+      "Equal5": [
+        "0 0"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "2"
+      ],
+      "Edge": [
+        "2DB032E3FE831856",
+        "952ADE689D957588"
+      ],
+      "Timestamp": [
+        "1355614496.778"
+      ],
+      "version": "X-Trace Report ver 1.0",
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D95251EF8616D380C"
+      ],
+      "String1": [
+        "1954BC991231EA984D2DB032E3FE831856"
+      ],
+      "String2": [
+        "1954BC991231EA984D952ADE689D957588"
+      ],
+      "Equal": [
+        "false"
+      ],
+      "Name2": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ],
+      "Equal3": [
+        "true"
+      ],
+      "Equal2": [
+        "false"
+      ],
+      "Name1": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ]
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D99F7864F70AD5A32"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "37"
+      ],
+      "Edge": [
+        "95251EF8616D380C",
+        "E9733CEDC38138A4",
+        "45FF4256C33A634D",
+        "D46A1D88E773A3E0",
+        "1FBC94B2D457E7A0",
+        "665417F461C57A24",
+        "5F1E018D5EED0EED",
+        "5B35543A6A2BEDC9",
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.785"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D2BF6B766A479FEE1"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.NEW transitioning with event EventType: START"
+      ],
+      "Edge": [
+        "204472A8168D0D21"
+      ],
+      "Timestamp": [
+        "1355614496.824"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D523E5AC2E8523DE6"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ApplicationMasterService"
+      ],
+      "Label": [
+        "Registering appattempt_1355614423089_0001_000001"
+      ],
+      "Edge": [
+        "2BF6B766A479FEE1"
+      ],
+      "Timestamp": [
+        "1355614496.825"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DD46D7366F724D38E"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "Successfully transitioned to RMAppAttemptState.SUBMITTED"
+      ],
+      "Edge": [
+        "523E5AC2E8523DE6",
+        "2BF6B766A479FEE1"
+      ],
+      "Timestamp": [
+        "1355614496.826"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DB2C1D3E31E6DB6D2"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.SUBMITTED transitioning with event EventType: APP_ACCEPTED"
+      ],
+      "Edge": [
+        "523E5AC2E8523DE6",
+        "D46D7366F724D38E"
+      ],
+      "Timestamp": [
+        "1355614496.846"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D2D446CE2D9C6ACA3"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppImpl"
+      ],
+      "Label": [
+        "RMAppState.SUBMITTED transitioning with event EventType: APP_ACCEPTED"
+      ],
+      "Edge": [
+        "B2C1D3E31E6DB6D2",
+        "204472A8168D0D21"
+      ],
+      "Timestamp": [
+        "1355614496.850"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DCD02E5540AC8A40B"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "38"
+      ],
+      "Edge": [
+        "99F7864F70AD5A32",
+        "95251EF8616D380C",
+        "E9733CEDC38138A4",
+        "45FF4256C33A634D",
+        "D46A1D88E773A3E0",
+        "1FBC94B2D457E7A0",
+        "665417F461C57A24",
+        "5F1E018D5EED0EED",
+        "5B35543A6A2BEDC9",
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.861"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D2A7FFCC9EC2A97C3"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "JobSubmitter"
+      ],
+      "Label": [
+        "Job submission complete"
+      ],
+      "Edge": [
+        "CD02E5540AC8A40B",
+        "99F7864F70AD5A32",
+        "95251EF8616D380C",
+        "E9733CEDC38138A4",
+        "45FF4256C33A634D",
+        "D46A1D88E773A3E0",
+        "1FBC94B2D457E7A0",
+        "665417F461C57A24",
+        "5F1E018D5EED0EED",
+        "5B35543A6A2BEDC9",
+        "37D29B006E2B289A",
+        "B66C104057820B3C",
+        "074879351D24133E",
+        "A51F13D84562C6CE",
+        "DCED002459AD392C",
+        "93DF17B80901F791",
+        "2B09A572F5FDC5CB",
+        "8E6606A8560D25EC",
+        "CEAC02CAF3D18E6C",
+        "DB85FFAC2F6F38CD",
+        "3E877C4610229BE2",
+        "D7A24C6C8F196FDB",
+        "1185EF8491BA568B",
+        "105E61A4565904CB",
+        "B68368AA4B3DD4A1",
+        "A3409D5A764D3874",
+        "709006B1F85A08D8",
+        "D78B954D5E741379",
+        "906FB5EEB84F05FD",
+        "FA86A5CBA67A9BD5",
+        "F56768E9E5EE244B",
+        "7BE79546FCB67367",
+        "C88E35101BCA0298",
+        "482F9AC54EFF54DE",
+        "740F6645863F67A2",
+        "691DEDB037C3A512",
+        "E42B80736E7B0FC3",
+        "DC8C3BBCAE970414",
+        "DC8C3BBCAE970414"
+      ],
+      "Timestamp": [
+        "1355614496.983"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DE30DF119D59982B9"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapReduce Job"
+      ],
+      "Label": [
+        "Submitted Job job_1355614423089_0001"
+      ],
+      "Edge": [
+        "2A7FFCC9EC2A97C3"
+      ],
+      "Timestamp": [
+        "1355614496.984"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "Operation": [
+        "merge"
+      ],
+      "Equal4": [
+        "true"
+      ],
+      "Equal5": [
+        "0 0"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "2"
+      ],
+      "Edge": [
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614497.020"
+      ],
+      "version": "X-Trace Report ver 1.0",
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D1630BA7ED06EF27F"
+      ],
+      "String1": [
+        "1954BC991231EA984DE30DF119D59982B9"
+      ],
+      "String2": [
+        "1954BC991231EA984DE30DF119D59982B9"
+      ],
+      "Equal": [
+        "false"
+      ],
+      "Name2": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ],
+      "Equal3": [
+        "true"
+      ],
+      "Equal2": [
+        "true"
+      ],
+      "Name1": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ]
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D4B127059047A680A"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.SCHEDULED transitioning with event EventType: CONTAINER_ALLOCATED"
+      ],
+      "Edge": [
+        "B2C1D3E31E6DB6D2"
+      ],
+      "Timestamp": [
+        "1355614497.429"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D63568D2215CDE11B"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMContainerImpl"
+      ],
+      "Label": [
+        "RMContainerState.ALLOCATED transitioning with event EventType: ACQUIRED"
+      ],
+      "Edge": [
+        "4B127059047A680A"
+      ],
+      "Timestamp": [
+        "1355614497.431"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DBE3651C860EFBB63"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "Successfully transitioned to RMAppAttemptState.ALLOCATED"
+      ],
+      "Edge": [
+        "63568D2215CDE11B",
+        "4B127059047A680A"
+      ],
+      "Timestamp": [
+        "1355614497.436"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DC72F1307B2C23BED"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.ALLOCATED transitioning with event EventType: CONTAINER_ACQUIRED"
+      ],
+      "Edge": [
+        "63568D2215CDE11B",
+        "BE3651C860EFBB63"
+      ],
+      "Timestamp": [
+        "1355614497.437"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DDF45D2B6EACE3F1C"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "AMLauncher"
+      ],
+      "Label": [
+        "Setting up container Container: [ContainerId: container_1355614423089_0001_01_000001, NodeId: msi:50780, NodeHttpAddress: msi:8042, Resource: memory: 1536, Priority: org.apache.hadoop.yarn.api.records.impl.pb.PriorityPBImpl@1f, State: NEW, Token: null, Status: container_id {, app_attempt_id {, application_id {, id: 1, cluster_timestamp: 1355614423089, }, attemptId: 1, }, id: 1, }, state: C_NEW, ] for AM appattempt_1355614423089_0001_000001"
+      ],
+      "Edge": [
+        "63568D2215CDE11B"
+      ],
+      "Timestamp": [
+        "1355614497.475"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D908CB27F85E319ED"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerManagerImpl"
+      ],
+      "Label": [
+        "Start request for container_1355614423089_0001_01_000001 by user jon"
+      ],
+      "Edge": [
+        "DF45D2B6EACE3F1C"
+      ],
+      "Timestamp": [
+        "1355614497.739"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D64E181967F90F078"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ApplicationImpl"
+      ],
+      "Label": [
+        "ApplicationState.NEW transitioning with event EventType: INIT_APPLICATION"
+      ],
+      "Edge": [
+        "908CB27F85E319ED"
+      ],
+      "Timestamp": [
+        "1355614497.767"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D51B69AC1FEDA6894"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "NMAuditLogger"
+      ],
+      "Label": [
+        "USER=jon\tIP=127.0.0.1\tOPERATION=Start Container Request\tTARGET=ContainerManageImpl\tRESULT=SUCCESS\tAPPID=application_1355614423089_0001\tCONTAINERID=container_1355614423089_0001_01_000001"
+      ],
+      "Edge": [
+        "908CB27F85E319ED"
+      ],
+      "Timestamp": [
+        "1355614497.768"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D493F30D1476AD6AD"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ApplicationImpl"
+      ],
+      "Label": [
+        "ApplicationState.INITING transitioning with event EventType: INIT_CONTAINER"
+      ],
+      "Edge": [
+        "908CB27F85E319ED",
+        "64E181967F90F078"
+      ],
+      "Timestamp": [
+        "1355614497.770"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "Operation": [
+        "merge"
+      ],
+      "Equal4": [
+        "true"
+      ],
+      "Equal5": [
+        "0 0"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "2"
+      ],
+      "Edge": [
+        "51B69AC1FEDA6894",
+        "DF45D2B6EACE3F1C"
+      ],
+      "Timestamp": [
+        "1355614497.778"
+      ],
+      "version": "X-Trace Report ver 1.0",
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D7E96A529317C48F1"
+      ],
+      "String1": [
+        "1954BC991231EA984D51B69AC1FEDA6894"
+      ],
+      "String2": [
+        "1954BC991231EA984DDF45D2B6EACE3F1C"
+      ],
+      "Equal": [
+        "false"
+      ],
+      "Name2": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ],
+      "Equal3": [
+        "true"
+      ],
+      "Equal2": [
+        "false"
+      ],
+      "Name1": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ]
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DB5F55C77CB9F9FF3"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ApplicationImpl"
+      ],
+      "Label": [
+        "ApplicationState.INITING transitioning with event EventType: APPLICATION_INITED"
+      ],
+      "Edge": [
+        "64E181967F90F078",
+        "493F30D1476AD6AD"
+      ],
+      "Timestamp": [
+        "1355614497.780"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D68E3FE78C690AC8C"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.ALLOCATED transitioning with event EventType: LAUNCHED"
+      ],
+      "Edge": [
+        "7E96A529317C48F1",
+        "DF45D2B6EACE3F1C",
+        "C72F1307B2C23BED"
+      ],
+      "Timestamp": [
+        "1355614497.781"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D09053B5744875FE3"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.NEW transitioning with event EventType: INIT_CONTAINER"
+      ],
+      "Edge": [
+        "B5F55C77CB9F9FF3",
+        "908CB27F85E319ED"
+      ],
+      "Timestamp": [
+        "1355614497.784"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D932AC146179EC893"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.INIT transitioning with event EventType: REQUEST"
+      ],
+      "Edge": [
+        "09053B5744875FE3"
+      ],
+      "Timestamp": [
+        "1355614497.794"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DFB2C8F48E1B725DE"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.INIT transitioning with event EventType: REQUEST"
+      ],
+      "Edge": [
+        "932AC146179EC893"
+      ],
+      "Timestamp": [
+        "1355614497.795"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DFDD5C25D7FBE4035"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.INIT transitioning with event EventType: REQUEST"
+      ],
+      "Edge": [
+        "FB2C8F48E1B725DE"
+      ],
+      "Timestamp": [
+        "1355614497.796"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D1B5CBF7D30A2C30F"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.INIT transitioning with event EventType: REQUEST"
+      ],
+      "Edge": [
+        "FDD5C25D7FBE4035"
+      ],
+      "Timestamp": [
+        "1355614497.796"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D68F0A41C4351F8D5"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.INIT transitioning with event EventType: REQUEST"
+      ],
+      "Edge": [
+        "1B5CBF7D30A2C30F"
+      ],
+      "Timestamp": [
+        "1355614497.796"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D90023384264E884F"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "3"
+      ],
+      "Edge": [
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614498.022"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D35B1DFD6A0166CCE"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "4"
+      ],
+      "Edge": [
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614498.026"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DC8F2EDC013E55584"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMContainerImpl"
+      ],
+      "Label": [
+        "RMContainerState.ACQUIRED transitioning with event EventType: LAUNCHED"
+      ],
+      "Edge": [
+        "63568D2215CDE11B"
+      ],
+      "Timestamp": [
+        "1355614498.436"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D71ED823AECA158BD"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.DOWNLOADING transitioning with event EventType: LOCALIZED"
+      ],
+      "Edge": [
+        "932AC146179EC893"
+      ],
+      "Timestamp": [
+        "1355614498.526"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D9E974FC2FC202E8F"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZING transitioning with event EventType: RESOURCE_LOCALIZED"
+      ],
+      "Edge": [
+        "71ED823AECA158BD",
+        "09053B5744875FE3"
+      ],
+      "Timestamp": [
+        "1355614498.530"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D648864FB55062013"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.DOWNLOADING transitioning with event EventType: LOCALIZED"
+      ],
+      "Edge": [
+        "FB2C8F48E1B725DE"
+      ],
+      "Timestamp": [
+        "1355614498.613"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D173BA5B5868DC686"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZING transitioning with event EventType: RESOURCE_LOCALIZED"
+      ],
+      "Edge": [
+        "648864FB55062013",
+        "9E974FC2FC202E8F"
+      ],
+      "Timestamp": [
+        "1355614498.614"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D2C444CAF9466FD93"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.DOWNLOADING transitioning with event EventType: LOCALIZED"
+      ],
+      "Edge": [
+        "FDD5C25D7FBE4035"
+      ],
+      "Timestamp": [
+        "1355614498.654"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D6A45706B31ADAB4B"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZING transitioning with event EventType: RESOURCE_LOCALIZED"
+      ],
+      "Edge": [
+        "2C444CAF9466FD93",
+        "173BA5B5868DC686"
+      ],
+      "Timestamp": [
+        "1355614498.655"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D0FD85786DD0121BB"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.DOWNLOADING transitioning with event EventType: LOCALIZED"
+      ],
+      "Edge": [
+        "1B5CBF7D30A2C30F"
+      ],
+      "Timestamp": [
+        "1355614498.721"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DB0F7330952B381D2"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZING transitioning with event EventType: RESOURCE_LOCALIZED"
+      ],
+      "Edge": [
+        "0FD85786DD0121BB",
+        "6A45706B31ADAB4B"
+      ],
+      "Timestamp": [
+        "1355614498.723"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DB091E988DE06ABE3"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.DOWNLOADING transitioning with event EventType: LOCALIZED"
+      ],
+      "Edge": [
+        "68F0A41C4351F8D5"
+      ],
+      "Timestamp": [
+        "1355614498.781"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DC83F84BF7A798ED8"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZING transitioning with event EventType: RESOURCE_LOCALIZED"
+      ],
+      "Edge": [
+        "B091E988DE06ABE3",
+        "B0F7330952B381D2"
+      ],
+      "Timestamp": [
+        "1355614498.782"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D0C05374CDFC9E83F"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZED transitioning with event EventType: CONTAINER_LAUNCHED"
+      ],
+      "Edge": [
+        "C83F84BF7A798ED8"
+      ],
+      "Timestamp": [
+        "1355614498.828"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D7B213DF22BF70848"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "args": [
+        "[bash, -c, \/tmp\/nm-local-dir\/usercache\/jon\/appcache\/application_1355614423089_0001\/container_1355614423089_0001_01_000001\/default_container_executor.sh]"
+      ],
+      "Agent": [
+        "DefaultContainerExecutor"
+      ],
+      "Label": [
+        "Launching container"
+      ],
+      "Edge": [
+        "C83F84BF7A798ED8"
+      ],
+      "Timestamp": [
+        "1355614498.858"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D112CC88FF635C459"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "5"
+      ],
+      "Edge": [
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614499.029"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D1BBEFACF6482688A"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "6"
+      ],
+      "Edge": [
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614499.032"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D13FAB6C8DF3E6CA4"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MRAppMaster"
+      ],
+      "Label": [
+        "Start Trace: Starting job job_1355614423089_0001"
+      ],
+      "Edge": [
+        "7B213DF22BF70848"
+      ],
+      "Timestamp": [
+        "1355614499.974"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D2CC61BF3BE75A9E2"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "7"
+      ],
+      "Edge": [
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614500.035"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DBE0C0EDD77F321F1"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "8"
+      ],
+      "Edge": [
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614500.039"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "Operation": [
+        "merge"
+      ],
+      "Equal4": [
+        "true"
+      ],
+      "Equal5": [
+        "0 0"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "2"
+      ],
+      "Edge": [
+        "13FAB6C8DF3E6CA4",
+        "13FAB6C8DF3E6CA4"
+      ],
+      "Timestamp": [
+        "1355614500.681"
+      ],
+      "version": "X-Trace Report ver 1.0",
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D5830FF0482C3ED9E"
+      ],
+      "String1": [
+        "1954BC991231EA984D13FAB6C8DF3E6CA4"
+      ],
+      "String2": [
+        "1954BC991231EA984D13FAB6C8DF3E6CA4"
+      ],
+      "Equal": [
+        "false"
+      ],
+      "Name2": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ],
+      "Equal3": [
+        "true"
+      ],
+      "Equal2": [
+        "true"
+      ],
+      "Name1": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ]
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DF3EEC15A193E5B6E"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "3"
+      ],
+      "Edge": [
+        "5830FF0482C3ED9E",
+        "13FAB6C8DF3E6CA4",
+        "13FAB6C8DF3E6CA4"
+      ],
+      "Timestamp": [
+        "1355614500.684"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D15C32B61CB420884"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "4"
+      ],
+      "Edge": [
+        "F3EEC15A193E5B6E",
+        "5830FF0482C3ED9E",
+        "13FAB6C8DF3E6CA4",
+        "13FAB6C8DF3E6CA4"
+      ],
+      "Timestamp": [
+        "1355614500.686"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DF57CA1F0083A9EF9"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "5"
+      ],
+      "Edge": [
+        "15C32B61CB420884",
+        "F3EEC15A193E5B6E",
+        "5830FF0482C3ED9E",
+        "13FAB6C8DF3E6CA4",
+        "13FAB6C8DF3E6CA4"
+      ],
+      "Timestamp": [
+        "1355614500.747"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D97118B482D29F90D"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "6"
+      ],
+      "Edge": [
+        "F57CA1F0083A9EF9",
+        "15C32B61CB420884",
+        "F3EEC15A193E5B6E",
+        "5830FF0482C3ED9E",
+        "13FAB6C8DF3E6CA4",
+        "13FAB6C8DF3E6CA4"
+      ],
+      "Timestamp": [
+        "1355614500.754"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D7095331D71F229E1"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "9"
+      ],
+      "Edge": [
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614501.046"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D5C696E1B9E440C39"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "10"
+      ],
+      "Edge": [
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614501.049"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DBE1678EC86F477DF"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "JobImpl"
+      ],
+      "Label": [
+        "JobState.NEW transitioning with event EventType: JOB_INIT"
+      ],
+      "Edge": [
+        "97118B482D29F90D",
+        "F57CA1F0083A9EF9",
+        "15C32B61CB420884",
+        "F3EEC15A193E5B6E",
+        "5830FF0482C3ED9E",
+        "13FAB6C8DF3E6CA4",
+        "13FAB6C8DF3E6CA4"
+      ],
+      "Timestamp": [
+        "1355614501.217"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "Operation": [
+        "merge"
+      ],
+      "Equal4": [
+        "true"
+      ],
+      "Equal5": [
+        "0 0"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "2"
+      ],
+      "Edge": [
+        "BE1678EC86F477DF",
+        "BE1678EC86F477DF"
+      ],
+      "Timestamp": [
+        "1355614501.232"
+      ],
+      "version": "X-Trace Report ver 1.0",
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DB4136AD8640448AD"
+      ],
+      "String1": [
+        "1954BC991231EA984DBE1678EC86F477DF"
+      ],
+      "String2": [
+        "1954BC991231EA984DBE1678EC86F477DF"
+      ],
+      "Equal": [
+        "false"
+      ],
+      "Name2": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ],
+      "Equal3": [
+        "true"
+      ],
+      "Equal2": [
+        "true"
+      ],
+      "Name1": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ]
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DC04553B0E5658A4A"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "3"
+      ],
+      "Edge": [
+        "B4136AD8640448AD",
+        "BE1678EC86F477DF",
+        "BE1678EC86F477DF"
+      ],
+      "Timestamp": [
+        "1355614501.319"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D8915FE7D95616270"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "JobImpl"
+      ],
+      "Label": [
+        "Successfully transitioned to JobState.INITED"
+      ],
+      "Edge": [
+        "C04553B0E5658A4A",
+        "B4136AD8640448AD",
+        "BE1678EC86F477DF",
+        "BE1678EC86F477DF"
+      ],
+      "Timestamp": [
+        "1355614501.391"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DC13FF74CAD994D4D"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "11"
+      ],
+      "Edge": [
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614502.055"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D9B2CFBA95C8F3390"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "12"
+      ],
+      "Edge": [
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614502.063"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D132976292C79F936"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "13"
+      ],
+      "Edge": [
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614503.070"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DF16FE57183524F96"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "14"
+      ],
+      "Edge": [
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614503.089"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D75D827D98059CC1E"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "15"
+      ],
+      "Edge": [
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614504.102"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D46A48BE50EEEC800"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "16"
+      ],
+      "Edge": [
+        "75D827D98059CC1E",
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614504.112"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D51295FABFFCF1DFD"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "17"
+      ],
+      "Edge": [
+        "46A48BE50EEEC800",
+        "75D827D98059CC1E",
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614505.118"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DD66E254A2E888DBB"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "18"
+      ],
+      "Edge": [
+        "51295FABFFCF1DFD",
+        "46A48BE50EEEC800",
+        "75D827D98059CC1E",
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614505.125"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DF2CCE82BFBFB87E2"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "19"
+      ],
+      "Edge": [
+        "D66E254A2E888DBB",
+        "51295FABFFCF1DFD",
+        "46A48BE50EEEC800",
+        "75D827D98059CC1E",
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614506.130"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D5CF05556A2AF70A6"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "20"
+      ],
+      "Edge": [
+        "F2CCE82BFBFB87E2",
+        "D66E254A2E888DBB",
+        "51295FABFFCF1DFD",
+        "46A48BE50EEEC800",
+        "75D827D98059CC1E",
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614506.132"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D45E051E13663336F"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "21"
+      ],
+      "Edge": [
+        "5CF05556A2AF70A6",
+        "F2CCE82BFBFB87E2",
+        "D66E254A2E888DBB",
+        "51295FABFFCF1DFD",
+        "46A48BE50EEEC800",
+        "75D827D98059CC1E",
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614507.135"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D6CDA78F84B4F66B5"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "22"
+      ],
+      "Edge": [
+        "45E051E13663336F",
+        "5CF05556A2AF70A6",
+        "F2CCE82BFBFB87E2",
+        "D66E254A2E888DBB",
+        "51295FABFFCF1DFD",
+        "46A48BE50EEEC800",
+        "75D827D98059CC1E",
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614507.137"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D89E38F886520F1B7"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.LAUNCHED transitioning with event EventType: REGISTERED"
+      ],
+      "Edge": [
+        "8915FE7D95616270",
+        "68E3FE78C690AC8C"
+      ],
+      "Timestamp": [
+        "1355614507.257"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DE6073968CD1A408C"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAuditLogger"
+      ],
+      "Label": [
+        "USER=jon\tIP=127.0.0.1\tOPERATION=Register App Master\tTARGET=ApplicationMasterService\tRESULT=SUCCESS\tAPPID=application_1355614423089_0001\tAPPATTEMPTID=appattempt_1355614423089_0001_000001"
+      ],
+      "Edge": [
+        "8915FE7D95616270"
+      ],
+      "Timestamp": [
+        "1355614507.258"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DC373FC782B77E4B5"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppImpl"
+      ],
+      "Label": [
+        "RMAppState.ACCEPTED transitioning with event EventType: ATTEMPT_REGISTERED"
+      ],
+      "Edge": [
+        "89E38F886520F1B7",
+        "2D446CE2D9C6ACA3"
+      ],
+      "Timestamp": [
+        "1355614507.262"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "Operation": [
+        "merge"
+      ],
+      "Equal4": [
+        "true"
+      ],
+      "Equal5": [
+        "0 0"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "2"
+      ],
+      "Edge": [
+        "E6073968CD1A408C",
+        "8915FE7D95616270"
+      ],
+      "Timestamp": [
+        "1355614507.264"
+      ],
+      "version": "X-Trace Report ver 1.0",
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D0991A0CC4CAD3661"
+      ],
+      "String1": [
+        "1954BC991231EA984DE6073968CD1A408C"
+      ],
+      "String2": [
+        "1954BC991231EA984D8915FE7D95616270"
+      ],
+      "Equal": [
+        "false"
+      ],
+      "Name2": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ],
+      "Equal3": [
+        "true"
+      ],
+      "Equal2": [
+        "false"
+      ],
+      "Name1": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ]
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DB001106419318764"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "JobImpl"
+      ],
+      "Label": [
+        "JobState.INITED transitioning with event EventType: JOB_START"
+      ],
+      "Edge": [
+        "0991A0CC4CAD3661",
+        "8915FE7D95616270"
+      ],
+      "Timestamp": [
+        "1355614507.283"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DE25C352CD7A9FE7C"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskImpl"
+      ],
+      "Label": [
+        "TaskState.NEW transitioning with event EventType: T_SCHEDULE"
+      ],
+      "Edge": [
+        "B001106419318764",
+        "C04553B0E5658A4A",
+        "B4136AD8640448AD",
+        "BE1678EC86F477DF",
+        "BE1678EC86F477DF"
+      ],
+      "Timestamp": [
+        "1355614507.290"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D9E4A626775B7CFCF"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskImpl"
+      ],
+      "Label": [
+        "TaskState.NEW transitioning with event EventType: T_SCHEDULE"
+      ],
+      "Edge": [
+        "B001106419318764",
+        "C04553B0E5658A4A",
+        "B4136AD8640448AD",
+        "BE1678EC86F477DF",
+        "BE1678EC86F477DF"
+      ],
+      "Timestamp": [
+        "1355614507.306"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DB6E19EBC38C582F6"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ReduceTaskImpl"
+      ],
+      "Label": [
+        "TaskState.NEW transitioning with event EventType: T_SCHEDULE"
+      ],
+      "Edge": [
+        "B001106419318764",
+        "C04553B0E5658A4A",
+        "B4136AD8640448AD",
+        "BE1678EC86F477DF",
+        "BE1678EC86F477DF"
+      ],
+      "Timestamp": [
+        "1355614507.306"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D3224A4A65532D3E7"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskAttemptImpl"
+      ],
+      "Label": [
+        "TaskAttemptState.NEW transitioning with event EventType: TA_SCHEDULE"
+      ],
+      "Edge": [
+        "E25C352CD7A9FE7C"
+      ],
+      "Timestamp": [
+        "1355614507.307"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D4613B18C414C019A"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskAttemptImpl"
+      ],
+      "Label": [
+        "TaskAttemptState.NEW transitioning with event EventType: TA_SCHEDULE"
+      ],
+      "Edge": [
+        "9E4A626775B7CFCF"
+      ],
+      "Timestamp": [
+        "1355614507.309"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D39C0F363CF1AC5FE"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ReduceTaskAttemptImpl"
+      ],
+      "Label": [
+        "TaskAttemptState.NEW transitioning with event EventType: TA_SCHEDULE"
+      ],
+      "Edge": [
+        "B6E19EBC38C582F6"
+      ],
+      "Timestamp": [
+        "1355614507.310"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984DE399DBFA94A19FB5"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "23"
+      ],
+      "Edge": [
+        "6CDA78F84B4F66B5",
+        "45E051E13663336F",
+        "5CF05556A2AF70A6",
+        "F2CCE82BFBFB87E2",
+        "D66E254A2E888DBB",
+        "51295FABFFCF1DFD",
+        "46A48BE50EEEC800",
+        "75D827D98059CC1E",
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614508.141"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D20F7E045FFC62F3F"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "24"
+      ],
+      "Edge": [
+        "E399DBFA94A19FB5",
+        "6CDA78F84B4F66B5",
+        "45E051E13663336F",
+        "5CF05556A2AF70A6",
+        "F2CCE82BFBFB87E2",
+        "D66E254A2E888DBB",
+        "51295FABFFCF1DFD",
+        "46A48BE50EEEC800",
+        "75D827D98059CC1E",
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614508.158"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DC73EAC2F473087EA"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.RUNNING transitioning with event EventType: STATUS_UPDATE"
+      ],
+      "Edge": [
+        "89E38F886520F1B7"
+      ],
+      "Timestamp": [
+        "1355614508.301"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D0D967AD6B77DC710"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.RUNNING transitioning with event EventType: CONTAINER_ALLOCATED"
+      ],
+      "Edge": [
+        "C73EAC2F473087EA"
+      ],
+      "Timestamp": [
+        "1355614508.470"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DC6963B2FC7F841C6"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.RUNNING transitioning with event EventType: CONTAINER_ALLOCATED"
+      ],
+      "Edge": [
+        "0D967AD6B77DC710"
+      ],
+      "Timestamp": [
+        "1355614508.471"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D4E54ED0F12E01AA2"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "25"
+      ],
+      "Edge": [
+        "20F7E045FFC62F3F",
+        "E399DBFA94A19FB5",
+        "6CDA78F84B4F66B5",
+        "45E051E13663336F",
+        "5CF05556A2AF70A6",
+        "F2CCE82BFBFB87E2",
+        "D66E254A2E888DBB",
+        "51295FABFFCF1DFD",
+        "46A48BE50EEEC800",
+        "75D827D98059CC1E",
+        "F16FE57183524F96",
+        "132976292C79F936",
+        "9B2CFBA95C8F3390",
+        "C13FF74CAD994D4D",
+        "5C696E1B9E440C39",
+        "7095331D71F229E1",
+        "BE0C0EDD77F321F1",
+        "2CC61BF3BE75A9E2",
+        "1BBEFACF6482688A",
+        "112CC88FF635C459",
+        "35B1DFD6A0166CCE",
+        "90023384264E884F",
+        "1630BA7ED06EF27F",
+        "E30DF119D59982B9",
+        "E30DF119D59982B9"
+      ],
+      "Timestamp": [
+        "1355614508.493"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D268D0542DE2708AC"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.RUNNING transitioning with event EventType: STATUS_UPDATE"
+      ],
+      "Edge": [
+        "C6963B2FC7F841C6"
+      ],
+      "Timestamp": [
+        "1355614509.326"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D7EB7C788E162B300"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.RUNNING transitioning with event EventType: CONTAINER_ACQUIRED"
+      ],
+      "Edge": [
+        "268D0542DE2708AC"
+      ],
+      "Timestamp": [
+        "1355614509.327"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DBE2CBBC4B1545C32"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.RUNNING transitioning with event EventType: CONTAINER_ACQUIRED"
+      ],
+      "Edge": [
+        "7EB7C788E162B300"
+      ],
+      "Timestamp": [
+        "1355614509.328"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D83DFE5255F3B49DB"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "JobImpl"
+      ],
+      "Label": [
+        "JobState.RUNNING transitioning with event EventType: JOB_COUNTER_UPDATE"
+      ],
+      "Edge": [
+        "B001106419318764"
+      ],
+      "Timestamp": [
+        "1355614509.340"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DEAA50051B4BDEA9B"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskAttemptImpl"
+      ],
+      "Label": [
+        "TaskAttemptState.UNASSIGNED transitioning with event EventType: TA_ASSIGNED"
+      ],
+      "Edge": [
+        "3224A4A65532D3E7"
+      ],
+      "Timestamp": [
+        "1355614509.347"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "Operation": [
+        "merge"
+      ],
+      "Equal4": [
+        "true"
+      ],
+      "Equal5": [
+        "0 0"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "2"
+      ],
+      "Edge": [
+        "EAA50051B4BDEA9B",
+        "EAA50051B4BDEA9B"
+      ],
+      "Timestamp": [
+        "1355614509.426"
+      ],
+      "version": "X-Trace Report ver 1.0",
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D7263813E1FCCB61C"
+      ],
+      "String1": [
+        "1954BC991231EA984DEAA50051B4BDEA9B"
+      ],
+      "String2": [
+        "1954BC991231EA984DEAA50051B4BDEA9B"
+      ],
+      "Equal": [
+        "false"
+      ],
+      "Name2": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ],
+      "Equal3": [
+        "true"
+      ],
+      "Equal2": [
+        "true"
+      ],
+      "Name1": [
+        "edu.berkeley.xtrace.XTraceMetadata"
+      ]
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D4C76D64828B29287"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "3"
+      ],
+      "Edge": [
+        "7263813E1FCCB61C",
+        "EAA50051B4BDEA9B",
+        "EAA50051B4BDEA9B"
+      ],
+      "Timestamp": [
+        "1355614509.430"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "NewContextSize": [
+        "1"
+      ],
+      "X-Trace": [
+        "1954BC991231EA984D3260E8CEDFDFD4C9"
+      ],
+      "Operation": [
+        "merge"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "NewContextSize2": [
+        "1"
+      ],
+      "OldContextSize": [
+        "4"
+      ],
+      "Edge": [
+        "4C76D64828B29287",
+        "7263813E1FCCB61C",
+        "EAA50051B4BDEA9B",
+        "EAA50051B4BDEA9B"
+      ],
+      "Timestamp": [
+        "1355614509.433"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DD512652274A5F498"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskAttemptImpl"
+      ],
+      "Label": [
+        "Successfully transitioned to TaskAttemptState.ASSIGNED"
+      ],
+      "Edge": [
+        "3260E8CEDFDFD4C9",
+        "4C76D64828B29287",
+        "7263813E1FCCB61C",
+        "EAA50051B4BDEA9B",
+        "EAA50051B4BDEA9B"
+      ],
+      "Timestamp": [
+        "1355614509.448"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D3D7C7A8AC8E19D05"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "JobImpl"
+      ],
+      "Label": [
+        "JobState.RUNNING transitioning with event EventType: JOB_COUNTER_UPDATE"
+      ],
+      "Edge": [
+        "83DFE5255F3B49DB"
+      ],
+      "Timestamp": [
+        "1355614509.449"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D530A12121A902103"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskAttemptImpl"
+      ],
+      "Label": [
+        "TaskAttemptState.UNASSIGNED transitioning with event EventType: TA_ASSIGNED"
+      ],
+      "Edge": [
+        "4613B18C414C019A"
+      ],
+      "Timestamp": [
+        "1355614509.449"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D57F047A62C240201"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ApplicationImpl"
+      ],
+      "Label": [
+        "ApplicationState.RUNNING transitioning with event EventType: INIT_CONTAINER"
+      ],
+      "Edge": [
+        "B5F55C77CB9F9FF3"
+      ],
+      "Timestamp": [
+        "1355614509.521"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D4E75A17A157E74FF"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ApplicationImpl"
+      ],
+      "Label": [
+        "ApplicationState.RUNNING transitioning with event EventType: INIT_CONTAINER"
+      ],
+      "Edge": [
+        "57F047A62C240201"
+      ],
+      "Timestamp": [
+        "1355614509.522"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D43A65AEC6223E87C"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.NEW transitioning with event EventType: INIT_CONTAINER"
+      ],
+      "Edge": [
+        "57F047A62C240201"
+      ],
+      "Timestamp": [
+        "1355614509.524"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D36F1A54B4EE57893"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.NEW transitioning with event EventType: INIT_CONTAINER"
+      ],
+      "Edge": [
+        "4E75A17A157E74FF"
+      ],
+      "Timestamp": [
+        "1355614509.527"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DEED4F8B7FB539492"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskAttemptImpl"
+      ],
+      "Label": [
+        "TaskAttemptState.ASSIGNED transitioning with event EventType: TA_CONTAINER_LAUNCHED"
+      ],
+      "Edge": [
+        "530A12121A902103"
+      ],
+      "Timestamp": [
+        "1355614509.531"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DB79B4AB3684FCC11"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.LOCALIZED transitioning with event EventType: REQUEST"
+      ],
+      "Edge": [
+        "43A65AEC6223E87C",
+        "648864FB55062013"
+      ],
+      "Timestamp": [
+        "1355614509.532"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DB77C5B3A5F285A17"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.LOCALIZED transitioning with event EventType: REQUEST"
+      ],
+      "Edge": [
+        "B79B4AB3684FCC11",
+        "B091E988DE06ABE3"
+      ],
+      "Timestamp": [
+        "1355614509.532"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D8F5E57345C2FADC7"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.LOCALIZED transitioning with event EventType: REQUEST"
+      ],
+      "Edge": [
+        "36F1A54B4EE57893",
+        "B79B4AB3684FCC11"
+      ],
+      "Timestamp": [
+        "1355614509.533"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DC67011D3D85A32C6"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "LocalizedResource"
+      ],
+      "Label": [
+        "ResourceState.LOCALIZED transitioning with event EventType: REQUEST"
+      ],
+      "Edge": [
+        "8F5E57345C2FADC7",
+        "B77C5B3A5F285A17"
+      ],
+      "Timestamp": [
+        "1355614509.533"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D5290257F12ECE926"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZING transitioning with event EventType: RESOURCE_LOCALIZED"
+      ],
+      "Edge": [
+        "B79B4AB3684FCC11",
+        "43A65AEC6223E87C"
+      ],
+      "Timestamp": [
+        "1355614509.533"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D74BE087C8B026712"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZING transitioning with event EventType: RESOURCE_LOCALIZED"
+      ],
+      "Edge": [
+        "B77C5B3A5F285A17",
+        "5290257F12ECE926"
+      ],
+      "Timestamp": [
+        "1355614509.534"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D5F31DA41380D625D"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZING transitioning with event EventType: RESOURCE_LOCALIZED"
+      ],
+      "Edge": [
+        "8F5E57345C2FADC7",
+        "36F1A54B4EE57893"
+      ],
+      "Timestamp": [
+        "1355614509.534"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D3ECF155D4B13915A"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZING transitioning with event EventType: RESOURCE_LOCALIZED"
+      ],
+      "Edge": [
+        "C67011D3D85A32C6",
+        "5F31DA41380D625D"
+      ],
+      "Timestamp": [
+        "1355614509.534"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D0F70F9CE29A81900"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskAttemptImpl"
+      ],
+      "Label": [
+        "TaskAttemptState.ASSIGNED transitioning with event EventType: TA_CONTAINER_LAUNCHED"
+      ],
+      "Edge": [
+        "D512652274A5F498"
+      ],
+      "Timestamp": [
+        "1355614509.535"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D42A405FF0A7CBAC9"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "JobImpl"
+      ],
+      "Label": [
+        "JobState.RUNNING transitioning with event EventType: JOB_COUNTER_UPDATE"
+      ],
+      "Edge": [
+        "EED4F8B7FB539492",
+        "3D7C7A8AC8E19D05"
+      ],
+      "Timestamp": [
+        "1355614509.535"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D2F8142D2D3A49E04"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskImpl"
+      ],
+      "Label": [
+        "TaskState.SCHEDULED transitioning with event EventType: T_ATTEMPT_LAUNCHED"
+      ],
+      "Edge": [
+        "EED4F8B7FB539492",
+        "9E4A626775B7CFCF"
+      ],
+      "Timestamp": [
+        "1355614509.537"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DE2FED105A9E2F379"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "JobImpl"
+      ],
+      "Label": [
+        "JobState.RUNNING transitioning with event EventType: JOB_COUNTER_UPDATE"
+      ],
+      "Edge": [
+        "0F70F9CE29A81900",
+        "42A405FF0A7CBAC9"
+      ],
+      "Timestamp": [
+        "1355614509.538"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D5CBC4EDE3C27AEA1"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "MapTaskImpl"
+      ],
+      "Label": [
+        "TaskState.SCHEDULED transitioning with event EventType: T_ATTEMPT_LAUNCHED"
+      ],
+      "Edge": [
+        "0F70F9CE29A81900",
+        "E25C352CD7A9FE7C"
+      ],
+      "Timestamp": [
+        "1355614509.539"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D65EBC24CBA64F1BA"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZED transitioning with event EventType: CONTAINER_LAUNCHED"
+      ],
+      "Edge": [
+        "3ECF155D4B13915A"
+      ],
+      "Timestamp": [
+        "1355614509.592"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DA4960F6EF5620265"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "ContainerImpl"
+      ],
+      "Label": [
+        "ContainerState.LOCALIZED transitioning with event EventType: CONTAINER_LAUNCHED"
+      ],
+      "Edge": [
+        "74BE087C8B026712"
+      ],
+      "Timestamp": [
+        "1355614509.593"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D8E9A8F86AECF63F2"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "args": [
+        "[bash, -c, \/tmp\/nm-local-dir\/usercache\/jon\/appcache\/application_1355614423089_0001\/container_1355614423089_0001_01_000002\/default_container_executor.sh]"
+      ],
+      "Agent": [
+        "DefaultContainerExecutor"
+      ],
+      "Label": [
+        "Launching container"
+      ],
+      "Edge": [
+        "74BE087C8B026712"
+      ],
+      "Timestamp": [
+        "1355614509.626"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DCEC17D82CE34BA06"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "args": [
+        "[bash, -c, \/tmp\/nm-local-dir\/usercache\/jon\/appcache\/application_1355614423089_0001\/container_1355614423089_0001_01_000003\/default_container_executor.sh]"
+      ],
+      "Agent": [
+        "DefaultContainerExecutor"
+      ],
+      "Label": [
+        "Launching container"
+      ],
+      "Edge": [
+        "3ECF155D4B13915A"
+      ],
+      "Timestamp": [
+        "1355614509.630"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984D5BB60EC28F0F5A5A"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.RUNNING transitioning with event EventType: STATUS_UPDATE"
+      ],
+      "Edge": [
+        "BE2CBBC4B1545C32"
+      ],
+      "Timestamp": [
+        "1355614510.355"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    },
+    {
+      "X-Trace": [
+        "1954BC991231EA984DAFF3A1F470537981"
+      ],
+      "Host": [
+        "msi"
+      ],
+      "Agent": [
+        "RMAppAttemptImpl"
+      ],
+      "Label": [
+        "RMAppAttemptState.RUNNING transitioning with event EventType: CONTAINER_ALLOCATED"
+      ],
+      "Edge": [
+        "5BB60EC28F0F5A5A"
+      ],
+      "Timestamp": [
+        "1355614510.478"
+      ],
+      "version": "X-Trace Report ver 1.0"
+    }
+  ]
+}

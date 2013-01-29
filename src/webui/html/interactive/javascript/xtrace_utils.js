@@ -4,9 +4,12 @@ var getReports = function(callback, errback) {
 	} catch(e) {
 		errback("Unable to extrace a traceID from URL", e);
 	}
-	if (current_id=="example") {
-	    d3.json("static.json", callback);
+	var len = current_id.length;
+	if (len > 5 && current_id.substring(len-5, len)==".json") {
+	    console.log("Loading JSON", current_id)
+	    d3.json(current_id, callback);
 	} else {
+	    console.log("Retrieving reports for ID", current_id);
 	    getReportsForTrace(current_id, callback, errback);
 	}
 };

@@ -35,6 +35,7 @@
 window.onload = function() {    
 	var callback = function(reports) {
 		console.log("Reports received!", reports);
+		window.reports = reports;
 		drawXTraceGraph(document.body, reports.reports);
 	};
 	var errback = function(message, error) {
