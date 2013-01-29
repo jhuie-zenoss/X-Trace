@@ -41,11 +41,6 @@ var getReportsForTrace = function(traceID, callback, errback) {
 	xhr.send(null);
 };
 
-jQuery.fn.outerHTML = function() {
-    return jQuery('<div />').append(this.eq(0).clone()).html();
-};
-
-
 var createGraphFromReports = function(reports) {
     var nodes = {};
     
@@ -113,3 +108,7 @@ var createTooltipHTMLFromReport = function(report) {
     
     return tooltip.outerHTML();
 }
+
+jQuery.fn.outerHTML = function() {
+    return jQuery('<div />').append(this.eq(0).clone()).html();
+};

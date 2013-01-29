@@ -78,11 +78,27 @@ function drawTooltips() {
         $(this).tipsy({
             gravity: $.fn.tipsy.autoWE,
             html: true,
-            delayIn: 1000,
             title: function() {
                 return createTooltipHTMLFromReport(d.report);
             }
         });
+    });
+}
+
+function attachContextMenu() {
+    $(".graph .node").unbind("contextmenu");
+    $(".graph .node.selected").contextMenu('context-menu-1', {
+        'Hide Selected Nodes': {
+            click: function(element) { 
+                history.addSelected(graphSVG);            
+                d3.select(element.context).classed("hovered", false)
+                graphSVG.classed("hovering", false);
+                draw();
+            },
+        }
+    }, { 
+        disable_native_context_menu: true,
+        showMenu: function(element) { $(".tipsy").remove(); },
     });
 }
 
@@ -94,6 +110,7 @@ function setupEvents(){
 
     var lastSelected = null;
     nodes.on("click", function(d) { 
+        console.log("click");
         var node = d3.select(this);
         var selected = !node.classed("selected");
         
@@ -129,7 +146,9 @@ function setupEvents(){
         }
         
         refreshEdges();
+        attachContextMenu();
     });
+    graphSVG.node().oncontextmenu = function(d) { return false; };
     
     nodes.on("mouseover", function(d) {
         graphSVG.classed("hovering", true);
@@ -205,7 +224,7 @@ function draw() {
     graphSVG.datum(graph).call(DAG);    // Draw a DAG at the graph attach
     minimapSVG.datum(graphSVG.node()).call(DAGMinimap);  // Draw a Minimap at the minimap attach
     drawTooltips();                     // Draw the tooltips
-    setupEvents();             // Set up the node selection events
+    setupEvents();                      // Set up the node selection events
     refreshViewport();
 }
 
@@ -235,20 +254,6 @@ d3.select("body").on("keyup", function(d) {
         d3.select(this).classed("hovered", false)
         graphSVG.classed("hovering", false);
         draw();
-    }
-});
-
-d3.selectAll(".item").classed("context-menu-one", true);
-$.contextMenu({
-    selector: '.context-menu-one', 
-    items: {
-        "edit": {name: "Edit", icon: "edit"},
-        "cut": {name: "Cut", icon: "cut"},
-        "copy": {name: "Copy", icon: "copy"},
-        "paste": {name: "Paste", icon: "paste"},
-        "delete": {name: "Delete", icon: "delete"},
-        "sep1": "---------",
-        "quit": {name: "Quit", icon: "quit"}
     }
 });
     
