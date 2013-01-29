@@ -162,7 +162,7 @@ function getEntirePath(center) {
         if (!visitedParents[node.id]) {
             visitedParents[node.id]=true;
             path[node.id] = true;
-            node.getVisibleParents().forEach(function(p) {
+            node.getParents().forEach(function(p) {
                 selectParents(p);
             });
         }
@@ -171,7 +171,7 @@ function getEntirePath(center) {
         if (!visitedChildren[node.id]) {
             visitedChildren[node.id]=true;
             path[node.id] = true;
-            node.getVisibleChildren().forEach(function(p) {
+            node.getChildren().forEach(function(p) {
                 selectChildren(p);
             });
         }
