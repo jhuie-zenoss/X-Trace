@@ -110,7 +110,6 @@ function setupEvents(){
 
     var lastSelected = null;
     nodes.on("click", function(d) { 
-        console.log("click");
         var node = d3.select(this);
         var selected = !node.classed("selected");
         
@@ -147,6 +146,7 @@ function setupEvents(){
         
         refreshEdges();
         attachContextMenu();
+        $(".tipsy").remove();
     });
     graphSVG.node().oncontextmenu = function(d) { return false; };
     
