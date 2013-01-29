@@ -34,14 +34,15 @@ function DirectedAcyclicGraph() {
             existing_nodes.classed("visible", true);
             
             // Do the layout
+            var start = window.performance.now();
             layout.call(svg.select(".graph").node(), nodes, edges);
+            console.log("layout took", (window.performance.now() - start));
             
             // Animate into new positions
-            svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attr("d", graph.splineGenerator);
-            new_edges.attr("class", "edge visible").attr("d", graph.splineGenerator);
+            svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attrTween("d", graph.edgeTween);
             existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
-            
             new_nodes.each(newnodetransition);
+            new_edges.attr("d", graph.splineGenerator).classed("visible", true);
         });
         
     }
@@ -58,10 +59,7 @@ function DirectedAcyclicGraph() {
     var getnodes = function(d) { return d.getVisibleNodes(); }
     var getedges = function(d) { return d.getVisibleLinks(); }
     var bbox = function(d) {
-        var nodePadding = 10;
-        var bbox = d3.select(this).select("text").node().getBBox();
-        bbox.width += 2*nodePadding; bbox.height += 2*nodePadding;
-        return bbox;
+        return d3.select(this).select("rect").node().getBBox();
     }
     var drawnode = function(d) {
         // Attach the DOM elements
@@ -76,9 +74,9 @@ function DirectedAcyclicGraph() {
     }    
     var sizenode = function(d) {
         // Because of SVG weirdness, call sizenode as necessary to ensure a node's size is correct
-        var node_bbox = bbox.call(this, d);
+        var node_bbox = {"height": 50, "width": 240};
         var rect = d3.select(this).select('rect'), text = d3.select(this).select('text');
-        var text_bbox = text.node().getBBox();
+        var text_bbox = {"height": 40, "width": 220};
         rect.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2)
         rect.attr("width", node_bbox.width).attr("height", node_bbox.height);
         text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
@@ -131,7 +129,7 @@ function DirectedAcyclicGraph() {
         var n0 = path0.getTotalLength(), n1 = (path1.setAttribute("d", d1), path1).getTotalLength();
 
         // Uniform sampling of distance based on specified precision.
-        var distances = [0], i = 0, dt = 4 / Math.max(n0, n1);
+        var distances = [0], i = 0, dt = Math.max(1/16, 4 / Math.max(n0, n1));
         while ((i += dt) < 1) distances.push(i);
         distances.push(1);
 
@@ -142,8 +140,10 @@ function DirectedAcyclicGraph() {
             return d3.interpolate([p0.x, p0.y], [p1.x, p1.y]);
         });
 
+        var line = d3.svg.line().interpolate("basis");
+        
         return function(t) {
-            return t < 1 ? "M" + points.map(function(p) { return p(t); }).join("L") : d1;
+            return line(points.map(function(p) { return p(t); }));
         };
     }
     
