@@ -72,9 +72,9 @@ function DirectedAcyclicGraph() {
     }    
     var sizenode = function(d) {
         // Because of SVG weirdness, call sizenode as necessary to ensure a node's size is correct
-        var node_bbox = {"height": 50, "width": 240};
+        var node_bbox = {"height": 50, "width": 200};
         var rect = d3.select(this).select('rect'), text = d3.select(this).select('text');
-        var text_bbox = {"height": 40, "width": 220};
+        var text_bbox = {"height": 40, "width": 190};
         rect.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2)
         rect.attr("width", node_bbox.width).attr("height", node_bbox.height);
         text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
