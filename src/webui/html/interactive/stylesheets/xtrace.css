@@ -122,6 +122,8 @@
 .xtrace-tooltip .value {
 	display: inline-block;
 	float: left;
+	word-wrap: break-word;
+	max-width: 410px;
 }
 
 .xtrace-tooltip .clear {

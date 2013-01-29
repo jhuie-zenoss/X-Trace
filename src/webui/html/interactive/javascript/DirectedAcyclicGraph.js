@@ -136,7 +136,6 @@ function DirectedAcyclicGraph() {
                     p.y += y;
                 })
             })
-            console.log("offset by ", x, y);
         }
     }
     var nodepos = function(d) {
