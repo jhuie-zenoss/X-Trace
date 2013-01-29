@@ -34,15 +34,13 @@ function DirectedAcyclicGraph() {
             existing_nodes.classed("visible", true);
             
             // Do the layout
-            var start = window.performance.now();
             layout.call(svg.select(".graph").node(), nodes, edges);
-            console.log("layout took", (window.performance.now() - start));
             
             // Animate into new positions
             svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attrTween("d", graph.edgeTween);
             existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
             new_nodes.each(newnodetransition);
-            new_edges.attr("d", graph.splineGenerator).classed("visible", true);
+            new_edges.attr("d", graph.splineGenerator).transition().delay(500).attr("class", "edge visible");
         });
         
     }
@@ -88,15 +86,19 @@ function DirectedAcyclicGraph() {
         d3.select(this).classed("visible", true).attr("transform", graph.nodeTranslate);
     }
     var layout = function(nodes_d, edges_d) {
+        var start = window.performance.now();
         // Dagre requires the width, height, and bbox of each node to be attached to that node's data
         d3.select(this).selectAll(".node").each(function(d) {
             d.bbox = bbox.call(this, d);
             d.width = d.bbox.width;
             d.height = d.bbox.height;
         });
+        console.log("layout:bbox", (window.performance.now() - start));
+        start = window.performance.now();
         
         // Call dagre layout.  Store layout data such that calls to x(), y() and points() will return them
-        dagre.layout().nodeSep(50).edgeSep(10).rankSep(30).nodes(nodes_d).edges(edges_d).run();    
+        dagre.layout().nodeSep(50).edgeSep(10).rankSep(30).nodes(nodes_d).edges(edges_d).run(); 
+        console.log("layout:dagre", (window.performance.now() - start));   
         
         // Also we want to make sure that the control points for all the edges overlap the nodes nicely
         d3.select(this).selectAll(".edge").each(function(d) {

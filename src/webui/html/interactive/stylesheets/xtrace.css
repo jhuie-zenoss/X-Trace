@@ -15,14 +15,14 @@
   -webkit-transition:fill 0.5s, stroke 0.5s, opacity 2s;
 }
 
-.graph.hovering .node.visible {
+.hovering .graph .node.visible {
   opacity: 0.2;
   transition:fill 0.5s, stroke 0.5s, opacity 0.4s;
   -webkit-transition:fill 0.5s, stroke 0.5s, opacity 0.4s;
 }
 
-.graph.hovering .node.visible.hovered,
-.graph.hovering .node.visible.selected {
+.hovering .graph .node.visible.hovered,
+.hovering .graph .node.visible.selected {
   opacity: 1;
 }
 
@@ -39,7 +39,7 @@
 }
 
 .graph .node.selected rect,
-.graph.hovering .node.selected rect {
+.hovering .graph .node.selected rect {
   stroke: #0F4BFF;
   fill: #B3ECFF;
 }
@@ -60,21 +60,18 @@
 
 .graph .edge.visible {
   opacity: 1;
-  transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
-  transition-delay: 0s, 0s, 0s, 1s;
-  -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
-  -webkit-transition-delay: 0s, 0s, 0s, 0.5s;
-  
+  transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 2s;
+  -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 2s;
 }
 
-.graph.hovering .edge.visible {
+.hovering .graph .edge.visible {
   opacity: 0.1;
   transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.4s;
   -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.4s;
 }
 
-.graph.hovering .edge.visible.hovered,
-.graph.hovering .edge.selected {
+.hovering .graph .edge.visible.hovered,
+.hovering .graph .edge.selected {
   opacity: 1;
 }
 

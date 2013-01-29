@@ -132,12 +132,12 @@ function setupEvents(){
     });
     
     nodes.on("mouseover", function(d) {
-        d3.select(this).classed("hovered", true);
         graphSVG.classed("hovering", true);
         highlightPath(d);
     }).on("mouseout", function(d){
-        d3.select(this).classed("hovered", false)
         graphSVG.classed("hovering", false);
+        edges.classed("hovered", false);
+        edges.classed("hovered", false);
     });
     
     // When a list item is clicked, it will be removed from the history and added to the graph
@@ -180,11 +180,20 @@ function setupEvents(){
     function highlightPath(center) {        
         var path = getEntirePath(center);
         
+        var pathnodes = {};
+        var pathlinks = {};
+        
+        path.forEach(function(p) {
+           pathnodes[p.source.id] = true;
+           pathnodes[p.target.id] = true;
+           pathlinks[p.source.id+p.target.id] = true;
+        });
+        
         edges.classed("hovered", function(d) {
-            return path[d.source.id] && path[d.target.id];            
+            return pathlinks[d.source.id+d.target.id];            
         })
         nodes.classed("hovered", function(d) {
-            return path[d.id];
+            return pathnodes[d.id];
         });
     }
 }
@@ -197,8 +206,7 @@ function draw() {
     minimapSVG.datum(graphSVG.node()).call(DAGMinimap);  // Draw a Minimap at the minimap attach
     drawTooltips();                     // Draw the tooltips
     setupEvents();             // Set up the node selection events
-
-    
+    refreshViewport();
 }
 
 //Set a nice removenode animation

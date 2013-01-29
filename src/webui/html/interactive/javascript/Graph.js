@@ -85,6 +85,7 @@ Graph.prototype.getVisibleNodes = function() {
 
 Graph.prototype.getVisibleLinks = function() {
     var visible_parent_map = {};
+    var start = window.performance.now();
     
     var explore_node = function(node) {
         if (visible_parent_map[node.id]) {
@@ -120,6 +121,8 @@ Graph.prototype.getVisibleLinks = function() {
             ret.push({source: nodes[pid], target: node});
         })
     }
+    
+    console.log("getVisibleLinks:", window.performance.now()-start);
 
     return ret;
 }
@@ -148,37 +151,87 @@ function getNodesBetween(a, b) {
         return between[p.id];
     }
     get(a)
-    console.log("getting nodes between took", (window.performance.now()-start));
+    console.log("getNodesBetween: ", (window.performance.now()-start));
     return nodesBetween;
 }
 
 function getEntirePath(center) {
-    // Returns a list containing all nodes with paths leading into or from the center node
+    // Returns a list containing all edges leading into or from the center node
     var start = window.performance.now();    
-    var visitedParents = {};
-    var visitedChildren = {};
-    var path = {};
-    function selectParents(node) {
-        if (!visitedParents[node.id]) {
-            visitedParents[node.id]=true;
-            path[node.id] = true;
-            node.getParents().forEach(function(p) {
-                selectParents(p);
-            });
+
+    var visible_parent_map = {};
+    var visible_child_map = {};
+    var nodes = {};
+    
+    var explore_parents = function(node) {
+        if (visible_parent_map[node.id]) {
+            return;
+        }
+        visible_parent_map[node.id] = {};
+        nodes[node.id] = node;
+        var parents = node.parent_nodes;
+        for (var pid in parents) {
+            var parent = parents[pid];
+            if (parent.visible) {
+                visible_parent_map[node.id][pid] = true;
+                explore_parents(parent);
+            } else {
+                explore_parents(parent);
+                var grandparents = visible_parent_map[pid];
+                for (var gpid in grandparents) {
+                    visible_parent_map[node.id][gpid] = true;
+                }
+            }
         }
     }
-    function selectChildren(node) {
-        if (!visitedChildren[node.id]) {
-            visitedChildren[node.id]=true;
-            path[node.id] = true;
-            node.getChildren().forEach(function(p) {
-                selectChildren(p);
-            });
+    
+    var explore_children = function(node) {
+        if (visible_child_map[node.id]) {
+            return;
+        }
+        visible_child_map[node.id] = {};
+        nodes[node.id] = node;
+        var children = node.child_nodes;
+        for (var cid in children) {
+            var child = children[cid];
+            if (child.visible) {
+                visible_child_map[node.id][cid] = true;
+                explore_children(child);
+            } else {
+                explore_children(child);
+                var grandchildren = visible_child_map[cid];
+                for (var gcid in grandchildren) {
+                    visible_child_map[node.id][gcid] = true;
+                }
+            }
         }
     }
-    selectParents(center);
-    selectChildren(center);
-    console.log("getting entire path took", (window.performance.now()-start));
+    
+    explore_parents(center);
+    explore_children(center);
+    
+    var path = [];
+
+    for (var targetid in visible_parent_map) {
+        var target = nodes[targetid];
+        var sourceids = visible_parent_map[targetid];
+        for (var sourceid in sourceids) {
+            var source = nodes[sourceid];
+            path.push({source: source, target: target});
+        }
+    }
+    
+    for (var sourceid in visible_child_map) {
+        var source = nodes[sourceid];
+        var targetids = visible_child_map[sourceid];
+        for (var targetid in targetids) {
+            var target = nodes[targetid];
+            path.push({source: source, target: target});
+        }
+    }
+
+  console.log("getEntirePath: ", (window.performance.now()-start));
+    
     return path;
 }
 
