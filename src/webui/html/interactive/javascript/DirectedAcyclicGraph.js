@@ -43,7 +43,8 @@ function DirectedAcyclicGraph() {
             svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attrTween("d", graph.edgeTween);
             existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
             new_nodes.each(newnodetransition);
-            new_edges.attr("d", graph.splineGenerator).transition().delay(500).attr("class", "edge visible");
+            new_edges.attr("d", graph.splineGenerator);
+            window.setTimeout(function() {new_edges.classed("visible", true);}, 500);
         });
         
     }
