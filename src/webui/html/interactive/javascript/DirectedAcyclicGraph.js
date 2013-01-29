@@ -90,7 +90,7 @@ function DirectedAcyclicGraph() {
     }
     var layout = function(nodes_d, edges_d) {
         // Dagre requires the width, height, and bbox of each node to be attached to that node's data
-        var start = window.performance.now();
+        var start = new Date().getTime();
         d3.select(this).selectAll(".node.visible").each(function(d) {
             d.bbox = bbox.call(this, d);
             d.width = d.bbox.width;
@@ -99,12 +99,12 @@ function DirectedAcyclicGraph() {
             d.dagre_id = layout_count+1;
         });
         layout_count++;
-        console.log("layout:bbox", (window.performance.now() - start));
+        console.log("layout:bbox", (new Date().getTime() - start));
         
         // Call dagre layout.  Store layout data such that calls to x(), y() and points() will return them
-        start = window.performance.now();
+        start = new Date().getTime();
         dagre.layout().nodeSep(20).edgeSep(5).rankSep(20).nodes(nodes_d).edges(edges_d).run(); 
-        console.log("layout:dagre", (window.performance.now() - start));   
+        console.log("layout:dagre", (new Date().getTime() - start));   
         
         // Also we want to make sure that the control points for all the edges overlap the nodes nicely
         d3.select(this).selectAll(".edge").each(function(d) {
