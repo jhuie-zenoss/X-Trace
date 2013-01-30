@@ -20,16 +20,7 @@ var DirectedAcyclicGraphHistory = function() {
         item.name = name;
         item.selection = d;
         
-        history.add(item);
-    }
-    
-    history.addSelected = function(graphSVG) {
-        var selection = [];
-        graphSVG.selectAll(".node.selected").each(function(d) {
-            selection.push(d);
-        });
-        
-        history.addSelection(selection, "User Selection");
+        return history.add(item);
     }
     
     return history;
@@ -44,6 +35,7 @@ var History = function() {
         item.id = seed++;
         history.splice(0, 0, item);
         item.apply();
+        return item;
     }
     
     history.remove = function(item) {
@@ -55,6 +47,7 @@ var History = function() {
         for (var i = 0; i < history.length; i++) {
             history[i].apply();
         }
+        return item;
     }
     
     return history;

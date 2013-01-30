@@ -115,7 +115,7 @@ function DirectedAcyclicGraph() {
             p[0].y -= 0.5; p[p.length-1].y += 0.5; 
         });
         
-        // Try and put the graph as close to previous position as possible
+        // Try to put the graph as close to previous position as possible
         var count = 0, x = 0, y = 0;
         d3.select(this).selectAll(".node.visible").each(function(d) {
             if (d.dagre_prev) {

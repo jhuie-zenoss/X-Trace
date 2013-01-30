@@ -250,8 +250,7 @@ resetViewport();
 // Bind the delete key behaviour
 d3.select("body").on("keyup", function(d) {
     if (d3.event.keyCode==46) {
-        history.addSelected(graphSVG);            
-        d3.select(this).classed("hovered", false)
+        history.addSelection(graphSVG.selectAll(".node.selected").data(), "User Selection");
         graphSVG.classed("hovering", false);
         draw();
     }
