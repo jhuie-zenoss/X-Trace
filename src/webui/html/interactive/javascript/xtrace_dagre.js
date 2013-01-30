@@ -7,6 +7,7 @@ var graph = createGraphFromReports(reports);
 // Twiddle the attach point a little bit
 var rootSVG = d3.select(attachPoint).append("svg");
 var graphSVG = rootSVG.append("svg").attr("width", "100%").attr("height", "100%").attr("class", "graph-attach");
+graphSVG.node().oncontextmenu = function(d) { return false; };
 var minimapSVG = rootSVG.append("svg").attr("class", "minimap-attach");
 var listSVG = rootSVG.append("svg").attr("class", "history-attach");
 
@@ -42,8 +43,8 @@ var resetViewport = function() {
   refreshViewport();
 }
 
-// A function to attach tipsy tooltips to the graph nodes
-function drawTooltips() {
+// Attaches tooltips to the graph nodes
+function attachTooltips() {
     graphSVG.selectAll(".node").each(function(d) {
         $(this).tipsy({
             gravity: $.fn.tipsy.autoWE,
@@ -53,6 +54,11 @@ function drawTooltips() {
             }
         });
     });
+}
+
+// Hides any visible tooltips
+function hideTooltips() {
+    $(".tipsy").remove();
 }
 
 function attachContextMenu() {
@@ -68,7 +74,7 @@ function attachContextMenu() {
         }
     }, { 
         disable_native_context_menu: true,
-        showMenu: function(element) { $(".tipsy").remove(); },
+        showMenu: hideTooltips,
     });
 }
 
@@ -78,47 +84,18 @@ function setupEvents(){
     var edges = graphSVG.selectAll(".edge");
     var items = listSVG.selectAll(".item");
 
-    var lastSelected = null;
-    nodes.on("click", function(d) { 
-        var node = d3.select(this);
-        var selected = !node.classed("selected");
-        
-        if (d3.event.ctrlKey && d3.event.shiftKey) {
-            if (selected) {
-                lastSelected = lastSelected || d;
-                selectPath(d, lastSelected);    
-            } else {
-                node.classed("selected", selected);
-                lastSelected = lastSelected==d ? null : lastSelected;
-            }
-        } else if (d3.event.ctrlKey) {
-            node.classed("selected", selected);
-            if (selected) {
-                lastSelected = d;
-            } else if (lastSelected==d) {
-                lastSelected = null;
-            }
-        } else if (d3.event.shiftKey) {
-            nodes.classed("selected", false);
-            lastSelected = lastSelected || d;
-            selectPath(d, lastSelected);
-        } else {
-            if (graphSVG.selectAll(".node.selected")[0].length==1) {
-                nodes.classed("selected", false);
-                node.classed("selected", selected);
-                lastSelected = selected ? d : null;
-            } else {
-                nodes.classed("selected", false);
-                node.classed("selected", true);
-                lastSelected = d
-            }
-        }
-        
+    // Set up node selection events
+    var select = Selectable().getrange(function(a, b) {
+        var path = getNodesBetween(a, b).concat(getNodesBetween(b, a));
+        return nodes.data(path, DAG.nodeid());
+    }).on("select", function(d) {
         refreshEdges();
         attachContextMenu();
-        $(".tipsy").remove();
+        hideTooltips();
     });
-    graphSVG.node().oncontextmenu = function(d) { return false; };
+    select(nodes);
+
+    
     
     nodes.on("mouseover", function(d) {
         graphSVG.classed("hovering", true);
@@ -145,12 +122,6 @@ function setupEvents(){
         // Redraw the graph and such
         draw();
     })
-    
-    
-    function selectPath(a, b) {
-        var path = getNodesBetween(a, b).concat(getNodesBetween(b, a));
-        graphSVG.selectAll(".node").data(path, DAG.nodeid()).classed("selected", true);
-    }
     
     function refreshEdges() {
         // Class up the selected edges
@@ -185,12 +156,12 @@ function setupEvents(){
 
 // The main draw function
 function draw() {
-    $(".tipsy").remove();               // Hide any tooltips
+    hideTooltips();                     // Hide any tooltips
     graphSVG.datum(graph).call(DAG);    // Draw a DAG at the graph attach
     minimapSVG.datum(graphSVG.node()).call(DAGMinimap);  // Draw a Minimap at the minimap attach
-    drawTooltips();                     // Draw the tooltips
+    attachTooltips();                   // Draw the tooltips
     setupEvents();                      // Set up the node selection events
-    refreshViewport();
+    refreshViewport();                  // Update the viewport settings
 }
 
 //Call the draw function
@@ -208,12 +179,8 @@ d3.select("body").on("keyup", function(d) {
         listSVG.datum(history).call(DAGHistory);
         
         // Find the point to animate the hidden nodes to
-        var bbox =  null;
-        listSVG.selectAll(".item").data([item], function(d) { return d.id; }).each(function(d) {
-            bbox = DAGHistory.bbox().call(this, d);
-        });
+        var bbox = DAGHistory.bbox().call(DAGHistory.select.call(listSVG.node(), item), item);
         var transform = zoom.getTransform(bbox);
-        
         DAG.removenode(function(d) {
             d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
         });

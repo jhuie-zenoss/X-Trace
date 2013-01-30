@@ -66,6 +66,10 @@ function List() {
         return bbox;
     }
     
+    list.select = function(item) {
+        return d3.select(this).selectAll(".item").data([item], function(d) { return d.id; }).node();
+    }
+    
 
     list.width = function(_) { if (!arguments.length) return width; width = d3.functor(_); return list; }
     list.height = function(_) { if (!arguments.length) return height; height = d3.functor(_); return list; }
