@@ -67,9 +67,17 @@ function attachContextMenus() {
     $(".graph .node.selected").contextMenu('context-menu-1', {
         'Hide Selected Nodes': {
             click: function(element) { 
-                history.addSelected(graphSVG);            
-                d3.select(element.context).classed("hovered", false)
+                var item = history.addSelection(graphSVG.selectAll(".node.selected").data(), "User Selection");
                 graphSVG.classed("hovering", false);
+                listSVG.datum(history).call(DAGHistory);
+                
+                // Find the point to animate the hidden nodes to
+                var bbox = DAGHistory.bbox().call(DAGHistory.select.call(listSVG.node(), item), item);
+                var transform = zoom.getTransform(bbox);
+                DAG.removenode(function(d) {
+                    d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
+                });
+                
                 draw();
             },
         }
