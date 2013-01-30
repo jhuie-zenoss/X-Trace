@@ -76,7 +76,8 @@ var createGraphFromReports = function(reports) {
     return graph;
 }
 
-var createTooltipHTMLFromReport = function(report) {
+var createTooltipHTMLFromReport = function(d) {
+    var report = d.report;
 
     var reserved = ["X-Trace", "Agent", "Class", "Timestamp", "Host", "Label"];
     

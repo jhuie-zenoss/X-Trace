@@ -1,9 +1,6 @@
 
 function drawXTraceGraph(attachPoint, reports) {
     
-    // Create the graph representation
-    var graph = createGraphFromReports(reports);
-    
     // Twiddle the attach point a little bit
     var rootSVG = d3.select(attachPoint).append("svg");
     var graphSVG = rootSVG.append("svg").attr("width", "100%").attr("height", "100%").attr("class", "graph-attach");
@@ -15,8 +12,10 @@ function drawXTraceGraph(attachPoint, reports) {
     var DAG = DirectedAcyclicGraph();
     var DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("19.5%").height("19.5%").x("80%").y("80%");
     var DAGHistory = List().width("8%").height("99%").x("0.5%").y("0.5%");
-    
-    // Create the history representation
+    var DAGTooltip = Tooltip().title(createTooltipHTMLFromReport);
+
+    // Create the graph and history representations
+    var graph = createGraphFromReports(reports);
     var history = DirectedAcyclicGraphHistory(DAG);
     
     // Attach the panzoom behavior
@@ -28,7 +27,7 @@ function drawXTraceGraph(attachPoint, reports) {
         graphSVG.selectAll(".node text").attr("opacity", 3*scale-0.3);    
     }
     var zoom = MinimapZoom().scaleExtent([0.001, 2.0]).on("zoom", refreshViewport);
-    zoom(rootSVG, minimapSVG);
+    zoom.call(this, rootSVG, minimapSVG);
     
     // A function that resets the viewport by zooming all the way out
     var resetViewport = function() {
@@ -41,24 +40,6 @@ function drawXTraceGraph(attachPoint, reports) {
       ty = ((h - bbox.height)/2 - bbox.y + 25)*scale;
       zoom.translate([tx, ty]).scale(scale);
       refreshViewport();
-    }
-    
-    // Attaches tooltips to the graph nodes
-    function attachTooltips() {
-        graphSVG.selectAll(".node").each(function(d) {
-            $(this).tipsy({
-                gravity: $.fn.tipsy.autoWE,
-                html: true,
-                title: function() {
-                    return createTooltipHTMLFromReport(d.report);
-                }
-            });
-        });
-    }
-    
-    // Hides any visible tooltips
-    function hideTooltips() {
-        $(".tipsy").remove();
     }
     
     // Attaches a context menu to any selected graph nodess
@@ -83,7 +64,7 @@ function drawXTraceGraph(attachPoint, reports) {
             }
         }, { 
             disable_native_context_menu: true,
-            showMenu: hideTooltips,
+            showMenu: DAGTooltip.hide,
         });
     }
     
@@ -113,7 +94,7 @@ function drawXTraceGraph(attachPoint, reports) {
         }).on("select", function(d) {
             refreshEdges();
             attachContextMenus();
-            hideTooltips();
+            DAGTooltip.hide();
         });
         select(nodes);
     
@@ -168,10 +149,10 @@ function drawXTraceGraph(attachPoint, reports) {
     
     // The main draw function
     function draw() {
-        hideTooltips();                     // Hide any tooltips
+        DAGTooltip.hide();                     // Hide any tooltips
         graphSVG.datum(graph).call(DAG);    // Draw a DAG at the graph attach
         minimapSVG.datum(graphSVG.node()).call(DAGMinimap);  // Draw a Minimap at the minimap attach
-        attachTooltips();                   // Draw the tooltips
+        graphSVG.selectAll(".node").call(DAGTooltip);  // Attach tooltips
         setupEvents();                      // Set up the node selection events
         refreshViewport();                  // Update the viewport settings
     }
