@@ -54,11 +54,8 @@ function Minimap() {
             
             // Zoom the minimap to the extent of the contents
             var bbox = svg.select('.contents').node().getBBox();
-            var x1 = bbox.x, y1 = bbox.y, x2 = bbox.x+bbox.width, y2 = bbox.y+bbox.height;
-            svg.select(".minimap").attr("viewBox", x1 + " " + y1 + " " + x2 + " " + y2);
-            
-            // Set the viewfinder to view everything
-            contents.select(".viewfinder").attr("x", x1).attr("y", y1).attr("width", x2-x1).attr("height", y2-y1);
+            svg.select(".minimap").attr("viewBox", bbox.x + " " + bbox.y + " " + bbox.width + " " + bbox.height);
+            contents.select(".viewfinder").attr("x", bbox.x).attr("y", bbox.y).attr("width", bbox.width).attr("height", bbox.height);
         });
     }
     
