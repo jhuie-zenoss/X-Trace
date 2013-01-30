@@ -61,8 +61,9 @@ function hideTooltips() {
     $(".tipsy").remove();
 }
 
-function attachContextMenu() {
-    $(".graph .node").unbind("contextmenu");
+// Attaches a context menu to any selected graph nodess
+function attachContextMenus() {
+    detachContextMenus();
     $(".graph .node.selected").contextMenu('context-menu-1', {
         'Hide Selected Nodes': {
             click: function(element) { 
@@ -78,6 +79,11 @@ function attachContextMenu() {
     });
 }
 
+// Detaches any bound context menus
+function detachContextMenus() {
+    $(".graph .node").unbind("contextmenu");    
+}
+
 // A function that attaches mouse-click events to nodes to enable node selection
 function setupEvents(){
     var nodes = graphSVG.selectAll(".node");
@@ -85,12 +91,20 @@ function setupEvents(){
     var items = listSVG.selectAll(".item");
 
     // Set up node selection events
+    function refreshEdges() {
+        var selected = graphSVG.selectAll(".node.selected");
+        var selectionIDs = {};
+        selected.each(function(d) { selectionIDs[d.id] = true; });
+        edges.classed("selected", function(d) {
+            return selectionIDs[d.source.id]==true && selectionIDs[d.target.id]==true; 
+        });
+    }
     var select = Selectable().getrange(function(a, b) {
         var path = getNodesBetween(a, b).concat(getNodesBetween(b, a));
         return nodes.data(path, DAG.nodeid());
     }).on("select", function(d) {
         refreshEdges();
-        attachContextMenu();
+        attachContextMenus();
         hideTooltips();
     });
     select(nodes);
@@ -122,16 +136,6 @@ function setupEvents(){
         // Redraw the graph and such
         draw();
     })
-    
-    function refreshEdges() {
-        // Class up the selected edges
-        var selected = graphSVG.selectAll(".node.selected");
-        var selectionIDs = {};
-        selected.each(function(d) { selectionIDs[d.id] = true; });
-        edges.classed("selected", function(d) {
-            return selectionIDs[d.source.id]==true && selectionIDs[d.target.id]==true; 
-        });
-    }
     
     function highlightPath(center) {        
         var path = getEntirePath(center);

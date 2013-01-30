@@ -26,25 +26,30 @@ function DirectedAcyclicGraph() {
             var removed_edges = existing_edges.exit();
             var removed_nodes = existing_nodes.exit();
             
-            var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge");
-            var new_nodes = existing_nodes.enter().append("g").attr("class", "node");
+            var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge entering");
+            var new_nodes = existing_nodes.enter().append("g").attr("class", "node entering");
             
             // Draw new nodes
             new_nodes.each(drawnode);
             existing_nodes.each(sizenode);
             removed_nodes.each(removenode);
             removed_edges.classed("visible", false).transition().duration(500).remove();
-            existing_nodes.classed("visible", true);
             
             // Do the layout
+            existing_nodes.classed("pre-existing", true);
             layout.call(svg.select(".graph").node(), nodes, edges);
+            existing_nodes.classed("pre-existing", false);
             
             // Animate into new positions
             svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attrTween("d", graph.edgeTween);
             existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
             new_nodes.each(newnodetransition);
-            new_edges.attr("d", graph.splineGenerator);
-            window.setTimeout(function() {new_edges.classed("visible", true);}, 500);
+            new_edges.attr("d", graph.splineGenerator).classed("visible", true);
+            existing_nodes.classed("visible", true);
+            window.setTimeout(function() {
+                new_edges.classed("entering", false);
+                new_nodes.classed("entering", false);
+            }, 2000);
         });
         
     }
@@ -92,7 +97,7 @@ function DirectedAcyclicGraph() {
     var layout = function(nodes_d, edges_d) {
         // Dagre requires the width, height, and bbox of each node to be attached to that node's data
         var start = new Date().getTime();
-        d3.select(this).selectAll(".node.visible").each(function(d) {
+        d3.select(this).selectAll(".node").each(function(d) {
             d.bbox = bbox.call(this, d);
             d.width = d.bbox.width;
             d.height = d.bbox.height;
@@ -117,7 +122,7 @@ function DirectedAcyclicGraph() {
         
         // Try to put the graph as close to previous position as possible
         var count = 0, x = 0, y = 0;
-        d3.select(this).selectAll(".node.visible").each(function(d) {
+        d3.select(this).selectAll(".node.pre-existing").each(function(d) {
             if (d.dagre_prev) {
                 count++;
                 x += (d.dagre_prev.x - d.dagre.x);
