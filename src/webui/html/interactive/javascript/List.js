@@ -5,7 +5,7 @@ function List() {
         y       = d3.functor(0),
         itemwidth  = d3.functor("100%"),
         itemheight = d3.functor(50),
-        itemx      = 0,
+        itemx      = d3.functor(0),
         itemy      = function(d, i) { return (itemheight.call(this, d, i)+2) * i; };
     
     
@@ -32,7 +32,7 @@ function List() {
                                 .attr("width", itemwidth).attr("height", itemheight).attr("x", itemx).attr("y", itemy);
             newitems.each(drawitem);
 
-            items.transition().duration(800).attr("x", itemx).attr("y", itemy);
+            items.transition().delay(400).duration(600).attr("x", itemx).attr("y", itemy);
             newitems.transition().delay(400).duration(600).attr("opacity", 1);
 
             
@@ -57,6 +57,15 @@ function List() {
             item.append("text").text(text).attr("x", "50%").attr("dy", "2em");
         }
     }
+    
+    var bbox = function(d, i) {
+        var brect = this.getBoundingClientRect();
+        var bbox = {
+            x: brect.left, y: brect.top, width: brect.right-brect.left, height: brect.bottom-brect.top
+        }
+        return bbox;
+    }
+    
 
     list.width = function(_) { if (!arguments.length) return width; width = d3.functor(_); return list; }
     list.height = function(_) { if (!arguments.length) return height; height = d3.functor(_); return list; }
@@ -66,6 +75,7 @@ function List() {
     list.itemheight = function(_) { if (!arguments.length) return itemheight; itemheight = d3.functor(_); return list; }
     list.itemx = function(_) { if (!arguments.length) return itemx; itemx = d3.functor(_); return list; }
     list.itemy = function(_) { if (!arguments.length) return itemy; itemy = d3.functor(_); return list; }
+    list.bbox = function(_) { if (!arguments.length) return bbox; bbox = d3.functor(_); return list; }
     
     return list;
 }

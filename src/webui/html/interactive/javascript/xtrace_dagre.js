@@ -18,59 +18,29 @@ var DAGHistory = List().width("8%").height("99%").x("0.5%").y("0.5%");
 // Create the history representation
 var history = DirectedAcyclicGraphHistory(DAG);
 
-// Variables for the pan-zoom state
-var w = window.innerWidth,
-    h = window.innerHeight,
-    scale = 1,
-    tx = 0,
-    ty = 0;
-
-// Sets the pan-zoom state of the graph and minimap according to the pan-zoom variables
+// Attach the panzoom behavior
 var refreshViewport = function() {
-    graphSVG.select(".graph").attr("transform","translate("+(tx*scale)+","+(ty*scale)+") scale("+scale+")");
-    minimapSVG.select('.viewfinder').attr("x", -tx).attr("y", -ty).attr("width", w).attr("height", h);
-    graphZoom.translate([tx*scale, ty*scale]).scale(scale);
-    minimapZoom.translate([0,0]).scale(1);
-    graphSVG.selectAll(".node text").attr("opacity", 3*scale-0.3);
+    var t = zoom.translate();
+    var scale = zoom.scale();
+    graphSVG.select(".graph").attr("transform","translate("+t[0]+","+t[1]+") scale("+scale+")");
+    minimapSVG.select('.viewfinder').attr("x", -t[0]/scale).attr("y", -t[1]/scale).attr("width", attachPoint.offsetWidth/scale).attr("height", attachPoint.offsetHeight/scale);
+    graphSVG.selectAll(".node text").attr("opacity", 3*scale-0.3);    
 }
+var zoom = MinimapZoom().scaleExtent([0.001, 2.0]).on("zoom", refreshViewport);
+zoom(rootSVG, minimapSVG);
 
-// Resets the viewport by zooming all the way out
+// A function that resets the viewport by zooming all the way out
 var resetViewport = function() {
-    var bbox = graphSVG.select(".graph").node().getBBox();
-    bbox.width += 50; bbox.height += 50;
-    scale = Math.min(window.innerWidth/bbox.width, window.innerHeight/bbox.height);
-    w = window.innerWidth/scale;
-    h = window.innerHeight/scale;
-    tx = (w - bbox.width)/2 - bbox.x + 25;
-    ty = (h - bbox.height)/2 - bbox.y + 25;
-    refreshViewport();
+  var bbox = graphSVG.node().getBBox();
+  bbox.width += 50; bbox.height += 50;
+  scale = Math.min(attachPoint.offsetWidth/bbox.width, attachPoint.offsetHeight/bbox.height);
+  w = attachPoint.offsetWidth/scale;
+  h = attachPoint.offsetHeight/scale;
+  tx = ((w - bbox.width)/2 - bbox.x + 25)*scale;
+  ty = ((h - bbox.height)/2 - bbox.y + 25)*scale;
+  zoom.translate([tx, ty]).scale(scale);
+  refreshViewport();
 }
-
-// Callback when graph is pan-zoomed
-var onGraphPanzoom = function() {
-    scale = d3.event.scale;
-    tx = d3.event.translate[0] / scale;
-    ty = d3.event.translate[1] / scale;
-    w = window.innerWidth / scale;
-    h = window.innerHeight / scale;
-    refreshViewport();
-}
-
-// Callback when minimap is pan-zoomed
-var onMinimapPanzoom = function() {
-    var mouse = d3.mouse(minimapSVG.select(".minimap").node());
-    tx = w/2-mouse[0];
-    ty = h/2-mouse[1];
-    refreshViewport();
-}
-
-// Create and call the graph pan-zoom behaviour
-var graphZoom = d3.behavior.zoom().translate([0, 0]).scale(1.0).scaleExtent([0.05, 2.0]).on("zoom", onGraphPanzoom);
-rootSVG.call(graphZoom).on("dblclick.zoom", null); // turn off double click zooming
-
-// Create and call the minimap pan-zoom behaviour
-var minimapZoom = d3.behavior.zoom().translate([0, 0]).scale(1.0).scaleExtent([1.0, 1.0]).on("zoom", onMinimapPanzoom);
-minimapSVG.call(minimapZoom) // turn off double click zooming
 
 // A function to attach tipsy tooltips to the graph nodes
 function drawTooltips() {
@@ -162,21 +132,17 @@ function setupEvents(){
     // When a list item is clicked, it will be removed from the history and added to the graph
     // So we override the DAG node transition behaviour so that the new nodes animate from the click position
     items.on("click", function(d, i) {
-        // Calculate the click point
-        var bbox = listSVG.node().getBBox();
-        console.log(bbox);
-        var startx = (bbox.x + bbox.width/2) / scale - tx;
-        var starty = (bbox.y + DAGHistory.itemy().call(this, d, i) + 20) / scale - ty;
-        var startscale = 0.8 / scale;
-        var starttransform = "translate("+startx+","+starty+") scale("+startscale+")";
-
-        // Update the new node transition to originate from this point
+        // Remove the item from the history and redraw the history
+        history.remove(d);
+        listSVG.datum(history).call(DAGHistory);
+        
+        // Now update the location that the new elements of the graph will enter from
+        var transform = zoom.getTransform(DAGHistory.bbox().call(this, d));
         DAG.newnodetransition(function(d) {
-            d3.select(this).attr("transform", starttransform).transition().duration(800).attr("transform", DAG.nodeTranslate);
+            d3.select(this).attr("transform", transform).transition().duration(800).attr("transform", DAG.nodeTranslate);
         })
         
-        // Now remove and redraw
-        history.remove(d);
+        // Redraw the graph and such
         draw();
     })
     
@@ -220,26 +186,12 @@ function setupEvents(){
 // The main draw function
 function draw() {
     $(".tipsy").remove();               // Hide any tooltips
-    listSVG.datum(history).call(DAGHistory);
     graphSVG.datum(graph).call(DAG);    // Draw a DAG at the graph attach
     minimapSVG.datum(graphSVG.node()).call(DAGMinimap);  // Draw a Minimap at the minimap attach
     drawTooltips();                     // Draw the tooltips
     setupEvents();                      // Set up the node selection events
     refreshViewport();
 }
-
-//Set a nice removenode animation
-DAG.removenode(function(d) {
-    // Calculate the current location of the history 
-    var bbox = listSVG.node().getBBox();
-    var targety = (bbox.y + 20) / scale - ty;
-    var targetx = (bbox.x + bbox.width/2) / scale - tx;
-    var targetscale = 0.5 / scale;
-    
-    // Slide the removed nodes over to the history
-    var translate = "translate("+targetx+","+targety+") scale("+targetscale+")";
-    d3.select(this).classed("visible", false).transition().duration(800).attr("transform", translate).remove();
-});
 
 //Call the draw function
 draw();
@@ -250,8 +202,22 @@ resetViewport();
 // Bind the delete key behaviour
 d3.select("body").on("keyup", function(d) {
     if (d3.event.keyCode==46) {
-        history.addSelection(graphSVG.selectAll(".node.selected").data(), "User Selection");
+        // Add the item to the history and redraw the history
+        var item = history.addSelection(graphSVG.selectAll(".node.selected").data(), "User Selection");
         graphSVG.classed("hovering", false);
+        listSVG.datum(history).call(DAGHistory);
+        
+        // Find the point to animate the hidden nodes to
+        var bbox =  null;
+        listSVG.selectAll(".item").data([item], function(d) { return d.id; }).each(function(d) {
+            bbox = DAGHistory.bbox().call(this, d);
+        });
+        var transform = zoom.getTransform(bbox);
+        
+        DAG.removenode(function(d) {
+            d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
+        });
+        
         draw();
     }
 });

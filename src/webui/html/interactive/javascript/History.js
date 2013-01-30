@@ -33,7 +33,8 @@ var History = function() {
     
     history.add = function(item) {
         item.id = seed++;
-        history.splice(0, 0, item);
+        history.push(item);
+//        history.splice(0, 0, item);
         item.apply();
         return item;
     }
