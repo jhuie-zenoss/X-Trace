@@ -31,6 +31,11 @@
   opacity: 1;
 }
 
+.hovering .graph .node.hovered.immediate rect {
+  stroke: #A4011B;
+  fill: #FFE0E5;
+}
+
 .graph .node rect {
   fill: #FFF2CC;
   stroke-width: 2px;
@@ -44,7 +49,8 @@
 }
 
 .graph .node.selected rect,
-.hovering .graph .node.selected rect {
+.hovering .graph .node.selected rect,
+.hovering .graph .node.selected.hovered.immediate rect {
   stroke: #0F4BFF;
   fill: #B3ECFF;
 }
@@ -66,15 +72,17 @@
 
 .graph .edge.visible.preview {
   stroke-width: 4px;
-    stroke: #CA78D2;
+  stroke: #CA78D2;
 }
 
-.graph .edge.visible.selected {
+.graph .edge.visible.selected,
+.hovering .graph .edge.hovered.immediate.selected {
   stroke-width: 6px;
   stroke: #386AFF;
 }
 
-.graph .edge.visible.preview {
+.graph .edge.visible.preview,
+.hovering .graph .edge.hovered.immediate.preview {
     stroke: #CA78D2;
 }
 
@@ -100,6 +108,11 @@
 .hovering .graph .edge.visible.hovered,
 .hovering .graph .edge.selected {
   opacity: 1;
+}
+
+.hovering .graph .edge.hovered.immediate {
+  stroke: #A4011B;
+  stroke-width: 4px;
 }
 
 .minimap .edge {
@@ -158,11 +171,11 @@
 }
 
 .context-menu .highlight {
-	color: #A60000;
+	color: #7F2389;
 }
 
 .context-menu a:hover .highlight {
-	color: #FF7373;
+	color: #CA78D2;
 }
 
 text, tspan, .tipsy {

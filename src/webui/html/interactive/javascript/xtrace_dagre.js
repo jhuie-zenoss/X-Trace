@@ -104,8 +104,8 @@ function drawXTraceGraph(attachPoint, reports) {
             highlightPath(d);
         }).on("mouseout", function(d){
             graphSVG.classed("hovering", false);
-            edges.classed("hovered", false);
-            edges.classed("hovered", false);
+            edges.classed("hovered", false).classed("immediate", false);
+            nodes.classed("hovered", false).classed("immediate", false);
         });
         
         // When a list item is clicked, it will be removed from the history and added to the graph
@@ -143,6 +143,25 @@ function drawXTraceGraph(attachPoint, reports) {
             nodes.classed("hovered", function(d) {
                 return pathnodes[d.id];
             });
+            
+            var immediatenodes = {};
+            var immediatelinks = {};
+            immediatenodes[center.id] = true;
+            center.getVisibleParents().forEach(function(p) {
+                immediatenodes[p.id] = true;
+                immediatelinks[p.id+center.id] = true;
+            })
+            center.getVisibleChildren().forEach(function(p) {
+                immediatenodes[p.id] = true;
+                immediatelinks[center.id+p.id] = true;
+            })
+            
+            edges.classed("immediate", function(d) {
+                return immediatelinks[d.source.id+d.target.id];
+            })
+            nodes.classed("immediate", function(d) {
+                return immediatenodes[d.id];
+            })
         }
     }
     
