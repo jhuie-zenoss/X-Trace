@@ -45,8 +45,10 @@ function drawXTraceGraph(attachPoint, reports) {
     
     // Attaches a context menu to any selected graph nodess
     function attachContextMenus() {
-        DAGContextMenu.call(graphSVG.node(), graphSVG.selectAll(".node.selected"));
-        DAGContextMenu.on("hidenodes", function(nodes, selectionname) {
+        DAGContextMenu.call(graphSVG.node(), graphSVG.selectAll(".node"));
+        DAGContextMenu.on("open", function() {
+            DAGTooltip.hide();
+        }).on("hidenodes", function(nodes, selectionname) {
             var item = history.addSelection(nodes, selectionname);
             graphSVG.classed("hovering", false);
             listSVG.datum(history).call(DAGHistory);
@@ -173,6 +175,7 @@ function drawXTraceGraph(attachPoint, reports) {
         graphSVG.selectAll(".node").call(DAGTooltip);        // Attach tooltips
         setupEvents();                      // Set up the node selection events
         refreshViewport();                  // Update the viewport settings
+        attachContextMenus();
     }
     
     //Call the draw function

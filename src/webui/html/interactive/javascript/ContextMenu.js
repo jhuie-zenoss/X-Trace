@@ -1,10 +1,18 @@
 var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
     
+    var onMenuOpen = function(d) {
+        handlers.open.call(this, d);
+    }
+    
     var onMenuClick = function(d) {
         var items = [];
         var name = "";
         if (d.operation=="hideselected") {
             items = graphSVG.selectAll(".node.selected").data();
+            name = "User Selection";
+        }
+        if (d.operation=="hidethis") {
+            items = d3.select(this).data();
             name = "User Selection";
         }
         if (d.operation=="hidefield") {
@@ -23,6 +31,12 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
     
     var onOptionMouseOver = function(d) {
         var items = [];
+        if (d.operation=="hideselected") {
+            items = graphSVG.selectAll(".node.selected").data();
+        }
+        if (d.operation=="hidethis") {
+            items = d3.select(this).data();
+        }
         if (d.operation=="hidefield") {
             var fieldname = d.fieldname;
             var value = d.value;
@@ -38,7 +52,8 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
         handlers.hovernodes.call(this, []);
     }
     
-    var ctxmenu = ContextMenu().on("click", onMenuClick)
+    var ctxmenu = ContextMenu().on("open", onMenuOpen)
+                               .on("click", onMenuClick)
                                .on("mouseover", onOptionMouseOver)
                                .on("mouseout", onOptionMouseOut);
     
@@ -47,11 +62,18 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
         selection.each(function(d) {
             
             var items = [];
-            
+
             items.push({
-                "operation": "hideselected",
-                "name": "Hide all highlighed nodes",
-            });
+                "operation": "hidethis",
+                "name": "Hide this node",
+            });     
+            
+            if (!selection.filter(".selected").empty()) {   
+                items.push({
+                    "operation": "hideselected",
+                    "name": "Hide selected nodes",
+                });
+            }
             
             var addHideField = function(fieldname) {
                 if (d.report && d.report[fieldname] && d.report[fieldname][0]) {
@@ -84,7 +106,8 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
     
     var handlers = {
         "hidenodes": function() {},
-        "hovernodes": function() {}
+        "hovernodes": function() {},
+        "open": function() {}
     }
     
     menu.on = function(event, _) {
