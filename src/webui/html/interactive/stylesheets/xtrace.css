@@ -141,3 +141,11 @@
 .xtrace-tooltip .clear {
 	clear: both;
 }
+
+.context-menu .highlight {
+	color: #A60000;
+}
+
+.context-menu a:hover .highlight {
+	color: #FF7373;
+}

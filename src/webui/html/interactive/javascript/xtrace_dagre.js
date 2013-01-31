@@ -13,6 +13,7 @@ function drawXTraceGraph(attachPoint, reports) {
     var DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("19.5%").height("19.5%").x("80%").y("80%");
     var DAGHistory = List().width("8%").height("99%").x("0.5%").y("0.5%");
     var DAGTooltip = Tooltip().title(createTooltipHTMLFromReport);
+    var DAGContextMenu = DirectedAcyclicGraphContextMenu();
 
     // Create the graph and history representations
     var graph = createGraphFromReports(reports);
@@ -45,6 +46,42 @@ function drawXTraceGraph(attachPoint, reports) {
     // Attaches a context menu to any selected graph nodess
     function attachContextMenus() {
         detachContextMenus();
+        
+//        var hideSelection = {
+//            "id": 0, "name": "Hide Selected Nodes",
+//        }
+//        
+//        var items = [hideSelection];
+//        d3.selectAll(".node.selected").each(function(d) {
+//            console.log("attaching menu to ", this);
+//            DAGContextMenu.call(this, items);
+//        });
+//        
+//        DAGContextMenu.on("click", function(d) {
+////            console.log("clicked", this, d);
+//          var item = history.addSelection(graphSVG.selectAll(".node.selected").data(), "User Selection");
+//          graphSVG.classed("hovering", false);
+//          listSVG.datum(history).call(DAGHistory);
+//          
+//          // Find the point to animate the hidden nodes to
+//          var bbox = DAGHistory.bbox().call(DAGHistory.select.call(listSVG.node(), item), item);
+//          var transform = zoom.getTransform(bbox);
+//          DAG.removenode(function(d) {
+//              d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
+//          });
+//          
+//          draw();
+//        });
+//        
+//        console.log(graphSVG.selectAll(".node.selected"));
+//        DAGContextMenu.hide();
+//        DAGContextMenu.call(graphSVG.node(), graphSVG.selectAll(".node.selected"));
+        
+        
+        
+        
+        
+        
         $(".graph .node.selected").contextMenu('context-menu-1', {
             'Hide Selected Nodes': {
                 click: function(element) { 
@@ -149,10 +186,10 @@ function drawXTraceGraph(attachPoint, reports) {
     
     // The main draw function
     function draw() {
-        DAGTooltip.hide();                     // Hide any tooltips
+        DAGTooltip.hide();                  // Hide any tooltips
         graphSVG.datum(graph).call(DAG);    // Draw a DAG at the graph attach
         minimapSVG.datum(graphSVG.node()).call(DAGMinimap);  // Draw a Minimap at the minimap attach
-        graphSVG.selectAll(".node").call(DAGTooltip);  // Attach tooltips
+        graphSVG.selectAll(".node").call(DAGTooltip);        // Attach tooltips
         setupEvents();                      // Set up the node selection events
         refreshViewport();                  // Update the viewport settings
     }
