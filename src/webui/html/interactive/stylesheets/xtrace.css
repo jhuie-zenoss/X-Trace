@@ -58,7 +58,7 @@
 .graph .node.preview rect,
 .hovering .graph .node.preview rect {
 	fill: #EADAEC;
-	stroke: #CA78D2;
+	stroke: #9A38A2;
 }
 
 .graph .edge {
@@ -72,7 +72,7 @@
 
 .graph .edge.visible.preview {
   stroke-width: 4px;
-  stroke: #CA78D2;
+  stroke: #9A38A2;
 }
 
 .graph .edge.visible.selected,
@@ -83,7 +83,7 @@
 
 .graph .edge.visible.preview,
 .hovering .graph .edge.hovered.immediate.preview {
-    stroke: #CA78D2;
+    stroke: #9A38A2;
 }
 
 .graph .edge.visible {
