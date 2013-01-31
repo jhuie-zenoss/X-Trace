@@ -7,9 +7,16 @@ var Node = function(id) {
     this.id = id;
     
     // Default values for internal variables
-    this.visible              = true;
+    this.never_visible        = false;
+    this.hidden               = false;
     this.child_nodes          = {}; // The immediate child nodes in the graph, regardless of visibility
     this.parent_nodes         = {}; // The immediate parent nodes in the graph, regardless of visibility
+}
+
+Node.prototype.visible = function(_) {
+    if (arguments.length==0) return (!this.never_visible && !this.hidden)
+    this.hidden = !_;
+    return this;
 }
 
 Node.prototype.addChild = function(child) {
@@ -32,7 +39,7 @@ Node.prototype.getVisibleParents = function() {
     var visible_parents = {};
     for (var parent_id in this.parent_nodes) {
         var parent = this.parent_nodes[parent_id];
-        if (parent.visible) {
+        if (parent.visible()) {
             visible_parents[parent_id] = parent;
         } else {
             var grandparents = parent.getVisibleParents();
@@ -48,7 +55,7 @@ Node.prototype.getVisibleChildren = function() {
     var visible_children = {};
     for (var child_id in this.child_nodes) {
         var child = this.child_nodes[child_id];
-        if (child.visible) {
+        if (child.visible()) {
             visible_children[child_id] = child;
         } else {
             var grandchildren = child.getVisibleChildren();
@@ -80,7 +87,7 @@ Graph.prototype.getNodes = function() {
 }
 
 Graph.prototype.getVisibleNodes = function() {
-    return this.nodelist.filter(function(node) { return node.visible; });
+    return this.nodelist.filter(function(node) { return node.visible(); });
 }
 
 Graph.prototype.getVisibleLinks = function() {
@@ -95,7 +102,7 @@ Graph.prototype.getVisibleLinks = function() {
         var parents = node.parent_nodes;
         for (var pid in parents) {
             var parent = parents[pid];
-            if (parent.visible) {
+            if (parent.visible()) {
                 visible_parent_map[node.id][pid] = true;
             } else {
                 explore_node(parent);
@@ -172,7 +179,7 @@ function getEntirePath(center) {
         var parents = node.parent_nodes;
         for (var pid in parents) {
             var parent = parents[pid];
-            if (parent.visible) {
+            if (parent.visible()) {
                 visible_parent_map[node.id][pid] = true;
                 explore_parents(parent);
             } else {
@@ -194,7 +201,7 @@ function getEntirePath(center) {
         var children = node.child_nodes;
         for (var cid in children) {
             var child = children[cid];
-            if (child.visible) {
+            if (child.visible()) {
                 visible_child_map[node.id][cid] = true;
                 explore_children(child);
             } else {

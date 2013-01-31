@@ -149,3 +149,12 @@
 .context-menu a:hover .highlight {
 	color: #FF7373;
 }
+
+text, tspan, .tipsy {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}

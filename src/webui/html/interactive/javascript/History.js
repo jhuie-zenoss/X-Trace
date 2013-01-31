@@ -10,11 +10,11 @@ var DirectedAcyclicGraphHistory = function() {
         var item = {};
         
         item.apply = function() {
-            d.forEach(function(e) { e.visible = false; });
+            d.forEach(function(e) { e.visible(false); });
         }
         
         item.unapply = function() {
-            d.forEach(function(e) { e.visible = true; });
+            d.forEach(function(e) { e.visible(true); });
         }
         
         item.name = name;

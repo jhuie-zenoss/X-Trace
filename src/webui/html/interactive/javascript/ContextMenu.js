@@ -1,12 +1,30 @@
-var DirectedAcyclicGraphContextMenu = function() {
+var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
     
     var onMenuClick = function(d) {
-        console.log("menu click!", d);
+        var items = [];
+        var name = "";
+        if (d.operation=="hideselected") {
+            items = graphSVG.selectAll(".node.selected").data();
+            name = "User Selection";
+        }
+        if (d.operation=="hidefield") {
+            var fieldname = d.fieldname;
+            var value = d.value;
+            items = graph.getNodes().filter(function(node) {
+                return !node.never_visible && node.report && 
+                node.report[fieldname] && node.report[fieldname][0]==value;
+            });
+            name = fieldname+": "+value;
+        }
+        if (items.length!=0) {
+            onhide.call(this, items, name);
+        }
     }
     
     var ctxmenu = ContextMenu().on("click", onMenuClick);
     
     var menu = function(selection) {
+        menu.hide();
         selection.each(function(d) {
             
             var items = [];
@@ -22,7 +40,7 @@ var DirectedAcyclicGraphContextMenu = function() {
                         "operation": "hidefield",
                         "name": "Hide all <span class='highlight'>"+d.report[fieldname][0]+"</span> nodes",
                         "fieldname": fieldname,
-                        "value": d.report[fieldname][0]
+                        "value": d.report[fieldname][0],
                     });
                 }
             }
@@ -43,7 +61,7 @@ var DirectedAcyclicGraphContextMenu = function() {
         })            
         $(".context-menu").remove();
     }
-    var onhide = function() {}
+    var onhide = function(nodes, selectionname) {}
     
     menu.on = function(event, _) {
         if (event!="hide") return menu;
@@ -51,35 +69,6 @@ var DirectedAcyclicGraphContextMenu = function() {
         onhide = _;
         return menu;
     }
-    
-
-//    
-//    var hideSelection = {
-//        "id": 0, "name": "Hide Selected Nodes",
-//    }
-//    
-//    var items = [hideSelection];
-//    d3.selectAll(".node.selected").each(function(d) {
-//        console.log("attaching menu to ", this);
-//        DAGContextMenu.call(this, items);
-//    });
-//    
-//    DAGContextMenu.on("click", function(d) {
-////        console.log("clicked", this, d);
-//      var item = history.addSelection(graphSVG.selectAll(".node.selected").data(), "User Selection");
-//      graphSVG.classed("hovering", false);
-//      listSVG.datum(history).call(DAGHistory);
-//      
-//      // Find the point to animate the hidden nodes to
-//      var bbox = DAGHistory.bbox().call(DAGHistory.select.call(listSVG.node(), item), item);
-//      var transform = zoom.getTransform(bbox);
-//      DAG.removenode(function(d) {
-//          d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
-//      });
-//      
-//      draw();
-//    });
-    
     
     return menu;
 }
@@ -94,13 +83,13 @@ var ContextMenu = function() {
         // Create the menu items
         var menu = {};
         for (var i = 0; i < ds.length; i++) {
-            var d = ds[i];
-            var n = name.call(this, d);
-            var click = function() {
-                onclick.call(attach, d, i);
-            }
-            menu[n] = { "click": click }
+            var item = ds[i];
+            var itemname = name.call(this, item);
+            menu[itemname] = { 
+                "click": menuCallback(attach, item, i)
+            };
         }
+        console.log(menu);
         
         // Set the options
         var options = {
@@ -112,6 +101,13 @@ var ContextMenu = function() {
         // Attach the context menu to this element
         console.log("attaching context menu", menu, options);
         $(attach).contextMenu('context-menu'+(idseed++), menu, options);
+    }
+    
+    // Stupid javascript
+    var menuCallback = function(attach,d, i) {
+        return function() {
+            onclick.call(attach, d, i);
+        }
     }
     
     var name = function(d) { return d.name; }

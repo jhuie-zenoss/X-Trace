@@ -8,17 +8,17 @@ function drawXTraceGraph(attachPoint, reports) {
     var minimapSVG = rootSVG.append("svg").attr("class", "minimap-attach");
     var listSVG = rootSVG.append("svg").attr("class", "history-attach");
     
+    // Create the graph and history representations
+    var graph = createGraphFromReports(reports);
+    var history = DirectedAcyclicGraphHistory();
+    
     // Create the chart instances
     var DAG = DirectedAcyclicGraph();
     var DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("19.5%").height("19.5%").x("80%").y("80%");
-    var DAGHistory = List().width("8%").height("99%").x("0.5%").y("0.5%");
+    var DAGHistory = List().width("15%").height("99%").x("0.5%").y("0.5%");
     var DAGTooltip = Tooltip().title(createTooltipHTMLFromReport);
-    var DAGContextMenu = DirectedAcyclicGraphContextMenu();
+    var DAGContextMenu = DirectedAcyclicGraphContextMenu(graph, graphSVG);
 
-    // Create the graph and history representations
-    var graph = createGraphFromReports(reports);
-    var history = DirectedAcyclicGraphHistory(DAG);
-    
     // Attach the panzoom behavior
     var refreshViewport = function() {
         var t = zoom.translate();
@@ -45,63 +45,20 @@ function drawXTraceGraph(attachPoint, reports) {
     
     // Attaches a context menu to any selected graph nodess
     function attachContextMenus() {
-        detachContextMenus();
-        
-//        var hideSelection = {
-//            "id": 0, "name": "Hide Selected Nodes",
-//        }
-//        
-//        var items = [hideSelection];
-//        d3.selectAll(".node.selected").each(function(d) {
-//            console.log("attaching menu to ", this);
-//            DAGContextMenu.call(this, items);
-//        });
-//        
-//        DAGContextMenu.on("click", function(d) {
-////            console.log("clicked", this, d);
-//          var item = history.addSelection(graphSVG.selectAll(".node.selected").data(), "User Selection");
-//          graphSVG.classed("hovering", false);
-//          listSVG.datum(history).call(DAGHistory);
-//          
-//          // Find the point to animate the hidden nodes to
-//          var bbox = DAGHistory.bbox().call(DAGHistory.select.call(listSVG.node(), item), item);
-//          var transform = zoom.getTransform(bbox);
-//          DAG.removenode(function(d) {
-//              d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
-//          });
-//          
-//          draw();
-//        });
-//        
-//        console.log(graphSVG.selectAll(".node.selected"));
-//        DAGContextMenu.hide();
-//        DAGContextMenu.call(graphSVG.node(), graphSVG.selectAll(".node.selected"));
-        
-        
-        
-        
-        
-        
-        $(".graph .node.selected").contextMenu('context-menu-1', {
-            'Hide Selected Nodes': {
-                click: function(element) { 
-                    var item = history.addSelection(graphSVG.selectAll(".node.selected").data(), "User Selection");
-                    graphSVG.classed("hovering", false);
-                    listSVG.datum(history).call(DAGHistory);
-                    
-                    // Find the point to animate the hidden nodes to
-                    var bbox = DAGHistory.bbox().call(DAGHistory.select.call(listSVG.node(), item), item);
-                    var transform = zoom.getTransform(bbox);
-                    DAG.removenode(function(d) {
-                        d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
-                    });
-                    
-                    draw();
-                },
-            }
-        }, { 
-            disable_native_context_menu: true,
-            showMenu: DAGTooltip.hide,
+        DAGContextMenu.call(graphSVG.node(), graphSVG.selectAll(".node.selected"));
+        DAGContextMenu.on("hide", function(nodes, selectionname) {
+            var item = history.addSelection(nodes, selectionname);
+            graphSVG.classed("hovering", false);
+            listSVG.datum(history).call(DAGHistory);
+            
+            // Find the point to animate the hidden nodes to
+            var bbox = DAGHistory.bbox().call(DAGHistory.select.call(listSVG.node(), item), item);
+            var transform = zoom.getTransform(bbox);
+            DAG.removenode(function(d) {
+                d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
+            });
+            
+            draw();
         });
     }
     
@@ -128,7 +85,7 @@ function drawXTraceGraph(attachPoint, reports) {
         var select = Selectable().getrange(function(a, b) {
             var path = getNodesBetween(a, b).concat(getNodesBetween(b, a));
             return nodes.data(path, DAG.nodeid());
-        }).on("select", function(d) {
+        }).on("select", function() {
             refreshEdges();
             attachContextMenus();
             DAGTooltip.hide();
@@ -199,24 +156,4 @@ function drawXTraceGraph(attachPoint, reports) {
     
     // Start with the graph all the way zoomed out
     resetViewport();
-    
-    // Bind the delete key behaviour
-    d3.select("body").on("keyup", function(d) {
-        if (d3.event.keyCode==46) {
-            // Add the item to the history and redraw the history
-            var item = history.addSelection(graphSVG.selectAll(".node.selected").data(), "User Selection");
-            graphSVG.classed("hovering", false);
-            listSVG.datum(history).call(DAGHistory);
-            
-            // Find the point to animate the hidden nodes to
-            var bbox = DAGHistory.bbox().call(DAGHistory.select.call(listSVG.node(), item), item);
-            var transform = zoom.getTransform(bbox);
-            DAG.removenode(function(d) {
-                d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
-            });
-            
-            draw();
-        }
-    });
-    
 }

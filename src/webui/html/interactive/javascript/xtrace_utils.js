@@ -50,7 +50,7 @@ var createGraphFromReports = function(reports) {
         var id = report["X-Trace"][0].substr(18);
         nodes[id] = new Node(id);
         if (report["Operation"] && report["Operation"]=="merge") {
-            nodes[id].visible = false;
+            nodes[id].never_visible = true;
         }
         nodes[id].report = report;
     }

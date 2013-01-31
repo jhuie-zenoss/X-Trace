@@ -36,7 +36,19 @@ var Selectable = function() {
                     lastSelected = d
                 }
             }
-            onSelect.call(this, d);
+            onSelect();
+        });
+        
+        // Add the Ctrl-A behavior
+        var attach = this;
+        d3.select("body").on("keyup", function(d) {
+            if (d3.event.ctrlKey && d3.event.keyCode==65) {
+                var allSelected = selection.filter(function(d) {
+                    return !d3.select(this).classed("selected");
+                }).empty();
+                selection.classed("selected", !allSelected);
+                onSelect();
+            }
         });
     }
 
