@@ -36,35 +36,59 @@ Node.prototype.getChildren = function() {
 }
 
 Node.prototype.getVisibleParents = function() {   
-    var visible_parents = {};
-    for (var parent_id in this.parent_nodes) {
-        var parent = this.parent_nodes[parent_id];
-        if (parent.visible()) {
-            visible_parents[parent_id] = parent;
-        } else {
-            var grandparents = parent.getVisibleParents();
-            for (var i = 0; i < grandparents.length; i++) {
-                visible_parents[grandparents[i].id] = grandparents[i];
+    var visible_parent_map = {};
+    
+    var explore_node = function(node) {
+        if (visible_parent_map[node.id]) {
+            return;
+        }
+        visible_parent_map[node.id] = {};
+        var parents = node.parent_nodes;
+        for (var pid in parents) {
+            var parent = parents[pid];
+            if (parent.visible()) {
+                visible_parent_map[node.id][pid] = parent;
+            } else {
+                explore_node(parent);
+                var grandparents = visible_parent_map[pid];
+                for (var gpid in grandparents) {
+                    visible_parent_map[node.id][gpid] = grandparents[gpid];
+                }
             }
         }
     }
-    return values(visible_parents);
+    
+    explore_node(this);
+    
+    return values(visible_parent_map[this.id]);
 }
 
 Node.prototype.getVisibleChildren = function() {
-    var visible_children = {};
-    for (var child_id in this.child_nodes) {
-        var child = this.child_nodes[child_id];
-        if (child.visible()) {
-            visible_children[child_id] = child;
-        } else {
-            var grandchildren = child.getVisibleChildren();
-            for (var i = 0; i < grandchildren.length; i++) {
-                visible_children[grandchildren[i].id] = grandchildren[i];
+    var visible_children_map = {};
+    
+    var explore_node = function(node) {
+        if (visible_children_map[node.id]) {
+            return;
+        }
+        visible_children_map[node.id] = {};
+        var children = node.child_nodes;
+        for (var pid in children) {
+            var child = children[pid];
+            if (child.visible()) {
+                visible_children_map[node.id][pid] = child;
+            } else {
+                explore_node(child);
+                var grandchildren = visible_children_map[pid];
+                for (var gcid in grandchildren) {
+                    visible_children_map[node.id][gcid] = grandchildren[gcid];
+                }
             }
         }
     }
-    return values(visible_children);
+    
+    explore_node(this);
+    
+    return values(visible_children_map[this.id]);
 }
 
 var Graph = function() {
