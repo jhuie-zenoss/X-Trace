@@ -49,6 +49,12 @@
   fill: #B3ECFF;
 }
 
+.graph .node.preview rect,
+.hovering .graph .node.preview rect {
+	fill: #EADAEC;
+	stroke: #CA78D2;
+}
+
 .graph .edge {
   fill: none;
   stroke-width: 2.5px;
@@ -58,9 +64,18 @@
   -webkit-transition:fill 0.1s, stroke 0.1s, stroke-width 0.1s, opacity 0.3s;
 }
 
+.graph .edge.visible.preview {
+  stroke-width: 4px;
+    stroke: #CA78D2;
+}
+
 .graph .edge.visible.selected {
   stroke-width: 6px;
   stroke: #386AFF;
+}
+
+.graph .edge.visible.preview {
+    stroke: #CA78D2;
 }
 
 .graph .edge.visible {

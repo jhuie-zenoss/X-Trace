@@ -50,6 +50,12 @@
       menuItem.appendTo(menu).bind('click', function(e) {
         itemOptions.click(activeElement);
         e.preventDefault();
+      }).bind('mouseover', function(e) {
+        itemOptions.mouseover(activeElement);
+        e.preventDefault();
+      }).bind('mouseout', function(e) {
+        itemOptions.mouseout(activeElement);
+        e.preventDefault();
       });
     });
 

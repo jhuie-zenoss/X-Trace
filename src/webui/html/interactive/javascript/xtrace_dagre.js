@@ -46,7 +46,7 @@ function drawXTraceGraph(attachPoint, reports) {
     // Attaches a context menu to any selected graph nodess
     function attachContextMenus() {
         DAGContextMenu.call(graphSVG.node(), graphSVG.selectAll(".node.selected"));
-        DAGContextMenu.on("hide", function(nodes, selectionname) {
+        DAGContextMenu.on("hidenodes", function(nodes, selectionname) {
             var item = history.addSelection(nodes, selectionname);
             graphSVG.classed("hovering", false);
             listSVG.datum(history).call(DAGHistory);
@@ -59,6 +59,15 @@ function drawXTraceGraph(attachPoint, reports) {
             });
             
             draw();
+        }).on("hovernodes", function(nodes) {
+            graphSVG.selectAll(".node").classed("preview", function(d) {
+                return nodes.indexOf(d)!=-1;
+            })
+            var previewed = {};
+            graphSVG.selectAll(".node.preview").data().forEach(function(d) { previewed[d.id]=true; });
+            graphSVG.selectAll(".edge").classed("preview", function(d) {
+                return previewed[d.source.id] && previewed[d.target.id]; 
+            });
         });
     }
     
@@ -74,19 +83,15 @@ function drawXTraceGraph(attachPoint, reports) {
         var items = listSVG.selectAll(".item");
     
         // Set up node selection events
-        function refreshEdges() {
-            var selected = graphSVG.selectAll(".node.selected");
-            var selectionIDs = {};
-            selected.each(function(d) { selectionIDs[d.id] = true; });
-            edges.classed("selected", function(d) {
-                return selectionIDs[d.source.id]==true && selectionIDs[d.target.id]==true; 
-            });
-        }
         var select = Selectable().getrange(function(a, b) {
             var path = getNodesBetween(a, b).concat(getNodesBetween(b, a));
             return nodes.data(path, DAG.nodeid());
         }).on("select", function() {
-            refreshEdges();
+            var selected = {};
+            graphSVG.selectAll(".node.selected").data().forEach(function(d) { selected[d.id]=true; });
+            edges.classed("selected", function(d) {
+                return selected[d.source.id] && selected[d.target.id]; 
+            });
             attachContextMenus();
             DAGTooltip.hide();
         });

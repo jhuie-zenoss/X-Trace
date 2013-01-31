@@ -17,11 +17,30 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
             name = fieldname+": "+value;
         }
         if (items.length!=0) {
-            onhide.call(this, items, name);
+            handlers.hidenodes.call(this, items, name);
         }
     }
     
-    var ctxmenu = ContextMenu().on("click", onMenuClick);
+    var onOptionMouseOver = function(d) {
+        var items = [];
+        if (d.operation=="hidefield") {
+            var fieldname = d.fieldname;
+            var value = d.value;
+            items = graph.getNodes().filter(function(node) {
+                return !node.never_visible && node.report && 
+                node.report[fieldname] && node.report[fieldname][0]==value;
+            });            
+        }
+        handlers.hovernodes.call(this, items);
+    }
+    
+    var onOptionMouseOut = function(d) {
+        handlers.hovernodes.call(this, []);
+    }
+    
+    var ctxmenu = ContextMenu().on("click", onMenuClick)
+                               .on("mouseover", onOptionMouseOver)
+                               .on("mouseout", onOptionMouseOut);
     
     var menu = function(selection) {
         menu.hide();
@@ -63,10 +82,15 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
     }
     var onhide = function(nodes, selectionname) {}
     
+    var handlers = {
+        "hidenodes": function() {},
+        "hovernodes": function() {}
+    }
+    
     menu.on = function(event, _) {
-        if (event!="hide") return menu;
-        if (event=="hide" && arguments.length==1) return onhide;
-        onhide = _;
+        if (!handlers[event]) return menu;
+        if (arguments.length==1) return handlers[event];
+        handlers[event] = _;
         return menu;
     }
     
@@ -86,44 +110,60 @@ var ContextMenu = function() {
             var item = ds[i];
             var itemname = name.call(this, item);
             menu[itemname] = { 
-                "click": menuCallback(attach, item, i)
+                "click": menuClick(attach, item, i),
+                "mouseover": menuMouseOver(attach, item, i),
+                "mouseout": menuMouseOut(attach, item, i)
             };
         }
-        console.log(menu);
         
         // Set the options
         var options = {
             "disable_native_context_menu": true,
-            "showMenu": function() { onopen.call(attach, ds); },
-            "hideMenu": function() { onclose.call(attach, ds); }
+            "showMenu": function() { handlers.open.call(attach, ds); },
+            "hideMenu": function() { handlers.close.call(attach, ds); }
         }
         
         // Attach the context menu to this element
-        console.log("attaching context menu", menu, options);
         $(attach).contextMenu('context-menu'+(idseed++), menu, options);
     }
     
     // Stupid javascript
-    var menuCallback = function(attach,d, i) {
+    var menuClick = function(attach,d, i) {
         return function() {
-            onclick.call(attach, d, i);
+            handlers.click.call(attach, d, i);
+        }
+    }
+    
+    // Stupid stupid javascript
+    var menuMouseOver = function(attach, d, i) {
+        return function() {
+            handlers.mouseover.call(attach, d, i);
+        }
+    }
+    
+    // Stupid stupid stupid javascript
+    var menuMouseOut = function(attach, d, i) {
+        return function() {
+            handlers.mouseout.call(attach, d, i);
         }
     }
     
     var name = function(d) { return d.name; }
-    var onclick = function(d, i) {}
-    var onopen = function(ds) {}
-    var onclose = function(ds) {}
+    
+    var handlers = {
+        "click": function() {},
+        "open": function() {},
+        "close": function() {},
+        "mouseover": function() {},
+        "mouseout": function() {},
+    }
+    
     
     menu.name = function(_) { if (arguments.length==0) return name; name = _; return menu; }
     menu.on = function(event, _) {
-        if (event!="click" && event!="open" && event!="close") return menu;
-        if (event=="click" && arguments.length==1) return onclick;
-        if (event=="open" && arguments.length==1) return onopen;
-        if (event=="close" && arguments.length==1) return onclose;
-        if (event=="click") onclick = _;
-        if (event=="open") onopen = _;
-        if (event=="close") onclose = _;
+        if (!handlers[event]) return menu;
+        if (arguments.length==1) return handlers[event];
+        handlers[event] = _;
         return menu;
     }
     
