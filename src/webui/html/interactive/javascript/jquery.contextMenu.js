@@ -20,6 +20,10 @@
         $(this).hide();
         $('body').unbind('click', hideMenu);
       });
+
+      if (options.hideMenu) {
+          options.hideMenu.call(menu, activeElement);
+      }
     },
     default_options = {
       disable_native_context_menu: false, // disables the native contextmenu everywhere you click
@@ -74,13 +78,6 @@
 
         if (options.showMenu) {
           options.showMenu.call(menu, activeElement);
-        }
-
-        // Bind to the closed event if there is a hideMenu handler specified
-        if (options.hideMenu) {
-          menu.bind("closed", function() {
-            options.hideMenu.call(menu, activeElement);
-          });
         }
 
         menu.css({
