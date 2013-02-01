@@ -48,6 +48,10 @@ function drawXTraceGraph(attachPoint, reports) {
         DAGContextMenu.call(graphSVG.node(), graphSVG.selectAll(".node"));
         DAGContextMenu.on("open", function() {
             DAGTooltip.hide();
+        }).on("close", function() {
+            console.log("onclose");
+            graphSVG.selectAll(".node").classed("preview", false);
+            graphSVG.selectAll(".edge").classed("preview", false);            
         }).on("hidenodes", function(nodes, selectionname) {
             var item = history.addSelection(nodes, selectionname);
             graphSVG.classed("hovering", false);
@@ -70,6 +74,17 @@ function drawXTraceGraph(attachPoint, reports) {
             graphSVG.selectAll(".edge").classed("preview", function(d) {
                 return previewed[d.source.id] && previewed[d.target.id]; 
             });
+        }).on("selectnodes", function(nodes) {
+            var selected = {};
+            nodes.forEach(function(d) { selected[d.id]=true; });
+            graphSVG.selectAll(".node").classed("selected", function(d) {
+                return selected[d.id];
+            })
+            graphSVG.selectAll(".edge").classed("selected", function(d) {
+                return selected[d.source.id] && selected[d.target.id]; 
+            });
+            attachContextMenus();
+            DAGTooltip.hide();
         });
     }
     

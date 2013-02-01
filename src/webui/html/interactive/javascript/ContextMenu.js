@@ -4,28 +4,42 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
         handlers.open.call(this, d);
     }
     
+    var onMenuClose = function(d) {
+        handlers.close.call(this, d);
+    }
+    
     var onMenuClick = function(d) {
-        var items = [];
-        var name = "";
         if (d.operation=="hideselected") {
-            items = graphSVG.selectAll(".node.selected").data();
-            name = "User Selection";
+            var items = graphSVG.selectAll(".node.selected").data();
+            var name = "User Selection";
+            handlers.hidenodes.call(this, items, name);
         }
         if (d.operation=="hidethis") {
-            items = d3.select(this).data();
-            name = "User Selection";
+            var items = d3.select(this).data();
+            var name = "User Selection";
+            handlers.hidenodes.call(this, items, name);
         }
         if (d.operation=="hidefield") {
             var fieldname = d.fieldname;
             var value = d.value;
-            items = graph.getNodes().filter(function(node) {
+            var items = graph.getNodes().filter(function(node) {
                 return !node.never_visible && node.report && 
                 node.report[fieldname] && node.report[fieldname][0]==value;
             });
-            name = fieldname+": "+value;
-        }
-        if (items.length!=0) {
+            var name = fieldname+": "+value;
             handlers.hidenodes.call(this, items, name);
+        }
+        if (d.operation=="selectall") {
+            var items = graph.getVisibleNodes();
+            handlers.selectnodes.call(this, items);
+        }
+        if (d.operation=="selectfield") {
+            var fieldname = d.fieldname;
+            var value = d.value;
+            var items = graph.getVisibleNodes().filter(function(node) {
+                return node.report && node.report[fieldname] && node.report[fieldname][0]==value;
+            });
+            handlers.selectnodes.call(this, items);
         }
     }
     
@@ -37,13 +51,15 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
         if (d.operation=="hidethis") {
             items = d3.select(this).data();
         }
-        if (d.operation=="hidefield") {
+        if (d.operation=="hidefield" || d.operation=="selectfield") {
             var fieldname = d.fieldname;
             var value = d.value;
-            items = graph.getNodes().filter(function(node) {
-                return !node.never_visible && node.report && 
-                node.report[fieldname] && node.report[fieldname][0]==value;
+            items = graph.getVisibleNodes().filter(function(node) {
+                return node.report && node.report[fieldname] && node.report[fieldname][0]==value;
             });            
+        }
+        if (d.operation=="selectall") {
+            items = graph.getVisibleNodes();
         }
         handlers.hovernodes.call(this, items);
     }
@@ -53,6 +69,7 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
     }
     
     var ctxmenu = ContextMenu().on("open", onMenuOpen)
+                               .on("close", onMenuClose)
                                .on("click", onMenuClick)
                                .on("mouseover", onOptionMouseOver)
                                .on("mouseout", onOptionMouseOut);
@@ -66,7 +83,7 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
             items.push({
                 "operation": "hidethis",
                 "name": "Hide this node",
-            });     
+            });
             
             if (!selection.filter(".selected").empty()) {   
                 items.push({
@@ -86,9 +103,29 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
                 }
             }
             
+            var addSelectField = function(fieldname) {
+                if (d.report && d.report[fieldname] && d.report[fieldname][0]) {
+                    items.push({
+                        "operation": "selectfield",
+                        "name": "Select all <span class='highlight'>"+d.report[fieldname][0]+"</span> nodes",
+                        "fieldname": fieldname,
+                        "value": d.report[fieldname][0],
+                    });
+                }
+            }
+
             addHideField("Agent");
             addHideField("Host");
             addHideField("Class");
+            
+            items.push({
+                "operation": "selectall",
+                "name": "Select all",                
+            })
+            
+            addSelectField("Agent");
+            addSelectField("Host");
+            addSelectField("Class");
             
             ctxmenu.call(this, items);         
             
@@ -106,8 +143,10 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
     
     var handlers = {
         "hidenodes": function() {},
+        "selectnodes": function() {},
         "hovernodes": function() {},
-        "open": function() {}
+        "open": function() {},
+        "close": function() {}
     }
     
     menu.on = function(event, _) {
