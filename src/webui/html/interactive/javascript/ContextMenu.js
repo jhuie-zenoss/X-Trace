@@ -117,7 +117,6 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
             addHideField("Agent");
             addHideField("Host");
             addHideField("Class");
-            addHideField("ThreadID");
             addHideField("ProcessID");
             
             items.push({
@@ -128,7 +127,6 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
             addSelectField("Agent");
             addSelectField("Host");
             addSelectField("Class");
-            addSelectField("ThreadID");
             addSelectField("ProcessID");
             
             ctxmenu.call(this, items);         
