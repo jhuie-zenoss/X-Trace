@@ -77,10 +77,14 @@ function drawXTraceGraph(attachPoint, reports) {
             var selected = {};
             nodes.forEach(function(d) { selected[d.id]=true; });
             graphSVG.selectAll(".node").classed("selected", function(d) {
-                return selected[d.id];
+                var selectme = selected[d.id];
+                if (d3.event.ctrlKey) selectme = selectme || d3.select(this).classed("selected");
+                return selectme;
             })
             graphSVG.selectAll(".edge").classed("selected", function(d) {
-                return selected[d.source.id] && selected[d.target.id]; 
+                var selectme = selected[d.source.id] && selected[d.target.id];
+                if (d3.event.ctrlKey) selectme = selectme || d3.select(this).classed("selected");
+                return selectme;
             });
             attachContextMenus();
             DAGTooltip.hide();

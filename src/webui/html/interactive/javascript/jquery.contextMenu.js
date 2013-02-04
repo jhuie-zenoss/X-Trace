@@ -71,12 +71,15 @@
           }
 
           menuItem.appendTo(menu).bind('click', function(e) {
+            d3.event = e;
             itemOptions.click(activeElement);
             e.preventDefault();
           }).bind('mouseover', function(e) {
+            d3.event = e;
             itemOptions.mouseover(activeElement);
             e.preventDefault();
           }).bind('mouseout', function(e) {
+            d3.event = e;
             itemOptions.mouseout(activeElement);
             e.preventDefault();
           });
