@@ -116,7 +116,6 @@ Graph.prototype.getVisibleNodes = function() {
 
 Graph.prototype.getVisibleLinks = function() {
     var visible_parent_map = {};
-    var start = new Date().getTime();
     
     var explore_node = function(node) {
         if (visible_parent_map[node.id]) {
@@ -152,8 +151,6 @@ Graph.prototype.getVisibleLinks = function() {
             ret.push({source: nodes[pid], target: node});
         })
     }
-    
-    console.log("getVisibleLinks:", new Date().getTime()-start);
 
     return ret;
 }
@@ -164,7 +161,6 @@ Graph.prototype.getVisibleLinks = function() {
 
 function getNodesBetween(a, b) {
     // Returns a list containing all the nodes between a and b, including a and b
-    var start = new Date().getTime();
     var between = {};
     var nodesBetween = [a, b];
     var get = function(p) {
@@ -182,14 +178,11 @@ function getNodesBetween(a, b) {
         return between[p.id];
     }
     get(a)
-    console.log("getNodesBetween: ", (new Date().getTime()-start));
     return nodesBetween;
 }
 
 function getEntirePath(center) {
     // Returns a list containing all edges leading into or from the center node
-    var start = new Date().getTime();    
-
     var visible_parent_map = {};
     var visible_child_map = {};
     var nodes = {};
@@ -261,8 +254,6 @@ function getEntirePath(center) {
         }
     }
 
-  console.log("getEntirePath: ", (new Date().getTime()-start));
-    
     return path;
 }
 

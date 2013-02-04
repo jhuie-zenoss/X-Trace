@@ -185,12 +185,27 @@ function drawXTraceGraph(attachPoint, reports) {
     // The main draw function
     function draw() {
         DAGTooltip.hide();                  // Hide any tooltips
+        console.log("draw begin")
+        var begin = (new Date()).getTime();  
+        var start = (new Date()).getTime();        
         graphSVG.datum(graph).call(DAG);    // Draw a DAG at the graph attach
+        console.log("draw graph", new Date().getTime() - start);
+        start = (new Date()).getTime();    
         minimapSVG.datum(graphSVG.node()).call(DAGMinimap);  // Draw a Minimap at the minimap attach
+        console.log("draw minimap", new Date().getTime() - start);
+        start = (new Date()).getTime();
         graphSVG.selectAll(".node").call(DAGTooltip);        // Attach tooltips
+        console.log("draw tooltips", new Date().getTime() - start);
+        start = (new Date()).getTime();
         setupEvents();                      // Set up the node selection events
+        console.log("draw events", new Date().getTime() - start);
+        start = (new Date()).getTime();
         refreshViewport();                  // Update the viewport settings
+        console.log("draw viewport", new Date().getTime() - start);
+        start = (new Date()).getTime();
         attachContextMenus();
+        console.log("draw contextmenus", new Date().getTime() - start);
+        console.log("draw complete, total time=", new Date().getTime() - begin);
     }
     
     //Call the draw function
