@@ -49,7 +49,6 @@ function drawXTraceGraph(attachPoint, reports) {
         DAGContextMenu.on("open", function() {
             DAGTooltip.hide();
         }).on("close", function() {
-            console.log("onclose");
             graphSVG.selectAll(".node").classed("preview", false);
             graphSVG.selectAll(".edge").classed("preview", false);            
         }).on("hidenodes", function(nodes, selectionname) {

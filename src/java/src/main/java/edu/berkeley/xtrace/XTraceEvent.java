@@ -82,6 +82,8 @@ public class XTraceEvent {
 		willReport = true;
 		this.msgclass = msgclass;
 		this.put("Class", msgclass.getName());
+		this.put("ThreadID", String.valueOf(Thread.currentThread().getId()));
+		this.put("ProcessID", ManagementFactory.getRuntimeMXBean().getName());
 	}
 	/**
 	* If any edge added to this event has a higher severity than the threshold (default),
