@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 
 /**
@@ -632,6 +633,50 @@ public class XTraceContext {
 			}
 		}
 		return true;
+	}
+	
+	private static IdentityHashMap<Object, Collection<XTraceMetadata>> attachedContexts = new IdentityHashMap<Object, Collection<XTraceMetadata>>();
+	
+	/**
+	 * Some asynchronous design patterns would require refactoring in order to pass XTraceContexts along
+	 * with return values, for example, Callables and Futures.  Rather than require refactoring in these
+	 * cases, we provide the rememberObject and joinObject methods.  
+	 * rememberObject will store the current XTraceContext for the object argument provided.  A subsequent
+	 * call to joinObject will rejoin the context saved using rememberObject.
+	 * If rememberObject is called multiple times, the current XTraceContext is merged with any previously
+	 * remembered contexts
+	 * @param attachTo
+	 */
+	public static void rememberObject(Object o) {
+		Collection<XTraceMetadata> context = getThreadContext();
+		if (context==null) return;
+		synchronized(attachedContexts) {
+			Collection<XTraceMetadata> existing = attachedContexts.get(o);
+			if (existing!=null) {
+				existing.addAll(context);
+			} else {
+				attachedContexts.put(o, context);
+			}
+		}
+	}
+
+	/**
+	 * Some asynchronous design patterns would require refactoring in order to pass XTraceContexts along
+	 * with return values, for example, Callables and Futures.  Rather than require refactoring in these
+	 * cases, we provide the rememberObject and joinObject methods.  
+	 * joinObject will restore any previously remembered contexts.  It will only do so once; subsequent
+	 * calls to joinObject will not join any XTraceContexts unless there was an interleaved call to 
+	 * rememberObject.
+	 * joinObject does not clear the current thread context, instead it adds the remembered contexts to the
+	 * current context.
+	 * @param attachTo
+	 */
+	public static void joinObject(Object o) {
+		Collection<XTraceMetadata> context;
+		synchronized(attachedContexts) {
+			context = attachedContexts.remove(o);
+		}
+		XTraceContext.joinContext(context);
 	}
 	
 	/**

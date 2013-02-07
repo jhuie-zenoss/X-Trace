@@ -83,6 +83,7 @@ public class XTraceEvent {
 		this.msgclass = msgclass;
 		this.put("Class", msgclass.getName());
 		this.put("ThreadID", String.valueOf(Thread.currentThread().getId()));
+		this.put("ThreadName", String.valueOf(Thread.currentThread().getName()));
 		this.put("ProcessID", ManagementFactory.getRuntimeMXBean().getName());
 	}
 	/**
