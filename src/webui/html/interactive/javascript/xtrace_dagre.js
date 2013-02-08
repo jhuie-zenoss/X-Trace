@@ -16,7 +16,7 @@ function drawXTraceGraph(attachPoint, reports) {
     var DAG = DirectedAcyclicGraph();
     var DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("19.5%").height("19.5%").x("80%").y("80%");
     var DAGHistory = List().width("15%").height("99%").x("0.5%").y("0.5%");
-    var DAGTooltip = Tooltip().title(createTooltipHTMLFromReport);
+    var DAGTooltip = DirectedAcyclicGraphTooltip();
     var DAGContextMenu = DirectedAcyclicGraphContextMenu(graph, graphSVG);
 
     // Attach the panzoom behavior
