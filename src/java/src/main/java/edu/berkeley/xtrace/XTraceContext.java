@@ -159,6 +159,25 @@ public class XTraceContext {
 	}
 
 	/**
+	 * Adds the current thread's X-Trace context to the provided collection
+	 * If the current context is not valid, this method does nothing
+	 * For convenience, returns the provided collection
+	 * @param ctx a collection to add the current X-Trace context to.  If ctx
+	 * is null, a new collection is created
+	 * @return the provided collection if it was not null, otherwise a new collection
+	 */
+	public static Collection<XTraceMetadata> getThreadContext(Collection<XTraceMetadata> ctx) {
+		if (!XTraceContext.isValid()) {
+			return ctx;
+		}
+		if (ctx==null) {
+			ctx = new XTraceMetadataCollection();
+		}
+		ctx.addAll(contexts.get());
+		return ctx;
+	}
+
+	/**
 	 * Clear current thread's X-Trace context.
 	 */
 	public static void clearThreadContext() {
@@ -609,7 +628,7 @@ public class XTraceContext {
 	 */
 	public static boolean is(XTraceMetadata ctx) {
 		Collection<XTraceMetadata> current = contexts.get();
-		return ctx!=null && current!=null && current.size()==1 && ctx.equals(current.iterator().next());
+		return ctx!=null && current!=null && current.size()==1 && current.contains(ctx);
 	}
 	
 	/**
