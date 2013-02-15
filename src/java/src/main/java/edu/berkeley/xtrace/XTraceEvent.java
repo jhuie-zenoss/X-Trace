@@ -3,6 +3,7 @@ package edu.berkeley.xtrace;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.Random;
 
 import edu.berkeley.xtrace.reporting.Report;
@@ -111,6 +112,12 @@ public class XTraceEvent {
 		
 		report.put("X-Trace", newmd.toString(), false);
 		report.put("Edge", xtr.getOpIdString());
+	}
+	
+	public void addEdges(Collection<XTraceMetadata> xtrs) {
+		for (XTraceMetadata m : xtrs) {
+			addEdge(m);
+		}
 	}
 
 	public void put(String key, String value) {
