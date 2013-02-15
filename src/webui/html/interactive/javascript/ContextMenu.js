@@ -33,6 +33,12 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
             var items = graph.getVisibleNodes();
             handlers.selectnodes.call(this, items);
         }
+        if (d.operation=="selectneighbours") {
+            var item = d3.select(this).data()[0];
+            var items = item.getVisibleParents().concat(item.getVisibleChildren());
+            items.push(item);
+            handlers.selectnodes.call(this, items);
+        }
         if (d.operation=="selectfield") {
             var fieldname = d.fieldname;
             var value = d.value;
@@ -60,6 +66,11 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
         }
         if (d.operation=="selectall") {
             items = graph.getVisibleNodes();
+        }
+        if (d.operation=="selectneighbours") {
+            var item = d3.select(this).data()[0];
+            items = item.getVisibleParents().concat(item.getVisibleChildren());
+            items.push(item);
         }
         handlers.hovernodes.call(this, items);
     }
@@ -121,8 +132,13 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
             
             items.push({
                 "operation": "selectall",
-                "name": "Select all",                
-            })
+                "name": "Select all"                
+            });
+            
+            items.push({
+               "operation": "selectneighbours",
+               "name": "Select neighbours"
+            });
             
             addSelectField("Agent");
             addSelectField("Host");
