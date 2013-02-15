@@ -41,7 +41,11 @@ function DirectedAcyclicGraph() {
             existing_nodes.classed("pre-existing", false);
             
             // Animate into new positions
-            svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attrTween("d", graph.edgeTween);
+            if (svg.select(".graph").selectAll(".edge.visible").length > 500) {
+                svg.select(".graph").selectAll(".edge.visible").attr("d", graph.edgeTween);//attr("d", graph.splineGenerator);                
+            } else {
+                svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attrTween("d", graph.edgeTween);//attr("d", graph.splineGenerator);
+            }
             existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
             new_nodes.each(newnodetransition);
             new_edges.attr("d", graph.splineGenerator).classed("visible", true);
@@ -167,7 +171,7 @@ function DirectedAcyclicGraph() {
         var n0 = path0.getTotalLength(), n1 = (path1.setAttribute("d", d1), path1).getTotalLength();
 
         // Uniform sampling of distance based on specified precision.
-        var distances = [0], i = 0, dt = Math.max(1/16, 4 / Math.max(n0, n1));
+        var distances = [0], i = 0, dt = Math.max(1/8, 4 / Math.max(n0, n1));
         while ((i += dt) < 1) distances.push(i);
         distances.push(1);
 
