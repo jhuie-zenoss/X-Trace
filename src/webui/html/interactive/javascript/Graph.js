@@ -181,7 +181,63 @@ function getNodesBetween(a, b) {
     return nodesBetween;
 }
 
-function getEntirePath(center) {
+function getEntirePathNodes(center) {
+    // Returns a list containing all edges leading into or from the center node
+    var visible_parent_map = {};
+    var visible_child_map = {};
+    var nodes = {};
+    
+    var explore_parents = function(node) {
+        if (visible_parent_map[node.id]) {
+            return;
+        }
+        visible_parent_map[node.id] = {};
+        nodes[node.id] = node;
+        var parents = node.parent_nodes;
+        for (var pid in parents) {
+            var parent = parents[pid];
+            if (parent.visible()) {
+                visible_parent_map[node.id][pid] = true;
+                explore_parents(parent);
+            } else {
+                explore_parents(parent);
+                var grandparents = visible_parent_map[pid];
+                for (var gpid in grandparents) {
+                    visible_parent_map[node.id][gpid] = true;
+                }
+            }
+        }
+    }
+    
+    var explore_children = function(node) {
+        if (visible_child_map[node.id]) {
+            return;
+        }
+        visible_child_map[node.id] = {};
+        nodes[node.id] = node;
+        var children = node.child_nodes;
+        for (var cid in children) {
+            var child = children[cid];
+            if (child.visible()) {
+                visible_child_map[node.id][cid] = true;
+                explore_children(child);
+            } else {
+                explore_children(child);
+                var grandchildren = visible_child_map[cid];
+                for (var gcid in grandchildren) {
+                    visible_child_map[node.id][gcid] = true;
+                }
+            }
+        }
+    }
+    
+    explore_parents(center);
+    explore_children(center);
+    
+    return values(nodes);
+}
+
+function getEntirePathLinks(center) {
     // Returns a list containing all edges leading into or from the center node
     var visible_parent_map = {};
     var visible_child_map = {};

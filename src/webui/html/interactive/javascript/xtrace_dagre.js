@@ -64,6 +64,13 @@ function drawXTraceGraph(attachPoint, reports) {
             });
             
             draw();
+
+            // Refresh selected edges
+            var selected = {};
+            graphSVG.selectAll(".node.selected").data().forEach(function(d) { selected[d.id]=true; });
+            graphSVG.selectAll(".edge").classed("selected", function(d) {
+                return selected[d.source.id] && selected[d.target.id]; 
+            });
         }).on("hovernodes", function(nodes) {
             graphSVG.selectAll(".node").classed("preview", function(d) {
                 return nodes.indexOf(d)!=-1;
@@ -85,7 +92,7 @@ function drawXTraceGraph(attachPoint, reports) {
                 var selectme = selected[d.source.id] && selected[d.target.id];
                 if (d3.event.ctrlKey) selectme = selectme || d3.select(this).classed("selected");
                 return selectme;
-            });
+            });           
             attachContextMenus();
             DAGTooltip.hide();
         });
@@ -146,7 +153,7 @@ function drawXTraceGraph(attachPoint, reports) {
         })
         
         function highlightPath(center) {        
-            var path = getEntirePath(center);
+            var path = getEntirePathLinks(center);
             
             var pathnodes = {};
             var pathlinks = {};
