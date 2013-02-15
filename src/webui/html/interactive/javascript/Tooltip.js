@@ -49,7 +49,8 @@ var Tooltip = function() {
             $(this).tipsy({
                 gravity: $.fn.tipsy.autoWE,
                 html: true,
-                title: function() { return title(d); }
+                title: function() { return title(d); },
+                opacity: 1
             });
         });
     }
