@@ -150,7 +150,7 @@ public class XTraceEvent {
 	private void setTimestamp() {
 		long time = System.currentTimeMillis();
 		String value = String.format("%d.%03d", time/1000, time%1000);
-		report.put("Timestamp", value, false);
+		report.put("Timestamp", value);
 	}
 	
 	/**
