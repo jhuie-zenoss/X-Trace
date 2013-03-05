@@ -59,7 +59,7 @@ public abstract class Reporter
 			String systemprop = System.getProperty("xtrace.reporter");
 
 			if (systemprop == null) {
-				systemprop = "edu.berkeley.xtrace.reporting.UdpReporter";
+				systemprop = "edu.berkeley.xtrace.reporting.TcpReporter";
 			}
 
 			try {

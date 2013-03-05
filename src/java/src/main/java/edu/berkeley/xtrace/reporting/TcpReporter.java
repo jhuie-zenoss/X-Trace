@@ -59,15 +59,7 @@ public final class TcpReporter extends Reporter
 		InetAddress host = null;
 		int port = 0;
 		
-		String tcpDest = System.getProperty("xtrace.tcpdest");
-		if (tcpDest == null) {
-			LOG.warn("TcpReportingContext was used, but no xtrace.tcpdest "
-					+ " system property has been set. X-Trace reports "
-					+ " will be ignored. Please specify the command line"
-					+ " option -Dxtrace.tcpdest=host:port to provide a"
-					+ " destination for X-Trace reports.");
-			return;
-		}
+		String tcpDest = System.getProperty("xtrace.tcpdest", "127.0.0.1:7831");
 		
 		try {
 			String[] split = tcpDest.split(":");
