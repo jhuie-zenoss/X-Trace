@@ -745,7 +745,6 @@ public class XTraceContext {
 		XTraceMetadata newcontext = event.getNewMetadata();
 		setThreadContext(newcontext);
 		event.sendReport();
-		return newcontext;
 	}
 	
 	public static void joinChildProcess(XTraceMetadata m) {
