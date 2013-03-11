@@ -79,14 +79,26 @@ public class XTraceEvent {
 	public XTraceEvent(Class<?> msgclass, int opIdLength) {
 		report = new Report();
 		myOpId = new byte[opIdLength];
-		random.get().nextBytes(myOpId);
+		XTraceEvent.random(myOpId);
 		willReport = true;
 		this.msgclass = msgclass;
 		this.put("Class", msgclass.getName());
 		this.put("ThreadID", String.valueOf(Thread.currentThread().getId()));
 		this.put("ThreadName", String.valueOf(Thread.currentThread().getName()));
-		this.put("ProcessID", ManagementFactory.getRuntimeMXBean().getName());
+		this.put("ProcessID", ManagementFactory.getRuntimeMXBean().getName());	
 	}
+	
+	XTraceEvent(XTraceMetadata m) {
+		report = new Report();
+		myOpId = m.getOpId();
+		willReport = true;
+		this.msgclass = XTraceLogLevel.DEFAULT;
+		this.put("Class", msgclass.getName());
+		this.put("ThreadID", String.valueOf(Thread.currentThread().getId()));
+		this.put("ThreadName", String.valueOf(Thread.currentThread().getName()));
+		this.put("ProcessID", ManagementFactory.getRuntimeMXBean().getName());	
+	}
+	
 	/**
 	* If any edge added to this event has a higher severity than the threshold (default),
 	* this event will not be reported.
@@ -175,5 +187,9 @@ public class XTraceEvent {
 		if (XTraceLogLevel.isOn(msgclass)) {
 			Reporter.getReporter().sendReport(report);
 		}
+	}
+	
+	public static void random(byte[] b) {
+		random.get().nextBytes(b);
 	}
 }

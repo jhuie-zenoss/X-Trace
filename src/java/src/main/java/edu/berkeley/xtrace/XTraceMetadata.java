@@ -33,6 +33,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
@@ -652,5 +653,27 @@ public final class XTraceMetadata {
 			// write an invalid XTraceMetadata to represent no context
 			new XTraceMetadata().write(out);
 		}
+	}
+	
+	/**
+	 * Creates a new random metadata with opIdLength the same as the one currently being
+	 * passed around.
+	 * Does not progress the current metadata. Just generates a random metadata.
+	 * @return a random XTraceMetadata
+	 */
+	public static XTraceMetadata random() {
+		Collection<XTraceMetadata> oldContext = XTraceContext.getThreadContext();
+		int opIdLength = XTraceContext.defaultOpIdLength;
+		TaskID taskId = null;
+		if (oldContext.size()!=0) {
+			XTraceMetadata m = oldContext.iterator().next();
+			opIdLength = m.getOpIdLength();
+			taskId = m.getTaskId();
+		}
+		
+		byte[] opId = new byte[opIdLength];
+		XTraceEvent.random(opId);
+		
+		return new XTraceMetadata(taskId, opId);
 	}
 }
