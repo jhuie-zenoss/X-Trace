@@ -75,6 +75,8 @@ public class XTraceContext {
 	 * an environment variable set.  If there is, it assumes that this process is the
 	 * continuation of some previous trace, and sets the thread context accordingly. **/
 	public static final String XTRACE_CONTEXT_ENV_VARIABLE = "XTRACE_STARTING_CONTEXT";
+	public static final String XTRACE_SUBPROCESS_ENV_VARIABLE = "XTRACE_SUBPROCESS_CONTEXT";
+	
 	
 	
 	/** Thread-local current operation context(s), used in logEvent. **/
@@ -696,6 +698,56 @@ public class XTraceContext {
 			context = attachedContexts.remove(o);
 		}
 		XTraceContext.joinContext(context);
+	}
+	
+	/**
+	 * Used to help correctly stitch together Java subprocesses that may be kicked off by some parent Java
+	 * process.
+	 * Correct usage as follows:
+	 *  - In the parent java process, call startChildProcess() and save the resulting XTraceMetadata
+	 *  - In the child java process environment prior to launching the process, 
+	 *    set the XTRACE_SUBPROCESS_ENV_VARIABLE environment to be the metadata created by startChildProcess
+	 *  - In the child java process, at the point where it should rejoin the parent, call XTraceContext.joinParentProcess
+	 *  - In the parent java process, at the point where the child process should logically rejoin the parent,
+	 *    call XTraceContext.joinChildProcess, passing it the metadata created by startChildProcess
+	 * @return
+	 */
+	public static XTraceMetadata startChildProcess() {
+		XTraceContext.logMerge();
+		return XTraceMetadata.random();
+	}
+	
+	public static XTraceMetadata joinParentProcess() {
+	    String xtrace_start_context = System.getenv(XTRACE_SUBPROCESS_ENV_VARIABLE);
+	    if (xtrace_start_context==null || xtrace_start_context.equals("")) {
+	    }
+  	    XTraceMetadata m = XTraceMetadata.createFromString(xtrace_start_context);
+		
+		XTraceEvent event = new XTraceEvent(m);
+
+		for (XTraceMetadata parent : contexts.get()) {
+			event.addEdge(parent);
+		}
+
+		try {
+			if (hostname == null) {
+				hostname = InetAddress.getLocalHost().getHostName();
+			}
+		} catch (UnknownHostException e) {
+			hostname = "unknown";
+		}
+
+		event.put("Host", hostname);
+		event.put("Operation", "merge");
+
+		XTraceMetadata newcontext = event.getNewMetadata();
+		setThreadContext(newcontext);
+		event.sendReport();
+		return newcontext;
+	}
+	
+	public static void joinChildProcess(XTraceMetadata m) {
+		joinContext(m);
 	}
 	
 	/**
