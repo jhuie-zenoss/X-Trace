@@ -59,12 +59,14 @@ var createGraphFromReports = function(reports) {
     for (var i = 0; i < reports.length; i++) {
         var report = reports[i];
         var id = report["X-Trace"][0].substr(18);
-        report["Edge"].forEach(function(parentid) {
-            if (nodes[parentid] && nodes[id]) {
-                nodes[parentid].addChild(nodes[id]);
-                nodes[id].addParent(nodes[parentid]);
-            }
-        });
+        if (report["Edge"]) {
+            report["Edge"].forEach(function(parentid) {
+                if (nodes[parentid] && nodes[id]) {
+                    nodes[parentid].addChild(nodes[id]);
+                    nodes[id].addParent(nodes[parentid]);
+                }
+            });
+        }
     }
     
     // Create the graph and add the nodes
