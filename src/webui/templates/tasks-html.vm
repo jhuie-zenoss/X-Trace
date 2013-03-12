@@ -47,6 +47,7 @@ Search by
     </td>
     <td>
       <a href="/interactive/graph.html?id=$task.taskId">Interactive</a>,
+      <a href="/interactive/graph.html?id=$task.taskId&lightweight=true">Lite</a>,
       <a href="/graph_report.pl?id=$task.taskId">Applet</a>,
       <a href="/graph_report.pl?id=$task.taskId&m=i">SVG</a>,
       <a href="/graph.rb?taskid=$task.taskId&format=pdf">PDF</a>#if($task.tags.contains("hadoop")),
