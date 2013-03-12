@@ -52,7 +52,7 @@ window.onload = function() {
 	var callback = function(reports) {
 		console.log("Reports received!", reports);
 		window.reports = reports;
-		drawXTraceGraph(document.body, reports.reports);
+		drawXTraceGraph(document.body, reports.reports, false);
 	};
 	var errback = function(message, error) {
 		console.log("Error retrieving reports", error);

@@ -1,6 +1,7 @@
 function DirectedAcyclicGraph() {
     
     var layout_count = 0;
+    var animate = true;
     
     /*
      * Main rendering function
@@ -9,7 +10,7 @@ function DirectedAcyclicGraph() {
         selection.each(function(data) {   
             // Select the g element that we draw to, or add it if it doesn't exist
             var svg = d3.select(this).selectAll("svg").data([data]);
-            svg.enter().append("svg").append("g").attr("class", "graph");
+            svg.enter().append("svg").append("g").attr("class", "graph").classed("animate", animate);
             
             // Size the chart
             svg.attr("width", width.call(this, data));
@@ -33,7 +34,11 @@ function DirectedAcyclicGraph() {
             new_nodes.each(drawnode);
             existing_nodes.each(sizenode);
             removed_nodes.each(removenode);
-            removed_edges.classed("visible", false).transition().duration(500).remove();
+            if (animate) {
+                removed_edges.classed("visible", false).transition().duration(500).remove();
+            } else {
+                removed_edges.classed("visible", false).remove();                
+            }
             
             // Do the layout
             existing_nodes.classed("pre-existing", true);
@@ -41,12 +46,14 @@ function DirectedAcyclicGraph() {
             existing_nodes.classed("pre-existing", false);
             
             // Animate into new positions
-            if (svg.select(".graph").selectAll(".edge.visible").length > 500) {
-                svg.select(".graph").selectAll(".edge.visible").attr("d", graph.edgeTween);//attr("d", graph.splineGenerator);                
-            } else {
+            if (animate) {
                 svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attrTween("d", graph.edgeTween);//attr("d", graph.splineGenerator);
+                existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
+            } else {
+                svg.select(".graph").selectAll(".edge.visible").attr("d", graph.splineGenerator);      
+                existing_nodes.attr("transform", graph.nodeTranslate);         
             }
-            existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
+            
             new_nodes.each(newnodetransition);
             new_edges.attr("d", graph.splineGenerator).classed("visible", true);
             existing_nodes.classed("visible", true);
@@ -93,7 +100,11 @@ function DirectedAcyclicGraph() {
         text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
     }
     var removenode = function(d) {
-        d3.select(this).classed("visible", false).transition().duration(200).remove();
+        if (animate) {
+            d3.select(this).classed("visible", false).transition().duration(200).remove();
+        } else {
+            d3.select(this).classed("visible", false).remove();            
+        }
     }
     var newnodetransition = function(d) {
         d3.select(this).classed("visible", true).attr("transform", graph.nodeTranslate);
@@ -216,6 +227,7 @@ function DirectedAcyclicGraph() {
     graph.layout = function(_) { if (!arguments.length) return layout; layout = _; return graph; }
     graph.nodepos = function(_) { if (!arguments.length) return nodepos; nodepos = _; return graph; }
     graph.edgepos = function(_) { if (!arguments.length) return edgepos; edgepos = _; return graph; }
+    graph.animate = function(_) { if (!arguments.length) return animate; animate = _; return graph; }
     
     return graph;
 }

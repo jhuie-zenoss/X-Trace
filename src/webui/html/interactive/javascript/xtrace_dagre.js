@@ -1,5 +1,5 @@
-
-function drawXTraceGraph(attachPoint, reports) {
+// lightweight is an optional argument that will try to draw the graph as fast as possible
+function drawXTraceGraph(attachPoint, reports, /*optional*/ lightweight) {
     
     // Twiddle the attach point a little bit
     var rootSVG = d3.select(attachPoint).append("svg");
@@ -13,7 +13,7 @@ function drawXTraceGraph(attachPoint, reports) {
     var history = DirectedAcyclicGraphHistory();
     
     // Create the chart instances
-    var DAG = DirectedAcyclicGraph();
+    var DAG = DirectedAcyclicGraph().animate(!lightweight);
     var DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("19.5%").height("19.5%").x("80%").y("80%");
     var DAGHistory = List().width("15%").height("99%").x("0.5%").y("0.5%");
     var DAGTooltip = DirectedAcyclicGraphTooltip();
@@ -25,7 +25,7 @@ function drawXTraceGraph(attachPoint, reports) {
         var scale = zoom.scale();
         graphSVG.select(".graph").attr("transform","translate("+t[0]+","+t[1]+") scale("+scale+")");
         minimapSVG.select('.viewfinder').attr("x", -t[0]/scale).attr("y", -t[1]/scale).attr("width", attachPoint.offsetWidth/scale).attr("height", attachPoint.offsetHeight/scale);
-        graphSVG.selectAll(".node text").attr("opacity", 3*scale-0.3);    
+        if (!lightweight) graphSVG.selectAll(".node text").attr("opacity", 3*scale-0.3);
     }
     var zoom = MinimapZoom().scaleExtent([0.001, 2.0]).on("zoom", refreshViewport);
     zoom.call(this, rootSVG, minimapSVG);
@@ -49,18 +49,24 @@ function drawXTraceGraph(attachPoint, reports) {
         DAGContextMenu.on("open", function() {
             DAGTooltip.hide();
         }).on("close", function() {
-            graphSVG.selectAll(".node").classed("preview", false);
-            graphSVG.selectAll(".edge").classed("preview", false);            
+            if (!lightweight) {
+                graphSVG.selectAll(".node").classed("preview", false);
+                graphSVG.selectAll(".edge").classed("preview", false);
+            }
         }).on("hidenodes", function(nodes, selectionname) {
             var item = history.addSelection(nodes, selectionname);
-            graphSVG.classed("hovering", false);
+            if (!lightweight) graphSVG.classed("hovering", false);
             listSVG.datum(history).call(DAGHistory);
             
             // Find the point to animate the hidden nodes to
             var bbox = DAGHistory.bbox().call(DAGHistory.select.call(listSVG.node(), item), item);
             var transform = zoom.getTransform(bbox);
             DAG.removenode(function(d) {
-                d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
+                if (lightweight) {
+                    d3.select(this).remove();
+                } else {
+                    d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
+                }
             });
             
             draw();
@@ -72,14 +78,16 @@ function drawXTraceGraph(attachPoint, reports) {
                 return selected[d.source.id] && selected[d.target.id]; 
             });
         }).on("hovernodes", function(nodes) {
-            graphSVG.selectAll(".node").classed("preview", function(d) {
-                return nodes.indexOf(d)!=-1;
-            })
-            var previewed = {};
-            graphSVG.selectAll(".node.preview").data().forEach(function(d) { previewed[d.id]=true; });
-            graphSVG.selectAll(".edge").classed("preview", function(d) {
-                return previewed[d.source.id] && previewed[d.target.id]; 
-            });
+            if (!lightweight) {
+                graphSVG.selectAll(".node").classed("preview", function(d) {
+                    return nodes.indexOf(d)!=-1;
+                })
+                var previewed = {};
+                graphSVG.selectAll(".node.preview").data().forEach(function(d) { previewed[d.id]=true; });
+                graphSVG.selectAll(".edge").classed("preview", function(d) {
+                    return previewed[d.source.id] && previewed[d.target.id]; 
+                });
+            }
         }).on("selectnodes", function(nodes) {
             var selected = {};
             nodes.forEach(function(d) { selected[d.id]=true; });
@@ -125,15 +133,16 @@ function drawXTraceGraph(attachPoint, reports) {
         select(nodes);
     
         
-        
-        nodes.on("mouseover", function(d) {
-            graphSVG.classed("hovering", true);
-            highlightPath(d);
-        }).on("mouseout", function(d){
-            graphSVG.classed("hovering", false);
-            edges.classed("hovered", false).classed("immediate", false);
-            nodes.classed("hovered", false).classed("immediate", false);
-        });
+        if (!lightweight) {
+            nodes.on("mouseover", function(d) {
+                graphSVG.classed("hovering", true);
+                highlightPath(d);
+            }).on("mouseout", function(d){
+                graphSVG.classed("hovering", false);
+                edges.classed("hovered", false).classed("immediate", false);
+                nodes.classed("hovered", false).classed("immediate", false);
+            });
+        }
         
         // When a list item is clicked, it will be removed from the history and added to the graph
         // So we override the DAG node transition behaviour so that the new nodes animate from the click position
@@ -145,7 +154,11 @@ function drawXTraceGraph(attachPoint, reports) {
             // Now update the location that the new elements of the graph will enter from
             var transform = zoom.getTransform(DAGHistory.bbox().call(this, d));
             DAG.newnodetransition(function(d) {
-                d3.select(this).attr("transform", transform).transition().duration(800).attr("transform", DAG.nodeTranslate);
+                if (DAG.animate()) {
+                    d3.select(this).attr("transform", transform).transition().duration(800).attr("transform", DAG.nodeTranslate);
+                } else {
+                    d3.select(this).attr("transform", transform).attr("transform", DAG.nodeTranslate);                    
+                }
             })
             
             // Redraw the graph and such
