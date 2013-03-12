@@ -24,7 +24,8 @@ Search by
 <table border=1 cellspacing=0 cellpadding=3>
 <tr>
   <th>Trace Title</th>
-  <th>Reports</th>
+  <th>Plain</th>
+  <th>JSON</th>
   <th>Created</th>
   <th>Last Report</th>
   <th>TaskID</th>
@@ -35,6 +36,7 @@ Search by
   <tr>
     <td><a href="/title/$task.title">$task.title</a></td>
     <td><a href="/reports/${task.taskId}">$task.numReports</a></td>
+    <td><a href="/interactive/reports/$task.taskId">$task.numReports</a></td>
     <td>$HTML_DATE_FORMAT.format($task.firstSeen)</td>
     <td>$HTML_DATE_FORMAT.format($task.lastUpdated)</td>
     <td><tt>$task.taskId</tt></td>
