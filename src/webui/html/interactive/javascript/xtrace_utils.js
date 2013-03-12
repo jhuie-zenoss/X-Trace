@@ -1,9 +1,4 @@
-var getReports = function(callback, errback) {
-	try {
-		var current_id = extractTraceID();
-	} catch(e) {
-		errback("Unable to extrace a traceID from URL", e);
-	}
+var getReports = function(current_id, callback, errback) {
 	var len = current_id.length;
 	if (len > 5 && current_id.substring(len-5, len)==".json") {
 	    console.log("Loading JSON", current_id)
@@ -14,10 +9,16 @@ var getReports = function(callback, errback) {
 	}
 };
 
-var extractTraceID = function() {
-	var searchstring = window.location.search;
-	var id = searchstring.substr(searchstring.indexOf("id=")+3);
-	return id;
+// http://stackoverflow.com/questions/523266/how-can-i-get-a-specific-parameter-from-location-search
+var getParameter = function(name) {
+    name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+    var regexS = "[\\?&]"+name+"=([^&#]*)";
+    var regex = new RegExp( regexS );
+    var results = regex.exec( window.location.href );
+    if( results == null )
+        return "";
+    else
+        return results[1];
 };
 
 var getReportsForTrace = function(traceID, callback, errback) {
