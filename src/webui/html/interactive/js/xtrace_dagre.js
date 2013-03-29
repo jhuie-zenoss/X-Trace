@@ -12,6 +12,7 @@ function drawXTraceGraph(attachPoint, reports, /*optional*/ lightweight) {
     var graph = createGraphFromReports(reports);
     var history = DirectedAcyclicGraphHistory();
     
+    
     // Create the chart instances
     var DAG = DirectedAcyclicGraph().animate(!lightweight);
     var DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("19.5%").height("19.5%").x("80%").y("80%");
@@ -236,4 +237,19 @@ function drawXTraceGraph(attachPoint, reports, /*optional*/ lightweight) {
     
     // Start with the graph all the way zoomed out
     resetViewport();
+
+    // Save important variables
+    this.attachPoint = attachPoint;
+    this.reports = reports;
+    this.DAG = DAG
+    this.DAGMinimap = DAGMinimap;
+    this.DAGHistory = DAGHistory;
+    this.DAGTooltip = DAGTooltip;
+    this.DAGContextMenu = DAGContextMenu;
+    this.graph = graph;
+    this.resetViewport = resetViewport;
+    this.history = history;
+    this.draw = draw;
+    
+    return this;
 }

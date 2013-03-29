@@ -78,3 +78,21 @@ var createGraphFromReports = function(reports) {
     
     return graph;
 }
+
+var createJSONFromVisibleGraph = function(graph) {
+    var nodes = graph.getVisibleNodes();
+    var reports = [];
+    
+    for (var i = 0; i < nodes.length; i++) {
+        var node = nodes[i];
+        var parents = node.getVisibleParents();
+        var report = $.extend({}, node.report);
+        report["Edge"] = [];
+        for (var j = 0; j < parents.length; j++) {
+            report["Edge"].push(parents[j].id);
+        }
+        reports.push(report);
+    }
+    
+    return {"reports": reports};
+}

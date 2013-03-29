@@ -54,7 +54,7 @@ window.onload = function() {
 	var callback = function(data) {
 		console.log("Reports received!", data);
 		window.data = data;
-		drawXTraceGraph(document.body, data.reports, lightweight=="true");
+		window.xtrace = drawXTraceGraph(document.body, data.reports, lightweight=="true");
 	};
 	var errback = function(message, error) {
 		console.log("Error retrieving reports", error);
