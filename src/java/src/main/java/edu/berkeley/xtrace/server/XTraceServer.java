@@ -59,6 +59,7 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.DefaultServlet;
 import org.mortbay.jetty.servlet.ServletHolder;
+import org.mortbay.log.Log;
 import org.mortbay.servlet.CGI;
 
 import edu.berkeley.xtrace.TaskID;
@@ -276,6 +277,8 @@ public final class XTraceServer {
 				"/reports/*");
 		context.addServlet(new ServletHolder(new GetJSONReportsServlet()),
 				"/interactive/reports/*");
+		context.addServlet(new ServletHolder(new GetLatestJSONReportsServlet()),
+				"/interactive/latestreports/*");
 		context.addServlet(new ServletHolder(new GetLatestTaskServlet()),
 				"/latestTask");
 		context.addServlet(new ServletHolder(new TagServlet()), "/tag/*");
@@ -356,6 +359,51 @@ public final class XTraceServer {
 				}
 				out.write(jsonObj.toString());
 			}
+		}
+	}
+
+	private static class GetLatestJSONReportsServlet extends HttpServlet {
+		protected void doGet(HttpServletRequest request,
+				HttpServletResponse response) throws ServletException,
+				IOException {
+			response.setContentType("text/json");
+			response.setStatus(HttpServletResponse.SC_OK);
+			String uri = request.getRequestURI();
+			int pathLen = request.getServletPath().length() + 1;
+			int numToGet = uri.length() > pathLen ? Integer.valueOf(uri.substring(pathLen))
+					: 1;
+			Writer out = response.getWriter();
+			List<TaskRecord> tasks = reportstore.getLatestTasks(0, numToGet);
+			out.write("{");
+			boolean first = true;
+			int count = 0;
+			for (TaskRecord r : tasks) {
+				Log.info("Writing task "+count);
+				count++;
+				Iterator<Report> iter;
+				try {
+					iter = reportstore.getReportsByTask(r.getTaskId());
+				} catch (XTraceException e) {
+					throw new ServletException(e);					
+				}
+				JSONObject task = new JSONObject();
+				try {
+					JSONArray reports = new JSONArray();
+					while (iter.hasNext()) {
+						reports.put(iter.next().toJSON());
+					}
+					task.put("reports", reports);
+					if (!first) {
+						out.write(",");
+					}
+					first = false;
+					out.write("\""+r.getTaskId().toString()+"\": ");
+					out.write(task.toString());
+				} catch (JSONException e) {
+					throw new ServletException(e);
+				}
+			}
+			out.write("}");
 		}
 	}
 
