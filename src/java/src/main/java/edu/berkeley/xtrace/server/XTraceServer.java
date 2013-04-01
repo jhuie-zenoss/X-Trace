@@ -354,6 +354,7 @@ public final class XTraceServer {
 						reports.put(iter.next().toJSON());
 					}
 					jsonObj.put("reports", reports);
+					jsonObj.put("id", taskId);
 				} catch (JSONException e) {
 					throw new ServletException(e);
 				}
