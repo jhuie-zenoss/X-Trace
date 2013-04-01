@@ -1,8 +1,8 @@
 <html>
 <head><title>X-Trace Viewer - $title</title></head>
 <body>
-<form action="#" method="get" name="searchForm" onSubmit="doSearch(); return false;">
 <p>
+<form action="#" method="get" name="searchForm" onSubmit="doSearch(); return false;" style="display: inline">
 <script language="javascript"><!--
 function doSearch() {
   document.location.href =
@@ -17,8 +17,17 @@ Search by
 </select>
 <input name="query" value="" />
 <input type="submit" value="Go" />
-</p>
 </form>
+<form action="#" method="get" name="getLatestForm" onSubmit="doGetLatest(); return false;"  style="display: inline">
+<script language="javascript"><!--
+function doGetLatest() {
+  document.location.href =
+    "/interactive/latestreports/" + document.getLatestForm.numrecent.value;
+}
+//--></script>
+| <span>Get latest <input name="numrecent" value="50" style="width: 25px; text-align: center"/> reports <input type="submit" value="Go"</span>
+</form>
+</p>
 <h1>$title</h1>
 #parse("navbar.vm")
 <table border=1 cellspacing=0 cellpadding=3>

@@ -358,7 +358,11 @@ public final class XTraceServer {
 				} catch (JSONException e) {
 					throw new ServletException(e);
 				}
-				out.write(jsonObj.toString());
+				try {
+					out.write(jsonObj.toString(2));
+				} catch (JSONException e) {
+					throw new ServletException(e);
+				}
 			}
 		}
 	}
@@ -375,7 +379,7 @@ public final class XTraceServer {
 					: 1;
 			Writer out = response.getWriter();
 			List<TaskRecord> tasks = reportstore.getLatestTasks(0, numToGet);
-			out.write("{");
+			out.write("[");
 			boolean first = true;
 			int count = 0;
 			for (TaskRecord r : tasks) {
@@ -393,18 +397,18 @@ public final class XTraceServer {
 					while (iter.hasNext()) {
 						reports.put(iter.next().toJSON());
 					}
+					task.put("id", r.getTaskId().toString());
 					task.put("reports", reports);
 					if (!first) {
 						out.write(",");
 					}
 					first = false;
-					out.write("\""+r.getTaskId().toString()+"\": ");
-					out.write(task.toString());
+					out.write(task.toString(2));
 				} catch (JSONException e) {
 					throw new ServletException(e);
 				}
 			}
-			out.write("}");
+			out.write("]");
 		}
 	}
 
