@@ -1,17 +1,10 @@
 <html>
 <head><title>X-Trace Viewer - $title</title>
 <script language="javascript">
-function onSelectAllCheckboxChecked(checkbox) {
-  checkboxes = document.getElementsByClassName("select-trace");
-  for (var i = 0; i < checkboxes.length; i++) {
-    checkboxes[i].checked = checkbox.checked;
-  }
-}
 var multiselect = {
   "previous_id": null,
 }
 function onCheckboxChecked(checkbox, event) {
-  console.log(event);
   if (event.shiftKey && checkbox.value != multiselect.previous_id) {
       setting = false;
       checkboxes = document.getElementsByClassName("select-trace");
@@ -41,37 +34,56 @@ function onCheckboxChecked(checkbox, event) {
       }
   }
   multiselect.previous_id = checkbox.value;
+  checkControlsEnabled();
+}
+function onSelectAllCheckboxChecked(checkbox) {
+  checkboxes = document.getElementsByClassName("select-trace");
+  for (var i = 0; i < checkboxes.length; i++) {
+    checkboxes[i].checked = checkbox.checked;
+  }
+  checkControlsEnabled();
+}
+function checkControlsEnabled() {
+    var numChecked = 0;
+    checkboxes = document.getElementsByClassName("select-trace");
+    for (var i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].checked) {
+        numChecked++;
+      }
+      if (numChecked>=2) {
+        break
+      }
+    }
+    var get_selected_buttons = document.getElementsByClassName("get-selected");
+    for (var i = 0; i < get_selected_buttons.length; i++) {
+      get_selected_buttons[i].disabled = numChecked>=1 ? false : true;
+    }
+    var compare_selected_buttons = document.getElementsByClassName("compare-selected");
+    for (var i = 0; i < get_selected_buttons.length; i++) {
+      compare_selected_buttons[i].disabled = numChecked>=2 ? false : true;
+    }
 }
 </script>
 </head>
 <body>
-<p>
-<form action="#" method="get" name="searchForm" onSubmit="doSearch(); return false;" style="display: inline">
-<script language="javascript"><!--
-function doSearch() {
-  document.location.href =
-    "/" + document.searchForm.searchType.value + "/" + document.searchForm.query.value;
-}
-//--></script>
-<a href="/">Return Home</a> |
-Search by
-<select name="searchType">
-<option selected value="titleLike">title</option>
-<option value="tag">tag</option>
-</select>
-<input name="query" value="" />
-<input type="submit" value="Go" />
-</form>
-<form action="#" method="get" name="getLatestForm" onSubmit="doGetLatest(); return false;"  style="display: inline">
-<script language="javascript"><!--
-function doGetLatest() {
-  document.location.href =
-    "/interactive/latestreports/" + document.getLatestForm.numrecent.value;
-}
-//--></script>
-| <span>Get latest <input name="numrecent" value="50" style="width: 25px; text-align: center"/> reports <input type="submit" value="Go"</span>
-</form>
-</p>
+<div>
+    <form action="#" method="get" name="searchForm" onSubmit="doSearch(); return false;" style="display: inline">
+    <script language="javascript"><!--
+    function doSearch() {
+      document.location.href =
+        "/" + document.searchForm.searchType.value + "/" + document.searchForm.query.value;
+    }
+    //--></script>
+    <a href="/">Return Home</a> |
+    Search by
+    <select name="searchType">
+    <option selected value="titleLike">title</option>
+    <option value="tag">tag</option>
+    </select>
+    <input name="query" value="" />
+    <input type="submit" value="Go" />
+    </form>
+</div>
 <h1>$title</h1>
 #parse("navbar.vm")
 <table border=1 cellspacing=0 cellpadding=3 style="width: 100%; text-align: left">
@@ -114,11 +126,11 @@ function doGetLatest() {
 </table>
 #parse("navbar.vm")
 <form action="$request.requestURI" method="get">
-<p>
-<input type="hidden" name="offset" value="$offset" />
-Results per page: <input type="text" name="length" value="$length" size="6" />
-<input type="submit" value="Change" />
-</p>
+<div style="text-align: right">
+    <input type="hidden" name="offset" value="$offset" />
+    Results per page: <input type="text" name="length" value="$length" size="6" />
+    <input type="submit" value="Change" />
+</div>
 </form>
 #if ($showStats)
   <hr />
