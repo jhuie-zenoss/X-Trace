@@ -1,5 +1,46 @@
 <html>
-<head><title>X-Trace Viewer - $title</title></head>
+<head><title>X-Trace Viewer - $title</title>
+<script language="javascript">
+function onSelectAllCheckboxChecked(checkbox) {
+  checkboxes = document.getElementsByClassName("select-trace");
+  for (var i = 0; i < checkboxes.length; i++) {
+    checkboxes[i].checked = checkbox.checked;
+  }
+}
+var multiselect = {
+  "previous_id": null,
+}
+function onCheckboxChecked(checkbox, event) {
+  console.log(event);
+  if (event.shiftKey && checkbox.value != multiselect.previous_id) {
+      setting = false;
+      checkboxes = document.getElementsByClassName("select-trace");
+      for (var i = 0; i < checkboxes.length; i++) {
+        var current = checkboxes[i];
+        if (setting) {
+          current.checked = checkbox.checked;
+        }
+        if (current.value==multiselect.previous_id || current==checkbox) setting = !setting;
+      }
+  } else {
+      if (!checkbox.checked) {
+        document.getElementById("select-all-checkbox").checked = false;
+      } else {
+        var all_selected = true;
+        checkboxes = document.getElementsByClassName("select-trace");
+        for (var i = 0; i < checkboxes.length; i++) {
+          if (!checkboxes[i].checked) {
+            all_selected = false;
+            break;
+          }
+        }
+        if (all_selected) document.getElementById("select-all-checkbox").checked = true;    
+      }
+  }
+  multiselect.previous_id = checkbox.value;
+}
+</script>
+</head>
 <body>
 <p>
 <form action="#" method="get" name="searchForm" onSubmit="doSearch(); return false;" style="display: inline">
@@ -32,6 +73,7 @@ function doGetLatest() {
 #parse("navbar.vm")
 <table border=1 cellspacing=0 cellpadding=3>
 <tr>
+  <th><input type="checkbox" onclick="onSelectAllCheckboxChecked(this)" id="select-all-checkbox"></th>
   <th>Trace Title</th>
   <th>Plain</th>
   <th>JSON</th>
@@ -43,6 +85,7 @@ function doGetLatest() {
 </tr>
 #foreach ($task in $tasks)
   <tr>
+    <td><input type="checkbox" class="select-trace" value="$task.taskId" onclick="onCheckboxChecked(this, event)"></td>
     <td><a href="/title/$task.title">$task.title</a></td>
     <td><a href="/reports/${task.taskId}">$task.numReports</a></td>
     <td><a href="/interactive/reports/$task.taskId">$task.numReports</a></td>
