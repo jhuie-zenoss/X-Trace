@@ -10,7 +10,33 @@ var getParameter = function(name) {
         return results[1];
 };
 
-var getReports = function(ids, callback, errback) {
+var getReports = function(ids_str, callback, errback) {
+    // Batches report requests
+    if (ids_str==null) {
+        errback("No IDs specified");
+    }
+
+    var i = 0;
+    var batch_size = 20;
+    ids = ids_str.split(",");
+    
+    var results = [];
+    var batch_callback = function(json) {
+        results = results.concat(json);
+        i++;
+        if (ids.length == 0) {
+            callback(results);
+        } else {
+            next_request_ids = ids.splice(0, batch_size);
+            console.info("Retrieving batch "+i+":", next_request_ids);
+            getAllReports(next_request_ids.join(), batch_callback, errback);
+        }
+    }
+    
+    batch_callback([]);
+}
+
+var getAllReports = function(ids, callback, errback) {
     var report_url = "reports/" + ids;
     
     var xhr = new XMLHttpRequest();
