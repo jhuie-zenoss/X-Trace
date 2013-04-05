@@ -1,4 +1,5 @@
-{
+[{
+    "id": "small.json",
     "reports": [
         {
             "X-Trace": [
@@ -5668,4 +5669,4 @@
             "version": "X-Trace Report ver 1.0"
         }
     ]
-}
+}]

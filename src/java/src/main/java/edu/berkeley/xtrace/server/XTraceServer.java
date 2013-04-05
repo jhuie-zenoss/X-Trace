@@ -277,8 +277,6 @@ public final class XTraceServer {
 				"/reports/*");
 		context.addServlet(new ServletHolder(new GetJSONReportsServlet()),
 				"/interactive/reports/*");
-		context.addServlet(new ServletHolder(new GetLatestJSONReportsServlet()),
-				"/interactive/latestreports/*");
 		context.addServlet(new ServletHolder(new GetLatestTaskServlet()),
 				"/latestTask");
 		context.addServlet(new ServletHolder(new TagServlet()), "/tag/*");
@@ -336,58 +334,19 @@ public final class XTraceServer {
 			response.setStatus(HttpServletResponse.SC_OK);
 			String uri = request.getRequestURI();
 			int pathLen = request.getServletPath().length() + 1;
-			String taskId = uri.length() > pathLen ? uri.substring(pathLen)
+			String taskIdString = uri.length() > pathLen ? uri.substring(pathLen)
 					: null;
+			String[] taskIds = taskIdString.split(",");
 			Writer out = response.getWriter();
-			if (taskId != null) {
-				Iterator<Report> iter;
-				try {
-					iter = reportstore.getReportsByTask(TaskID
-							.createFromString(taskId));
-				} catch (XTraceException e) {
-					throw new ServletException(e);
-				}
-				JSONObject jsonObj = new JSONObject();
-				try {
-					JSONArray reports = new JSONArray();
-					while (iter.hasNext()) {
-						reports.put(iter.next().toJSON());
-					}
-					jsonObj.put("reports", reports);
-					jsonObj.put("id", taskId);
-				} catch (JSONException e) {
-					throw new ServletException(e);
-				}
-				try {
-					out.write(jsonObj.toString(2));
-				} catch (JSONException e) {
-					throw new ServletException(e);
-				}
-			}
-		}
-	}
-
-	private static class GetLatestJSONReportsServlet extends HttpServlet {
-		protected void doGet(HttpServletRequest request,
-				HttpServletResponse response) throws ServletException,
-				IOException {
-			response.setContentType("text/json");
-			response.setStatus(HttpServletResponse.SC_OK);
-			String uri = request.getRequestURI();
-			int pathLen = request.getServletPath().length() + 1;
-			int numToGet = uri.length() > pathLen ? Integer.valueOf(uri.substring(pathLen))
-					: 1;
-			Writer out = response.getWriter();
-			List<TaskRecord> tasks = reportstore.getLatestTasks(0, numToGet);
 			out.write("[");
 			boolean first = true;
 			int count = 0;
-			for (TaskRecord r : tasks) {
-				Log.info("Writing task "+count);
+			for (String taskId : taskIds) {
+				Log.info("Writing task "+count+": "+taskId);
 				count++;
 				Iterator<Report> iter;
 				try {
-					iter = reportstore.getReportsByTask(r.getTaskId());
+					iter = reportstore.getReportsByTask(TaskID.createFromString(taskId));
 				} catch (XTraceException e) {
 					throw new ServletException(e);					
 				}
@@ -397,7 +356,7 @@ public final class XTraceServer {
 					while (iter.hasNext()) {
 						reports.put(iter.next().toJSON());
 					}
-					task.put("id", r.getTaskId().toString());
+					task.put("id", taskId);
 					task.put("reports", reports);
 					if (!first) {
 						out.write(",");
@@ -408,7 +367,7 @@ public final class XTraceServer {
 					throw new ServletException(e);
 				}
 			}
-			out.write("]");
+			out.write("]");			
 		}
 	}
 

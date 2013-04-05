@@ -1,14 +1,3 @@
-var getReports = function(current_id, callback, errback) {
-	var len = current_id.length;
-	if (len > 5 && current_id.substring(len-5, len)==".json") {
-	    console.log("Loading JSON", current_id)
-	    d3.json(current_id, callback);
-	} else {
-	    console.log("Retrieving reports for ID", current_id);
-	    getReportsForTrace(current_id, callback, errback);
-	}
-};
-
 // http://stackoverflow.com/questions/523266/how-can-i-get-a-specific-parameter-from-location-search
 var getParameter = function(name) {
     name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -21,26 +10,30 @@ var getParameter = function(name) {
         return results[1];
 };
 
-var getReportsForTrace = function(traceID, callback, errback) {
-	var report_url = "reports/" + traceID;
-	
-	var xhr = new XMLHttpRequest();
-	
-	xhr.open("GET", report_url, true);
-	
-	xhr.onreadystatechange = function() {
-		if (xhr.readyState==4) {
-			if (xhr.status = 200) {
-				var json = JSON.parse(xhr.responseText);
-				callback(json);
-			} else {
-				errback(xhr.status, xhr);
-			}
-		}
-	};
-	
-	xhr.send(null);
-};
+var getReports = function(ids, callback, errback) {
+    var report_url = "reports/" + ids;
+    
+    var xhr = new XMLHttpRequest();
+    
+    xhr.open("GET", report_url, true);
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState==4) {
+            if (xhr.status = 200) {
+                try {
+                    var json = JSON.parse(xhr.responseText);
+                    callback(json);
+                } catch (e) {
+                    errback(e)
+                }
+            } else {
+                errback(xhr.status, xhr);
+            }
+        }
+    };
+    
+    xhr.send(null);    
+}
 
 var createGraphFromReports = function(reports) {
     var nodes = {};

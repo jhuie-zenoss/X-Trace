@@ -1,4 +1,5 @@
-{
+[{
+    "id": "large.json",
     "reports": [
         {
             "<property><name>fs.defaultFS</name><value>hdfs": [
@@ -43047,4 +43048,4 @@
             ]
         }
     ]
-}
+}]
