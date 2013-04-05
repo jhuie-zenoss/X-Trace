@@ -1,8 +1,8 @@
 ## Render the nav bar for going to the previous/next tasks in a result set.
 <div style="padding-top: 5px; padding-bottom: 3px;">
     <div style="float: left; display: inline-block;">
-        <input class="get-selected" type="submit" value="Get Selected JSON" disabled="true" onclick="getSelected()"/>
-        <input class="compare-selected" type="submit" value="Compare Selected" disabled="true" onclick="compareSelected()"/>
+        <input class="get-selected" type="submit" value="Get Selected JSON" onclick="getSelected()"/>
+        <input class="compare-selected" type="submit" value="Compare Selected" onclick="compareSelected()"/>
     </div>
     <div style="float: right; display: inline-block;">
         <a href="$request.requestURI?offset=$prevOffset&length=$length">[&lt;&lt; Previous $length]</a>
@@ -14,12 +14,32 @@
 
 <script language="javascript">
 
+function getSelectedIDs() {
+    var ids = [];
+    var checkboxes = document.getElementsByClassName("select-trace");
+    for (var i = 0; i < checkboxes.length; i++) {
+        var checkbox = checkboxes[i];
+        if (checkbox.checked) {
+            ids.push(checkbox.value);
+        }
+    }
+    return ids;
+}
+
 function getSelected() {
-    console.log("getting selected!");
+    var selected = getSelectedIDs();
+    if (selected.length >= 1) {
+        document.location.href = "/interactive/reports/"+selected.join();
+    }
 }
 
 function compareSelected() {
-    console.log("comparing selected!");
+    var selected = getSelectedIDs();
+    if (selected.length >= 2) {
+        document.location.href = "/interactive/compare.html?id="+selected.join();
+    }
 }
+
+checkControlsEnabled();
 
 </script>
