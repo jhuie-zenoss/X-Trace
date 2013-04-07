@@ -54,12 +54,12 @@ function KernelTrace(id, nodes) {
     
     this.remove = function(node) {
         if (!(node.id in this.nodes)) return
-        node_id = node.id
-        node_parents = this.parents[node_id]
-        node_children = this.children[node_id]
+        node_id = node.id;
+        node_parents = this.parents[node_id];
+        node_children = this.children[node_id];
         for (parent_id in Object.keys(node_parents)) {
             if (parent_id in this.children) {
-                delete this.children[parent_id][node_id]
+                delete this.children[parent_id][node_id];
                 for (child_id in Object.keys(node_children)) {
                     this.children[parent_id][child_id] = true;                    
                 }
@@ -67,12 +67,23 @@ function KernelTrace(id, nodes) {
         }
         for (child_id in Object.keys(node_children)) {
             if (child_id in this.parents) {
-                delete this.parents[child_id][node_id]
+                delete this.parents[child_id][node_id];
                 for (parent_id in Object.keys(node_parents)) {
                     this.parents[child_id][parent_id] = true;
                 }
             }
         }
+        delete this.nodes[node_id];
+        delete this.children[node_id];
+        delete this.parents[node_id];
+        delete this.labels[node.label][node_id];
+        if (Object.keys(this.labels[node.label]).length==0) {
+            delete this.labels[node.label];
+        }
+    }
+    
+    this.get_nodes = function() {
+        
     }
     
     return this;
