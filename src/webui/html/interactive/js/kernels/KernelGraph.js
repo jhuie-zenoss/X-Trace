@@ -45,7 +45,7 @@ function KernelGraph(id, nodelist) {
         nodes[node.id] = node;
         parents[node.id] = {};
         children[node.id] = {};
-        if (!(labels.hasOwnProperty(node.label)) labels[node.label] = {}
+        if (!labels.hasOwnProperty(node.label)) labels[node.label] = {};
 
         // Also remember each node's label    
         labels[node.label][node.id] = true;        
