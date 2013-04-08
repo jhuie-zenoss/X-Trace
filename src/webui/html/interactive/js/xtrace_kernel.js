@@ -36,7 +36,7 @@ function XTraceCompareGraph(attach, reports) {
     // Calculate the edge weights as being normalized scores
     if (minEdge.score!=maxEdge.score) {
         edges.forEach(function(edge) {
-            edge.weight = 1 - Math.pow((edge.score) / (maxEdge.score), 2);
+            edge.weight = 1 - Math.pow((edge.score - minEdge.score) / (maxEdge.score - minEdge.score), 2);
         })
     }
 
