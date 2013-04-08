@@ -144,7 +144,6 @@ function KernelGraph(id, nodelist) {
         return ls;
     }
     
-    console.log("done");
     return this;
 }
 
