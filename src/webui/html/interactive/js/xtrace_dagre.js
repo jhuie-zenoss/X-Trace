@@ -1,5 +1,5 @@
 // lightweight is an optional argument that will try to draw the graph as fast as possible
-function drawXTraceGraph(attachPoint, reports, /*optional*/ lightweight) {
+function XTraceDAG(attachPoint, reports, /*optional*/ lightweight) {
     
     // Twiddle the attach point a little bit
     var rootSVG = d3.select(attachPoint).append("svg");
@@ -250,6 +250,4 @@ function drawXTraceGraph(attachPoint, reports, /*optional*/ lightweight) {
     this.resetViewport = resetViewport;
     this.history = history;
     this.draw = draw;
-    
-    return this;
 }

@@ -20,7 +20,7 @@
 <script type="text/javascript" src="js/Tooltip.js"></script>
 <script type="text/javascript" src="js/ContextMenu.js"></script>
 <script type="text/javascript" src="js/xtrace_utils.js"></script>
-<script type="text/javascript" src="js/kernels/xtrace_kernel.js"></script>
+<script type="text/javascript" src="js/xtrace_kernel.js"></script>
 <script type="text/javascript" src="js/kernels/KernelGraph.js"></script>
 <script type="text/javascript" src="js/kernels/Kernel.js"></script>
 <script type="text/javascript" src="js/kernels/NodeCountKernel.js"></script>
@@ -33,7 +33,11 @@ window.onload = function() {
 	var callback = function(data) {
 		console.log("Reports received, accessible as window.data", data);
 		window.data = data;
-		//window.xtrace = drawXTraceGraph(document.body, data[0].reports, lightweight=="true");
+		try {
+		    window.xtrace = new XTraceCompareGraph(document.body, data);
+		} catch(e) {
+		    console.log(e);
+		}
 	};
 	var errback = function(message, error) {
 		console.log("Error retrieving reports", error);
