@@ -152,8 +152,10 @@ KernelGraph.fromJSON = function(json) {
     var trace = new KernelGraph(json["id"], nodes);
     nodes.forEach(function(node) {
         var edges = node.data["Edge"];
-        for (var i = 0; i < edges.length; i++) {
-            trace.link(edges[i], node.id);
+        if (edges) {
+            for (var i = 0; i < edges.length; i++) {
+                trace.link(edges[i], node.id);
+            }
         }
     });
     return trace;
