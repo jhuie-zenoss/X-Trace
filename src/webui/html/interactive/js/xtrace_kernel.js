@@ -92,7 +92,7 @@ var yarnchild_kernelgraph_for_trace = function(trace) {
     
     // Remove any nodes that aren't yarnchild processes
     graph.get_nodes().forEach(function(node) {
-        if (!(node.data["ProcessID"][0] in yarnchild_process_ids)) {
+        if (!yarnchild_process_ids.hasOwnProperty(node.data["ProcessID"][0])) {
             graph.remove(node);
         }
     });

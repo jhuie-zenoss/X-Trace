@@ -22,7 +22,7 @@ var DirectedAcyclicGraphTooltip = function() {
         // Do the reserved first
         for (var i = 0; i < reserved.length; i++) {
             var key = reserved[i];
-            if (key in report) {
+            if (report.hasOwnProperty(key)) {
                 appendRow(key, report[key].join(", "), tooltip);
                 seen[key] = true;
             }

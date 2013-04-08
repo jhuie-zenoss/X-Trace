@@ -5,7 +5,7 @@ function KernelNode(id, label, data) {
 }
 
 KernelNode.prototype.field_equals = function(name, val) {
-    if (name in this.data) {
+    if (this.data.hasOwnProperty(name)) {
         for (var i = 0; i < this.data[name].length; i++) {
             if (this.data[name][i]==val) return true;
         }
@@ -45,7 +45,7 @@ function KernelGraph(id, nodelist) {
         nodes[node.id] = node;
         parents[node.id] = {};
         children[node.id] = {};
-        if (!(node.label in labels)) labels[node.label] = {}
+        if (!(labels.hasOwnProperty(node.label)) labels[node.label] = {}
 
         // Also remember each node's label    
         labels[node.label][node.id] = true;        
@@ -53,7 +53,7 @@ function KernelGraph(id, nodelist) {
 
     // This function links together two nodes
     this.link = function(parent, child) {
-        if ((parent.id in nodes) && (child.id in nodes)) {
+        if (nodes.hasOwnProperty(parent.id) && nodes.hasOwnProperty(child.id)) {
             parents[child.id][parent.id] = true;
             children[parent.id][child.id] = true;
         }
@@ -63,7 +63,7 @@ function KernelGraph(id, nodelist) {
     // Each of the node's children get re-linked to the node's parents and vice versa
     this.remove = function(node) {
         // Do nothing if the node doesn't exist
-        if (!(node.id in nodes)) return;
+        if (!nodes.hasOwnProperty(node.id)) return;
         
         // Get the children and the parents of the node
         var pid, cid, ps = parents[node.id], cs = children[node.id];
@@ -71,7 +71,7 @@ function KernelGraph(id, nodelist) {
         // For each parent, remove the node as a child
         // For each parent, add the node's children as the parent's children
         for (pid in ps) {
-            if (pid in children) {
+            if (children.hasOwnProperty(pid)) {
                 delete children[pid][node.id];
                 for (cid in cs) {
                     children[pid][cid] = true;                    
@@ -82,7 +82,7 @@ function KernelGraph(id, nodelist) {
         // For each child, remove the node as a parent
         // For each child, add the node's parents as the child's parents
         for (cid in cs) {
-            if (cid in parents) {
+            if (parents.hasOwnProperty(cid)) {
                 delete parents[cid][node.id];
                 for (pid in ps) {
                     parents[cid][pid] = true;
@@ -115,7 +115,7 @@ function KernelGraph(id, nodelist) {
     }
 
     this.get_parent_ids = function(nodeid) {
-        if (!(nodeid in parents)) {
+        if (!parents.hasOwnProperty(nodeid)) {
             return [];
         }
         return Object.keys(parents[nodeid]);
@@ -126,7 +126,7 @@ function KernelGraph(id, nodelist) {
     }
     
     this.get_child_ids = function(nodeid) {
-        if (!(nodeid in children)) {
+        if (!children.hasOwnProperty(nodeid)) {
             return [];
         }
         return Object.keys(children[nodeid]);
@@ -150,9 +150,8 @@ function KernelGraph(id, nodelist) {
 KernelGraph.fromJSON = function(json) {
     var nodes = json["reports"].map(function(report) { return KernelNode.fromJSON(report); });
     var trace = new KernelGraph(json["id"], nodes);
-    var node, edges;
     nodes.forEach(function(node) {
-        edges = node.data["Edge"];
+        var edges = node.data["Edge"];
         for (var i = 0; i < edges.length; i++) {
             trace.link(edges[i], node.id);
         }
