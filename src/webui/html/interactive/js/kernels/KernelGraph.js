@@ -154,10 +154,11 @@ function KernelGraph(id, nodelist) {
         });
         var clone = new KernelGraph(this.id, cloned_nodes);
         for (var cid in parents) {
-            parents[cid].forEach(function(pid) {
+            for (var pid in parents[cid]) {
                 clone.link(pid, cid);
-            });
+            }
         }
+        return clone;
     }
     
     return this;
