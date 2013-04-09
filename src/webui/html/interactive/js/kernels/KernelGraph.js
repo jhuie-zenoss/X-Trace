@@ -31,10 +31,7 @@ KernelNode.fromJSON = function(json) {
 }
 
 
-function KernelGraph(id, nodelist) {
-    // Initialize variables
-    this.id = id;
-    
+function KernelGraph(id, nodelist) {    
     // Private, internal variables
     var nodes = {};
     var parents = {};
@@ -160,7 +157,7 @@ function KernelGraph(id, nodelist) {
         var cloned_nodes = this.get_nodes().map(function(node) {
             return node.clone();
         });
-        var clone = new KernelGraph(this.id, cloned_nodes);
+        var clone = new KernelGraph(id, cloned_nodes);
         for (var cid in parents) {
             for (var pid in parents[cid]) {
                 clone.link(pid, cid);
@@ -169,7 +166,9 @@ function KernelGraph(id, nodelist) {
         return clone;
     }
     
-    return this;
+    this.get_id = function() {
+        return id;
+    }
 }
 
 KernelGraph.fromJSON = function(json) {
