@@ -216,7 +216,89 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
     }
     
     menu.on = function(event, _) {
-        if (!handlers[event]) return menu;
+        if (!handlers.hasOwnProperty(event)) return menu;
+        if (arguments.length==1) return handlers[event];
+        handlers[event] = _;
+        return menu;
+    }
+    
+    return menu;
+}
+
+var CompareGraphContextMenu = function() {
+    
+    var onMenuOpen = function(d) {
+        handlers.open.call(this, d);
+    }
+        
+    var onMenuClick = function(d) {
+        console.log("menu click", d);
+        if (d.operation=="viewthis") {
+            handlers.view.call(this, d3.select(this).datum());
+        }
+        if (d.operation=="removethis") {
+            handlers.hide.call(this, d3.select(this).data());
+        }
+        if (d.operation=="removeselected") {
+            handlers.hide.call(this, d3.selectAll(".node.selected").data());
+        }
+        if (d.operation=="compareselected") {
+            handlers.hide.call(this, d3.selectAll(".node").filter(function(d) {
+                return !d3.select(this).classed("selected");
+            }).data());
+        }
+    }
+        
+    var ctxmenu = ContextMenu().on("click", onMenuClick)
+                               .on("open", onMenuOpen);
+
+    var menu = function(selection) {
+        menu.hide();
+        selection.each(function(d) {
+            
+            var items = [];
+
+            items.push({
+                "operation": "viewthis",
+                "name": "View execution graph"
+            })
+            
+            items.push({
+                "operation": "removethis",
+                "name": "Remove",
+            });
+            
+            items.push({
+                "operation": "removeselected",
+                "name": "Remove selected"
+            });
+            
+            items.push({
+                "operation": "compareselected",
+                "name": "Compare selected"
+            });
+            
+            ctxmenu.call(this, items);         
+            
+            d3.select(this).classed("hascontextmenu", true);
+        });
+    }
+    
+    menu.hide = function(selection) {
+        d3.selectAll(".hascontextmenu").each(function(d) {
+            $(this).unbind("contextmenu");
+        })            
+        $(".context-menu").remove();
+    }
+    
+    var handlers = {
+        "open": function() {},
+        "view": function() {},
+        "hide": function() {}
+    }
+    
+    menu.on = function(event, _) {
+        if (!handlers.hasOwnProperty(event)) return menu;
         if (arguments.length==1) return handlers[event];
         handlers[event] = _;
         return menu;
