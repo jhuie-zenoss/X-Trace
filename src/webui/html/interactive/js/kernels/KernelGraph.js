@@ -56,10 +56,10 @@ function KernelGraph(id, nodelist) {
     }        
 
     // This function links together two nodes
-    this.link = function(parent, child) {
-        if (nodes.hasOwnProperty(parent.id) && nodes.hasOwnProperty(child.id)) {
-            parents[child.id][parent.id] = true;
-            children[parent.id][child.id] = true;
+    this.link = function(pid, cid) {
+        if (nodes.hasOwnProperty(pid) && nodes.hasOwnProperty(cid)) {
+            parents[cid][pid] = true;
+            children[pid][cid] = true;
         }
     }
     
@@ -126,7 +126,11 @@ function KernelGraph(id, nodelist) {
     }
     
     this.get_parents = function(node) {
-        return this.get_parent_ids().map(function(id) { return nodes[id]; });
+        return this.get_parent_ids(node.id).map(function(id) { return nodes[id]; });
+    }
+    
+    this.get_parent_labels = function(node) {
+        return this.get_parents(node).map(function(node) { return node.label; });
     }
     
     this.get_child_ids = function(nodeid) {
@@ -137,7 +141,11 @@ function KernelGraph(id, nodelist) {
     }
     
     this.get_children = function(node) {
-        return this.get_child_ids().map(function(id) { return nodes[id]; });
+        return this.get_child_ids(node.id).map(function(id) { return nodes[id]; });
+    }
+    
+    this.get_children_labels = function(node) {
+        return this.get_children(node).map(function(node) { return node.label; });
     }
     
     this.get_labels = function() {
