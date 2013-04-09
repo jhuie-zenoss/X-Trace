@@ -29,9 +29,7 @@ NodeCountKernel.prototype.calculate = function(a, b) {
             vb.push(0);
         }
     }
-    ret = dotProduct(normalize(va), normalize(vb));
-    console.log(va, vb, ret);
-    return ret;
+    return dotProduct(normalize(va), normalize(vb));
 }
 
 function dotProduct(a, b) {
