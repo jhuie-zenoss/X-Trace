@@ -20,6 +20,10 @@ KernelNode.prototype.field_one_of = function(name, values) {
     return false;
 }
 
+KernelNode.prototype.clone = function() {
+    return new KernelNode(this.id, this.label, this.data);
+}
+
 KernelNode.fromJSON = function(json) {
     var id = json["X-Trace"][0].substr(18);
     var label = hash_report(json);
@@ -45,7 +49,7 @@ function KernelGraph(id, nodelist) {
         nodes[node.id] = node;
         parents[node.id] = {};
         children[node.id] = {};
-        if (!(labels.hasOwnProperty(node.label)) labels[node.label] = {}
+        if (!(labels.hasOwnProperty(node.label))) labels[node.label] = {}
 
         // Also remember each node's label    
         labels[node.label][node.id] = true;        
@@ -142,6 +146,18 @@ function KernelGraph(id, nodelist) {
             ls[label] = Object.keys(labels[label]);
         })
         return ls;
+    }
+    
+    this.clone = function() {
+        var cloned_nodes = this.get_nodes().map(function(node) {
+            return node.clone();
+        });
+        var clone = new KernelGraph(this.id, cloned_nodes);
+        for (var cid in parents) {
+            parents[cid].forEach(function(pid) {
+                clone.link(pid, cid);
+            });
+        }
     }
     
     return this;
