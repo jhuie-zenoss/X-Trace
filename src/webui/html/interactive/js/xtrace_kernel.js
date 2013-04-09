@@ -12,7 +12,7 @@ function XTraceCompareGraph(attach, reports) {
     var graphs = reports.map(function(report) { return yarnchild_kernelgraph_for_trace(report); });
 
     // Calculate pairwise distances
-    var kernel = new NodeCountKernel();
+    var kernel = new WeisfeilerLehmanKernel();
     var edges = [];
     for (var i = 0; i < graphs.length; i++) {
         for (var j = 0; j < i; j++) {

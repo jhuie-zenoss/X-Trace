@@ -24,6 +24,7 @@
 <script type="text/javascript" src="js/kernels/KernelGraph.js"></script>
 <script type="text/javascript" src="js/kernels/Kernel.js"></script>
 <script type="text/javascript" src="js/kernels/NodeCountKernel.js"></script>
+<script type="text/javascript" src="js/kernels/WeisfeilerLehmanKernel.js"></script>
 <link href="stylesheets/xtrace_compare.css" rel="stylesheet" type="text/css" />
 <link href="stylesheets/tipsy.css" rel="stylesheet" type="text/css" />
 <link href="stylesheets/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
@@ -34,11 +35,7 @@ window.onload = function() {
 	var callback = function(data) {
 		console.log("Reports received, accessible as window.data", data);
 		window.data = data;
-		try {
-		    window.xtrace = new XTraceCompareGraph(document.body, data);
-		} catch(e) {
-		    console.log("Error", e);
-		}
+	    window.xtrace = new XTraceCompareGraph(document.body, data);
 	};
 	var errback = function(message, error) {
 		console.log("Error retrieving reports", error);
