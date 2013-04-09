@@ -144,7 +144,7 @@ function KernelGraph(id, nodelist) {
         return this.get_child_ids(node.id).map(function(id) { return nodes[id]; });
     }
     
-    this.get_children_labels = function(node) {
+    this.get_child_labels = function(node) {
         return this.get_children(node).map(function(node) { return node.label; });
     }
     
