@@ -41,6 +41,29 @@ var DirectedAcyclicGraphTooltip = function() {
     return tooltip;
 }
 
+var CompareTooltip = function() {
+    
+    var tooltip = Tooltip().title(function(d) {
+        function appendRow(key, value, tooltip) {
+            var keyrow = $("<div>").attr("class", "key").append(key);
+            var valrow = $("<div>").attr("class", "value").append(value);
+            var clearrow = $("<div>").attr("class", "clear");
+            tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
+        }
+        
+        var tooltip = $("<div>").attr("class", "xtrace-tooltip");
+        
+        appendRow("ID", d.get_id(), tooltip);
+        appendRow("NumReports", d.get_node_ids().length, tooltip);
+        appendRow("NumLabels", Object.keys(d.get_labels()).length, tooltip);
+        
+        return tooltip.outerHTML();
+    });
+    
+    return tooltip;
+    
+}
+
 
 var Tooltip = function() {
     
