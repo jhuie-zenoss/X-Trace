@@ -46,12 +46,8 @@ var getAllReports = function(ids, callback, errback) {
     xhr.onreadystatechange = function() {
         if (xhr.readyState==4) {
             if (xhr.status = 200) {
-                try {
-                    var json = JSON.parse(xhr.responseText);
-                    callback(json);
-                } catch (e) {
-                    errback(e)
-                }
+                var json = JSON.parse(xhr.responseText);
+                callback(json);
             } else {
                 errback(xhr.status, xhr);
             }
