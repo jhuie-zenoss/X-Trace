@@ -1,27 +1,38 @@
-function WeisfeilerLehmanKernel(depth, /*optional*/ kernel) {
-    this.depth = depth;
+function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
+    this.depth = (depth && depth > 0) ? depth : 20;
     this.kernel = kernel ? kernel : new NodeCountKernel();
-    this.generator = new WLMultisetLabelGenerator();
+    
+    generator = new WLMultisetLabelGenerator();
+    
+    var relabel = function(graph) {
+        // Create a new graph for the relabelling
+        var next = graph.clone();
+        
+        // Relabel all the nodes in the graph with their neighbours
+        next.get_nodes().forEach(function(node) {
+            var neighbours = next.get_child_labels(node);
+            node.label = this.generator.relabel(node.label, neighbours);
+        });
+        
+        // Anybody who actually has no neighbours should be removed, to prevent over representation
+        next.get_node_ids().forEach(function(id) {
+            if (next.get_child_ids(id).length==0) next.remove(id);
+        })
+        return next;
+    }
+    
+    this.calculate = function(a, b) {
+        var score = this.kernel.calculate(a, b);
+        for (var i = 1; i < this.depth; i++) {
+            a = relabel(a);
+            b = relabel(b);
+            score += this.kernel.calculate(a, b);
+        }
+        return score;        
+    }
 }
 
 WeisfeilerLehmanKernel.prototype = new Kernel();
-
-WeisfeilerLehmanKernel.prototype.calculate = function(a, b) {
-    var la = a.get_labels();
-    var lb = b.get_labels();
-    var score = 0;
-    for (var label in la) {
-        if (lb.hasOwnProperty(label)) {
-            score += la[label].length * lb[label].length;
-        }
-    }
-    return score;
-}
-
-WeisfeilerLehmanKernel.prototype.relabel = function(graph) {
-    
-}
-
 
 function WLMultisetLabelGenerator() {
     this.labels = {};
@@ -29,7 +40,7 @@ function WLMultisetLabelGenerator() {
 }
 
 WLMultisetLabelGenerator.prototype.next = function() {
-    return self.seed++;
+    return this.seed++;
 }
 
 WLMultisetLabelGenerator.prototype.relabel = function(label, /*optional*/neighbour_labels) {
