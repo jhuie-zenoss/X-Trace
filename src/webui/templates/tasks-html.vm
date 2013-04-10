@@ -22,7 +22,7 @@
                 }
             }
         } else if (!checkbox.checked) {
-                document.getElementById("select-all-checkbox").checked = false;
+            document.getElementById("select-all-checkbox").checked = false;
         } else {
             var all_selected = true;
             var checkboxes = document.getElementsByClassName("select-trace");
@@ -53,7 +53,7 @@
             if (checkboxes[i].checked) {
                 numChecked++;
             }
-            if (numChecked>=2) {
+            if (numChecked>=3) {
                 break;
             }
         }
@@ -61,9 +61,13 @@
         for (var i = 0; i < get_selected_buttons.length; i++) {
             get_selected_buttons[i].disabled = numChecked>=1 ? false : true;
         }
+        var cluster_selected_buttons = document.getElementsByClassName("cluster-selected");
+        for (var i = 0; i < cluster_selected_buttons.length; i++) {
+            cluster_selected_buttons[i].disabled = numChecked>=2 ? false : true;
+        }
         var compare_selected_buttons = document.getElementsByClassName("compare-selected");
-        for (var i = 0; i < get_selected_buttons.length; i++) {
-            compare_selected_buttons[i].disabled = numChecked>=2 ? false : true;
+        for (var i = 0; i < compare_selected_buttons.length; i++) {
+            compare_selected_buttons[i].disabled = numChecked==2 ? false : true;
         }
     }
 </script>

@@ -1,8 +1,9 @@
 ## Render the nav bar for going to the previous/next tasks in a result set.
 <div style="padding-top: 5px; padding-bottom: 3px;">
     <div style="float: left; display: inline-block;">
-        <input class="get-selected" type="submit" value="Get Selected JSON" onclick="getSelected()"/>
-        <input class="compare-selected" type="submit" value="Compare Selected" onclick="compareSelected()"/>
+        <input class="get-selected" type="submit" value="Get Selected JSON" onclick="getSelected()" title="Get raw JSON for selected graphs"/>
+        <input class="cluster-selected" type="submit" value="Cluster Selected" onclick="clusterSelected()" title="View clustering visualization for selected graphs"/>
+        <input class="compare-selected" type="submit" value="Side-by-side Comparison" onclick="compareSelected()" title="Compare two graphs side-by-side using the graph visualization"/>
     </div>
     <div style="float: right; display: inline-block;">
         <a href="$request.requestURI?offset=$prevOffset&length=$length">[&lt;&lt; Previous $length]</a>
@@ -33,10 +34,17 @@ function getSelected() {
     }
 }
 
-function compareSelected() {
+function clusterSelected() {
     var selected = getSelectedIDs();
     if (selected.length >= 2) {
         window.open("/interactive/cluster.html?id="+selected.join(), "_blank");
+    }
+}
+
+function compareSelected() {
+    var selected = getSelectedIDs();
+    if (selected.length == 2) {
+        window.open("/interactive/compare.html?id="+selected.join(), "_blank");
     }
 }
 
