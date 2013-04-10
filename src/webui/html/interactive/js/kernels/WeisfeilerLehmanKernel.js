@@ -30,6 +30,35 @@ function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
         }
         return score;        
     }
+    
+    this.calculate_node_stability = function(a, b) {
+        var scores_a = {};
+        var scores_b = {};
+        a.get_node_ids().forEach(function(id) { scores_a[id] = 0; });
+        b.get_node_ids().forEach(function(id) { scores_b[id] = 0; });
+        
+        for (var i = 0; i < this.depth; i++) {
+            var labels_a = a.get_labels();
+            var labels_b = b.get_labels();
+            for (var label in labels_a) {
+                if (labels_b[label] && labels_b[label].length > 0) {
+                    labels_a[label].forEach(function(id) {
+                        scores_a[id]++;
+                    });
+                }
+            }
+            for (var label in labels_b) {
+                if (labels_a[label] && labels_a[label].length > 0) {
+                    labels_b[label].forEach(function(id) {
+                        scores_b[id]++;
+                    });
+                }
+            }
+            a = relabel(a);
+            b = relabel(b);
+        }
+        return [scores_a, scores_b];
+    }
 }
 
 WeisfeilerLehmanKernel.prototype = new Kernel();
