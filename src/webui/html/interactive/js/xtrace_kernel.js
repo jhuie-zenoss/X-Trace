@@ -88,7 +88,14 @@ function XTraceCompareGraph(attach, data) {
     ctxmenu.on("open", function() {
         tooltip.hide();
     }).on("view", function(d) {
-        window.open("graph.html?id="+d.get_id()+"&lightweight=true", "_blank");
+        var reports = d.get_node_data();
+        var process_ids = {};
+        reports.forEach(function(report) {
+            if (report["ProcessID"]) {
+                process_ids[report["ProcessID"][0]] = true;
+            }
+        });
+        window.open("graph.html?id="+d.get_id()+"&processid="+Object.keys(process_ids).join(",")+"&lightweight=true", "_blank");
     }).on("hide", function(ds) {
         ids = {};
         graphs.map(function(d) {
