@@ -185,23 +185,3 @@ KernelGraph.fromJSON = function(json) {
     return trace;
 }
 
-// Javascript impl of java's string hashcode:
-// http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-String.prototype.hashCode = function(){
-    var hash = 0, i, char;
-    if (this.length == 0) return hash;
-    for (i = 0; i < this.length; i++) {
-        char = this.charCodeAt(i);
-        hash = ((hash<<5)-hash)+char;
-        hash = hash & hash; // Convert to 32bit integer
-    }
-    return hash;
-};
-
-function hash_report(report) {
-    hash = 0;
-    if (report["Agent"]) hash += ("Agent:"+report["Agent"][0]).hashCode();
-    if (report["Label"]) hash += ("Label:"+report["Label"][0]).hashCode();
-    if (report["Class"]) hash += ("Class:"+report["Class"][0]).hashCode();
-    return hash & hash;
-}
