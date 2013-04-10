@@ -29,14 +29,14 @@ function getSelectedIDs() {
 function getSelected() {
     var selected = getSelectedIDs();
     if (selected.length >= 1) {
-        document.location.href = "/interactive/reports/"+selected.join();
+        window.open("/interactive/reports/"+selected.join(), "_blank");
     }
 }
 
 function compareSelected() {
     var selected = getSelectedIDs();
     if (selected.length >= 2) {
-        document.location.href = "/interactive/compare.html?id="+selected.join();
+        window.open("/interactive/compare.html?id="+selected.join(), "_blank");
     }
 }
 
