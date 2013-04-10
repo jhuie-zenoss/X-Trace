@@ -242,10 +242,13 @@ var CompareGraphContextMenu = function() {
         if (d.operation=="removeselected") {
             handlers.hide.call(this, d3.selectAll(".node.selected").data());
         }
-        if (d.operation=="compareselected") {
+        if (d.operation=="clusterselected") {
             handlers.hide.call(this, d3.selectAll(".node").filter(function(d) {
                 return !d3.select(this).classed("selected");
             }).data());
+        }
+        if (d.operation=="compareselected") {
+            handlers.compare.call(this, d3.selectAll(".node.selected").data());            
         }
     }
         
@@ -255,9 +258,9 @@ var CompareGraphContextMenu = function() {
     var menu = function(selection) {
         menu.hide();
         selection.each(function(d) {
-            
             var items = [];
 
+            console.log("mace mace mace ", selection.filter(".selected"), selection);
             items.push({
                 "operation": "viewthis",
                 "name": "View execution graph"
@@ -268,15 +271,26 @@ var CompareGraphContextMenu = function() {
                 "name": "Remove",
             });
             
-            items.push({
-                "operation": "removeselected",
-                "name": "Remove selected"
-            });
+            if (!selection.filter(".selected").empty()) {
+                items.push({
+                    "operation": "removeselected",
+                    "name": "Remove selected"
+                });
+            }
             
-            items.push({
-                "operation": "compareselected",
-                "name": "Compare selected"
-            });
+            if (selection.filter(".selected")[0].length > 1) {
+                items.push({
+                    "operation": "clusterselected",
+                    "name": "Cluster selected"
+                });
+            }
+            
+            if (selection.filter(".selected")[0].length == 2) {
+                items.push({
+                    "operation": "compareselected",
+                    "name": "Compare selected"
+                });
+            }
             
             ctxmenu.call(this, items);         
             
@@ -294,7 +308,8 @@ var CompareGraphContextMenu = function() {
     var handlers = {
         "open": function() {},
         "view": function() {},
-        "hide": function() {}
+        "hide": function() {},
+        "compare": function() {}
     }
     
     menu.on = function(event, _) {

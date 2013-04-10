@@ -2,10 +2,6 @@ function XTraceCompareGraph(attach, data) {
     
     var w=1000, h=1000;
     
-    // Create the tooltip
-    var tooltip = CompareTooltip();
-    var ctxmenu = CompareGraphContextMenu();
-    
     // Twiddle the attach point a little bit
     var svg = d3.select(attach).append("svg").attr("class", "compare-graph")
                                              .attr("viewBox", "0 0 " + w + " " + h )
@@ -71,6 +67,48 @@ function XTraceCompareGraph(attach, data) {
             d3.selectAll(".node").classed("selected", false);
         }
         d3.select(this).classed("selected", !d3.select(this).classed("selected"));
+        refreshContextMenus();
+    }
+
+    var tooltip = CompareTooltip();
+    var ctxmenu = CompareGraphContextMenu();
+    ctxmenu.on("open", function() {
+                tooltip.hide();
+            }).on("view", function(d) {
+                var reports = d.get_node_data();
+                var process_ids = {};
+                reports.forEach(function(report) {
+                    if (report["ProcessID"]) {
+                        process_ids[report["ProcessID"][0]] = true;
+                    }
+                });
+                window.open("graph.html?id="+d.get_id()+"&processid="+Object.keys(process_ids).join(",")+"&lightweight=true", "_blank");
+            }).on("hide", function(ds) {
+                ids = {};
+                graphs.map(function(d) {
+                    ids[d.get_id()] = true;
+                })
+                ds.map(function(d) {
+                    delete ids[d.get_id()];
+                })
+                window.open("cluster.html?id="+Object.keys(ids).join(","),'_blank');
+            }).on("compare", function(ds) {
+                var trace_ids = [];
+                var process_ids = {};
+                ds.forEach(function(d) {
+                    var reports = d.get_node_data();
+                    reports.forEach(function(report) {
+                        if (report["ProcessID"]) {
+                            process_ids[report["ProcessID"][0]] = true;
+                        }
+                    });
+                    trace_ids.push(d.get_id());
+                });
+                window.open("compare.html?id="+trace_ids.join(",")+"&processid="+Object.keys(process_ids).join(",")+"&lightweight=true", "_blank");
+            });
+    
+    var refreshContextMenus = function() {
+        ctxmenu.call(svg, svg.selectAll(".node"));        
     }
 
     // Now actually draw the nodes and edges
@@ -83,29 +121,8 @@ function XTraceCompareGraph(attach, data) {
     svg.selectAll(".node").call(tooltip)
                           .call(force.drag)
                           .on("click", onNodeClick);
-    
-    ctxmenu.call(svg, svg.selectAll(".node"));
-    ctxmenu.on("open", function() {
-        tooltip.hide();
-    }).on("view", function(d) {
-        var reports = d.get_node_data();
-        var process_ids = {};
-        reports.forEach(function(report) {
-            if (report["ProcessID"]) {
-                process_ids[report["ProcessID"][0]] = true;
-            }
-        });
-        window.open("graph.html?id="+d.get_id()+"&processid="+Object.keys(process_ids).join(",")+"&lightweight=true", "_blank");
-    }).on("hide", function(ds) {
-        ids = {};
-        graphs.map(function(d) {
-            ids[d.get_id()] = true;
-        })
-        ds.map(function(d) {
-            delete ids[d.get_id()];
-        })
-        window.open("compare.html?id="+Object.keys(ids).join(","),'_blank');
-    });
+
+    refreshContextMenus();    
 }
 
 var kernelgraph_for_trace = function(trace) {
