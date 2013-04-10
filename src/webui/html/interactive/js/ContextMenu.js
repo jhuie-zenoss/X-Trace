@@ -236,9 +236,6 @@ var CompareGraphContextMenu = function() {
         if (d.operation=="viewthis") {
             handlers.view.call(this, d3.select(this).datum());
         }
-        if (d.operation=="removethis") {
-            handlers.hide.call(this, d3.select(this).data());
-        }
         if (d.operation=="removeselected") {
             handlers.hide.call(this, d3.selectAll(".node.selected").data());
         }
@@ -249,6 +246,11 @@ var CompareGraphContextMenu = function() {
         }
         if (d.operation=="compareselected") {
             handlers.compare.call(this, d3.selectAll(".node.selected").data());            
+        }
+        if (d.operation=="comparetoselected") {
+            var ds = d3.selectAll(".node.selected").data().concat(d3.select(this).data());
+            console.log(ds);
+            handlers.compare.call(this, ds);
         }
     }
         
@@ -266,30 +268,35 @@ var CompareGraphContextMenu = function() {
                 "name": "View execution graph"
             })
             
-            items.push({
-                "operation": "removethis",
-                "name": "Remove",
-            });
-            
-            if (!selection.filter(".selected").empty()) {
+            var selected = selection.filter(".selected");
+            if (!selected.empty() && (selection[0].length - selected[0].length) > 1) {
                 items.push({
                     "operation": "removeselected",
-                    "name": "Remove selected"
+                    "name": "Remove selected from the clustering"
                 });
             }
             
-            if (selection.filter(".selected")[0].length > 1) {
+            if (selected[0].length > 1) {
                 items.push({
                     "operation": "clusterselected",
-                    "name": "Cluster selected"
+                    "name": "Re-cluster using selected"
                 });
             }
             
-            if (selection.filter(".selected")[0].length == 2) {
+            if (selected[0].length == 2) {
                 items.push({
                     "operation": "compareselected",
-                    "name": "Compare selected"
+                    "name": "Compare graphs of selected"
                 });
+            }
+            
+            if (selected[0].length == 1) {
+                if (selected.datum() != d3.select(this).datum()) {
+                    items.push({
+                        "operation": "comparetoselected",
+                        "name": "Compare graph of this to selected"
+                    });
+                }
             }
             
             ctxmenu.call(this, items);         
