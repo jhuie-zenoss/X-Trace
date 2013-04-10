@@ -36,7 +36,7 @@ function getSelected() {
 function compareSelected() {
     var selected = getSelectedIDs();
     if (selected.length >= 2) {
-        window.open("/interactive/compare.html?id="+selected.join(), "_blank");
+        window.open("/interactive/cluster.html?id="+selected.join(), "_blank");
     }
 }
 
