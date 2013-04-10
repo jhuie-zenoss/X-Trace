@@ -10,6 +10,19 @@ var getParameter = function(name) {
         return results[1];
 };
 
+var getParameters = function() {
+    if (window.location.href.indexOf("?")==-1) return {};
+    var param_strs = window.location.href.substr(window.location.href.indexOf("?")+1).split("&");
+    var params = {};
+    param_strs.forEach(function(str) {
+        splits = str.split("=");
+        if (splits.length==2) {
+            params[splits[0]] = splits[1];
+        }
+    });
+    return params
+}
+
 var getReports = function(ids_str, callback, errback) {
     // Batches report requests
     if (ids_str==null) {
