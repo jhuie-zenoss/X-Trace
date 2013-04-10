@@ -12,7 +12,7 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
     var listSVG = rootSVG.append("svg").attr("class", "history-attach");
     
     // Create the graph and history representations
-    var graph = createGraphFromReports(reports);
+    var graph = createGraphFromReports(reports, params);
     var history = DirectedAcyclicGraphHistory();
     
     

@@ -70,7 +70,7 @@ var getAllReports = function(ids, callback, errback) {
     xhr.send(null);    
 }
 
-var createGraphFromReports = function(reports) {
+var createGraphFromReports = function(reports, params) {
     var nodes = {};
     
     // First create a node for each report
@@ -82,6 +82,19 @@ var createGraphFromReports = function(reports) {
             nodes[id].never_visible = true;
         }
         nodes[id].report = report;
+    }
+    
+    // Second, filter any nodes as specified in params
+    if (params.hasOwnProperty("processid")) {
+        var processids = params["processid"].split(",");
+        var processid_map = {};
+        processids.forEach(function(id) { processid_map[id]=true; });
+        for (var id in nodes) {
+            var node = nodes[id];
+            if (!node.report["ProcessID"] || !processid_map.hasOwnProperty(node.report["ProcessID"][0])) {
+                node.never_visible = true;
+            }
+        }        
     }
     
     // Second link the nodes together
