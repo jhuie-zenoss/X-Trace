@@ -35,7 +35,7 @@ window.onload = function() {
 	var callback = function(data) {
 		console.log("Reports received, accessible as window.data", data);
 		window.data = data;
-	    window.xtrace = new XTraceCompareGraph(document.body, data);
+	    window.xtrace = new XTraceClusterViz(document.body, data);
 	};
 	var errback = function(message, error) {
 		console.log("Error retrieving reports", error);

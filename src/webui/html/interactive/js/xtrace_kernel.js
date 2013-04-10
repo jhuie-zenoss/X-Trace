@@ -1,4 +1,4 @@
-function XTraceCompareGraph(attach, data) {
+function XTraceClusterViz(attach, data) {
     
     var w=1000, h=1000;
     
