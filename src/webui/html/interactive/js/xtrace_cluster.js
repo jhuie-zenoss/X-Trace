@@ -124,38 +124,3 @@ function XTraceClusterViz(attach, data) {
 
     refreshContextMenus();    
 }
-
-var kernelgraph_for_trace = function(trace) {
-    return KernelGraph.fromJSON(trace);
-}
-
-var yarnchild_kernelgraph_for_trace = function(trace) {
-    // Create the full graph
-    var graph = kernelgraph_for_trace(trace);
-    
-    
-    // Find the process IDs for yarnchild processes
-    var yarnchild_process_ids = {};
-    graph.get_nodes().forEach(function(node) {
-        if (node.data["Agent"] &&
-                node.data["Agent"][0]=="YarnChild") {
-            yarnchild_process_ids[node.data["ProcessID"][0]]=true;
-        }
-    });
-    
-    // Remove any nodes that aren't yarnchild processes
-    graph.get_nodes().forEach(function(node) {
-        if (!node.data["ProcessID"] || !yarnchild_process_ids.hasOwnProperty(node.data["ProcessID"][0])) {
-            graph.remove(node);
-        }
-    });
-    
-    return graph;
-}
-
-var node_count_kernel = function(a, b) {
-    var ga = yarnchild_kernelgraph_for_trace(a);
-    var gb = yarnchild_kernelgraph_for_trace(b);
-    
-    return new NodeCountKernel().calculate(ga, gb);
-}
