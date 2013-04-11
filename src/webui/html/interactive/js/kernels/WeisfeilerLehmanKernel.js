@@ -1,5 +1,5 @@
 function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
-    this.depth = (depth && depth > 0) ? depth : 6;
+    this.depth = (depth && depth > 0) ? depth : 10;
     this.kernel = kernel ? kernel : new NodeCountKernel();
     
     var generator = new WLMultisetLabelGenerator();
@@ -67,7 +67,7 @@ function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
                 if (score > 1) score = 1/score;
                 a.get_node_ids_for_label(label).forEach(function(id) {
                     labels_a[id].push(label); // Save each node's labels from this round
-                    scores_a[id] += score==1? 1 : 0;    // Update each node's aggregate score
+                    scores_a[id] += score>0 ? 0.5+0.5*score : 0;    // Update each node's aggregate score
                 })
             });
             b.get_labels().forEach(function(label) {
@@ -75,7 +75,7 @@ function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
                 if (score > 1) score = 1/score;
                 b.get_node_ids_for_label(label).forEach(function(id) {
                     labels_b[id].push(label); // Save each node's labels from this round
-                    scores_b[id] += score==1? 1 : 0;    // Update each node's aggregate score
+                    scores_b[id] += score>0 ? 0.5+0.5*score : 0;;    // Update each node's aggregate score
                 })
                 
             })

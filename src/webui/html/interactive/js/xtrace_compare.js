@@ -3,13 +3,27 @@ function XTraceCompareViz(attach, data, params) {
     var data_a = data[0];
     var data_b = data[1];
     
-    var kernel = new WeisfeilerLehmanKernel();
+    var kernel = new WeisfeilerLehmanKernel(5);
     var kga = yarnchild_kernelgraph_for_trace(data_a);
     var kgb = yarnchild_kernelgraph_for_trace(data_b);
     this.scores = kernel.calculate_node_stability(kga, kgb, "both");
     
     var labels_a = this.scores[0].labels, labels_b = this.scores[1].labels;
     var scores_a = this.scores[0].scores, scores_b = this.scores[1].scores;
+    
+    var max = 0;
+    for (var id in scores_a) {
+        scores_a[id] = scores_a[id] / labels_a[id].length;
+        if (scores_a[id] > max) {
+            max = scores_a[id];
+        }
+    }
+    for (var id in scores_b) {
+        scores_b[id] = scores_b[id] / labels_b[id].length;
+        if (scores_b[id] > max) {
+            max = scores_b[id];
+        }
+    }
     
     data_a.reports.forEach(function(report) {
         if (!report.hasOwnProperty("X-Trace")) return;
@@ -18,7 +32,7 @@ function XTraceCompareViz(attach, data, params) {
             report["KernelLabels"] = labels_a[id];
         }
         if (scores_a.hasOwnProperty(id)) {
-            report["KernelScore"] = [scores_a[id] / labels_a[id].length];
+            report["KernelScore"] = [scores_a[id] / max];
         }
     })
     
@@ -28,7 +42,7 @@ function XTraceCompareViz(attach, data, params) {
         if (labels_b.hasOwnProperty(id)) {
             report["KernelLabels"] = labels_b[id];
             if (scores_b.hasOwnProperty(id)) {
-                report["KernelScore"] = [scores_b[id] / labels_b[id].length];
+                report["KernelScore"] = [scores_b[id] / max];
             }
         }
     })
@@ -45,7 +59,7 @@ function XTraceCompareViz(attach, data, params) {
     var kernelscore_opacity = function(d) {
         if (d.report["KernelScore"]) {
             var score = d.report["KernelScore"][0];
-            return 0.2 + 6 * Math.pow(1-score, 4);
+            return 0.2 + 5 * Math.pow(1-score, 5);
         }
         return 1;
     }
