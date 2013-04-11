@@ -148,11 +148,18 @@ function KernelGraph(id, nodelist) {
     }
     
     this.get_labels = function() {
-        var ls = {};
-        Object.keys(labels).forEach(function(label) {
-            ls[label] = Object.keys(labels[label]);
-        })
-        return ls;
+        return Object.keys(labels);
+    }
+    
+    this.get_node_ids_for_label = function(label) {
+        if (labels.hasOwnProperty(label)) {
+            return Object.keys(labels[label]);
+        }
+        return [];
+    }
+    
+    this.get_label_count = function(label) {
+        return this.get_node_ids_for_label(label).length;
     }
     
     this.clone = function() {

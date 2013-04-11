@@ -1,0 +1,9 @@
+.compare-visualization > div {
+	width: 50%; 
+	height: 100%; 
+	position: absolute;
+}
+
+.compare-visualization > div.right {
+	right: 0;
+}

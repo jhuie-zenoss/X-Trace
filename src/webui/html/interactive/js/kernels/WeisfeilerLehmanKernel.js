@@ -45,51 +45,40 @@ function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
         return score;        
     }
     
-    this.calculate_node_stability = function(a, b) {
-        var all_labels = {};
-        var scores_a = {};
-        var scores_b = {};
-        var count_a = {};
-        var count_b = {};
-        a.get_node_ids().forEach(function(id) { scores_a[id] = 0; count_a[id] = 0; all_labels[id] = []; });
-        b.get_node_ids().forEach(function(id) { scores_b[id] = 0; count_b[id] = 0; all_labels[id] = []; });
+    this.calculate_node_stability = function(a, b) {        
+        var labels_a = {}, labels_b = {}; // For each node, keeps track of all the labels that get assigned to it for all iterations
+        var scores_a = {}, scores_b = {}; // Counts the number of times a node's label exists in both graphs
+        
+        // Initialize values with all node ids
+        a.get_node_ids().forEach(function(id) { labels_a[id] = []; scores_a[id] = 0; });
+        b.get_node_ids().forEach(function(id) { labels_b[id] = []; scores_b[id] = 0; });
         
         for (var i = 0; i < this.depth; i++) {
-            
-            a.get_nodes().concat(b.get_nodes()).forEach(function(node) {
-                all_labels[node.id].push(node.label);
+            // Update the scores for labels that occur in both graphs
+            var la = a.get_labels(), lb = b.get_labels();
+            a.get_labels().forEach(function(label) {
+                var score = b.get_label_count(label) / a.get_label_count(label);
+                if (score > 1) score = 1/score;
+                a.get_node_ids_for_label(label).forEach(function(id) {
+                    labels_a[id].push(label); // Save each node's labels from this round
+                    scores_a[id] += score;    // Update each node's aggregate score
+                })
             });
+            b.get_labels().forEach(function(label) {
+                var score = a.get_label_count(label) / b.get_label_count(label);
+                if (score > 1) score = 1/score;
+                b.get_node_ids_for_label(label).forEach(function(id) {
+                    labels_b[id].push(label); // Save each node's labels from this round
+                    scores_b[id] += score;    // Update each node's aggregate score
+                })
+                
+            })
             
-            var labels_a = a.get_labels();
-            var labels_b = b.get_labels();
-            console.log("Round "+i, labels_a, labels_b);
-            for (var label in labels_a) {
-                if (labels_b[label] && labels_b[label].length > 0) {
-                    labels_a[label].forEach(function(id) {
-                        scores_a[id]++;
-                    });
-                } else {
-                }
-            }
-            for (var label in labels_b) {
-                if (labels_a[label] && labels_a[label].length > 0) {
-                    labels_b[label].forEach(function(id) {
-                        scores_b[id]++;
-                    });
-                }
-            }
-            a.get_node_ids().forEach(function(id) { count_a[id]++; });
-            b.get_node_ids().forEach(function(id) { count_b[id]++; });
+            // Relabel the graph for the next round
             a = relabel(a);
             b = relabel(b);
         }
-        for (var id in scores_a) {
-            scores_a[id] = scores_a[id] / count_a[id];
-        }
-        for (var id in scores_b) {
-            scores_b[id] = scores_b[id] / count_b[id];
-        }
-        return [scores_a, scores_b];
+        return [{"labels": labels_a, "scores": scores_a}, {"labels": labels_b, "scores": scores_b}];
     }
 }
 

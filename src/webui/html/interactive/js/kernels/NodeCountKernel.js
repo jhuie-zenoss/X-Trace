@@ -8,26 +8,14 @@ NodeCountKernel.prototype.calculate = function(a, b) {
     
     // Merge the labels from each graph
     var labels = {};
-    for (var label in la) {
-        labels[label] = true;
-    }
-    for (var label in lb) {
-        labels[label] = true;
-    }
+    la.forEach(function(label) { labels[label] = true; });
+    lb.forEach(function(label) { labels[label] = true; });
     
     // Create the feature vectors; in this case each feature is the count of nodes in the graph with that label
-    var va=[], vb=[], label;
-    for (label in labels) {
-        if (la.hasOwnProperty(label)) {
-            va.push(la[label].length);
-        } else {
-            va.push(0);
-        }
-        if (lb.hasOwnProperty(label)) {
-            vb.push(lb[label].length);
-        } else {
-            vb.push(0);
-        }
+    var va=[], vb=[];
+    for (var label in labels) {
+        va.push(a.get_label_count(label));
+        vb.push(b.get_label_count(label));
     }
     return dotProduct(normalize(va), normalize(vb));
 }
