@@ -28,6 +28,9 @@ var DirectedAcyclicGraphTooltip = function() {
             }
         }
         
+        // Do the label
+        appendRow("Label", hash_report(report), tooltip);
+        
         // Do the remainder
         for (var key in report) {
             if (!seen[key]) {

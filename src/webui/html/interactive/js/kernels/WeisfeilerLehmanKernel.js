@@ -2,49 +2,73 @@ function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
     this.depth = (depth && depth > 0) ? depth : 20;
     this.kernel = kernel ? kernel : new NodeCountKernel();
     
-    generator = new WLMultisetLabelGenerator();
+    var generator = new WLMultisetLabelGenerator();
     
-    var relabel = function(graph) {
+    var relabel = function(graph, reverse) {
         // Create a new graph for the relabelling
         var next = graph.clone();
         
-        // Relabel all the nodes in the graph with their neighbours
-        next.get_nodes().forEach(function(node) {
-            var neighbours = next.get_child_labels(node);
-            node.label = this.generator.relabel(node.label, neighbours);
+        // Relabel the nodes in the new graph, based on their neighbours in the old graph
+        graph.get_nodes().forEach(function(node) {
+            var neighbours = reverse ? graph.get_parent_labels(node) : graph.get_child_labels(node);
+            next.relabel(node.id, generator.relabel(node.label, neighbours));
         });
         
-        // Anybody who actually has no neighbours should be removed, to prevent over representation
-        next.get_node_ids().forEach(function(id) {
-            if (next.get_child_ids(id).length==0) next.remove(id);
-        })
+        // Any node in the old graph that has no neighbours should be removed from the new graph
+        graph.get_nodes().forEach(function(node) {
+            var neighbours = reverse ? graph.get_parent_ids(node.id) : graph.get_child_ids(node.id);
+            if (neighbours.length==0) next.remove(node.id);
+        });
+
         return next;
     }
     
     this.calculate = function(a, b) {
+        return (this.calculate_forwards(a, b) + this.calculate_backwards(a, b)) / 2;
+    }
+    
+    this.calculate_forwards = function(a, b) {
+        return this.do_calculate(a, b, false);        
+    }
+    
+    this.calculate_backwards = function(a, b) {
+        return this.do_calculate(a, b, true);
+    }
+    
+    this.do_calculate = function(a, b, reverse) {
         var score = this.kernel.calculate(a, b);
         for (var i = 1; i < this.depth; i++) {
-            a = relabel(a);
-            b = relabel(b);
+            a = relabel(a, reverse);
+            b = relabel(b, reverse);
             score += this.kernel.calculate(a, b);
         }
         return score;        
     }
     
     this.calculate_node_stability = function(a, b) {
+        var all_labels = {};
         var scores_a = {};
         var scores_b = {};
-        a.get_node_ids().forEach(function(id) { scores_a[id] = 0; });
-        b.get_node_ids().forEach(function(id) { scores_b[id] = 0; });
+        var count_a = {};
+        var count_b = {};
+        a.get_node_ids().forEach(function(id) { scores_a[id] = 0; count_a[id] = 0; all_labels[id] = []; });
+        b.get_node_ids().forEach(function(id) { scores_b[id] = 0; count_b[id] = 0; all_labels[id] = []; });
         
         for (var i = 0; i < this.depth; i++) {
+            
+            a.get_nodes().concat(b.get_nodes()).forEach(function(node) {
+                all_labels[node.id].push(node.label);
+            });
+            
             var labels_a = a.get_labels();
             var labels_b = b.get_labels();
+            console.log("Round "+i, labels_a, labels_b);
             for (var label in labels_a) {
                 if (labels_b[label] && labels_b[label].length > 0) {
                     labels_a[label].forEach(function(id) {
                         scores_a[id]++;
                     });
+                } else {
                 }
             }
             for (var label in labels_b) {
@@ -54,8 +78,16 @@ function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
                     });
                 }
             }
+            a.get_node_ids().forEach(function(id) { count_a[id]++; });
+            b.get_node_ids().forEach(function(id) { count_b[id]++; });
             a = relabel(a);
             b = relabel(b);
+        }
+        for (var id in scores_a) {
+            scores_a[id] = scores_a[id] / count_a[id];
+        }
+        for (var id in scores_b) {
+            scores_b[id] = scores_b[id] / count_b[id];
         }
         return [scores_a, scores_b];
     }
@@ -76,12 +108,12 @@ WLMultisetLabelGenerator.prototype.relabel = function(label, /*optional*/neighbo
     if (!neighbour_labels) neighbour_labels = [];
     
     // First, figure out the label, making sure neighbours are sorted
-    var label = label+":"+neighbour_labels.sort().join(",");
+    var canonical_label = label+":"+neighbour_labels.sort().join(",");
     
     // Now relabel this label if it hasn't already been relabelled
-    if (!this.labels.hasOwnProperty(label)) { 
-        this.labels[label] = this.next();
+    if (!this.labels.hasOwnProperty(canonical_label)) { 
+        this.labels[canonical_label] = this.next();
     }
     
-    return this.labels[label];
+    return this.labels[canonical_label];
 }

@@ -29,6 +29,11 @@
 <script type="text/javascript" src="js/ContextMenu.js"></script>
 <script type="text/javascript" src="js/xtrace_utils.js"></script>
 <script type="text/javascript" src="js/xtrace_dagre.js"></script>
+<script type="text/javascript" src="js/xtrace_kernel.js"></script>
+<script type="text/javascript" src="js/kernels/KernelGraph.js"></script>
+<script type="text/javascript" src="js/kernels/Kernel.js"></script>
+<script type="text/javascript" src="js/kernels/NodeCountKernel.js"></script>
+<script type="text/javascript" src="js/kernels/WeisfeilerLehmanKernel.js"></script>
 <link href="stylesheets/xtrace.css" rel="stylesheet" type="text/css">
 <link href="stylesheets/tipsy.css" rel="stylesheet" type="text/css" />
 <link href="stylesheets/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
@@ -41,8 +46,26 @@ window.onload = function() {
 		window.data = data;
         var left = document.getElementById("left");
         var right = document.getElementById("right");
+        
+        kernel = new WeisfeilerLehmanKernel();
+        kga = yarnchild_kernelgraph_for_trace(data[0]);
+        kgb = yarnchild_kernelgraph_for_trace(data[1]);
+        scores = kernel.calculate_node_stability(kga, kgb);
+
         window.xtrace_left = new XTraceDAG(left, data[0].reports, params);
         window.xtrace_right = new XTraceDAG(right, data[1].reports, params);
+        
+        d3.select(left).selectAll(".node").attr("opacity", function(d) {
+            var id = d.id;
+            var score = scores[0][id];
+            return 0.8 * (1-scores[0][id]) + 0.2;
+        });
+        d3.select(right).selectAll(".node").attr("opacity", function(d) {
+            var id = d.id;
+            var score = scores[1][id];
+            return 0.8 * (1-scores[1][id]) + 0.2;
+        });
+        
 	};
 	var errback = function(message, error) {
 		console.log("Error retrieving reports", error);
