@@ -6,7 +6,7 @@ function XTraceCompareViz(attach, data, params) {
     var kernel = new WeisfeilerLehmanKernel();
     var kga = yarnchild_kernelgraph_for_trace(data_a);
     var kgb = yarnchild_kernelgraph_for_trace(data_b);
-    this.scores = kernel.calculate_node_stability(kga, kgb);
+    this.scores = kernel.calculate_node_stability(kga, kgb, "both");
     
     var labels_a = this.scores[0].labels, labels_b = this.scores[1].labels;
     var scores_a = this.scores[0].scores, scores_b = this.scores[1].scores;
@@ -42,20 +42,23 @@ function XTraceCompareViz(attach, data, params) {
     this.left_dag = new XTraceDAG(left, data_a.reports, params);
     this.right_dag = new XTraceDAG(right, data_b.reports, params);
     
-    // Set the opacity of the nodes
-    d3.select(left).selectAll(".node").attr("opacity", function(d) {
+    var kernelscore_opacity = function(d) {
         if (d.report["KernelScore"]) {
             var score = d.report["KernelScore"][0];
-            return 0.25 + 2 * (1-score);
+            return 0.2 + 6 * Math.pow(1-score, 4);
         }
         return 1;
-    })
+    }
     
-    d3.select(right).selectAll(".node").attr("opacity", function(d) {
-        if (d.report["KernelScore"]) {
-            var score = d.report["KernelScore"][0];
-            return 0.25 + 2 * (1-score);
-        }
-        return 1;
-    })
+    var edge_kernelscore_opacity = function(d) {
+        return kernelscore_opacity(d.source) + kernelscore_opacity(d.target) / 2;
+    }
+    
+    // Set the opacity of the nodes
+    d3.select(left).selectAll(".node").attr("opacity", kernelscore_opacity);
+    d3.select(right).selectAll(".node").attr("opacity", kernelscore_opacity);
+    d3.select(left).selectAll(".edge").attr("opacity", edge_kernelscore_opacity);
+    d3.select(right).selectAll(".edge").attr("opacity", edge_kernelscore_opacity);
+    
+    
 }

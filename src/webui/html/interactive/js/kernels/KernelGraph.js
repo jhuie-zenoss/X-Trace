@@ -147,6 +147,18 @@ function KernelGraph(id, nodelist) {
         return this.get_children(node).map(function(node) { return node.label; });
     }
     
+    this.get_neighbour_ids = function(nodeid) {
+        return this.get_parent_ids(nodeid).concat(this.get_child_ids(nodeid));
+    }
+    
+    this.get_neighbours = function(node) {
+        return this.get_parents(node).concat(this.get_children(node));
+    }
+    
+    this.get_neighbour_labels = function(node) {
+        return this.get_child_labels(node).concat(this.get_parent_labels(node));
+    }
+    
     this.get_labels = function() {
         return Object.keys(labels);
     }

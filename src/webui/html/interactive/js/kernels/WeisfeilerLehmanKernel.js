@@ -1,22 +1,28 @@
 function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
-    this.depth = (depth && depth > 0) ? depth : 20;
+    this.depth = (depth && depth > 0) ? depth : 6;
     this.kernel = kernel ? kernel : new NodeCountKernel();
     
     var generator = new WLMultisetLabelGenerator();
     
-    var relabel = function(graph, reverse) {
+    var relabel = function(graph, direction) {
         // Create a new graph for the relabelling
         var next = graph.clone();
         
         // Relabel the nodes in the new graph, based on their neighbours in the old graph
         graph.get_nodes().forEach(function(node) {
-            var neighbours = reverse ? graph.get_parent_labels(node) : graph.get_child_labels(node);
+            var neighbours;
+            if (direction=="both") neighbours = graph.get_neighbour_labels(node);
+            else if (direction=="up") neighbours = graph.get_parent_labels(node);
+            else neighbours = graph.get_child_labels(node);
             next.relabel(node.id, generator.relabel(node.label, neighbours));
         });
         
         // Any node in the old graph that has no neighbours should be removed from the new graph
         graph.get_nodes().forEach(function(node) {
-            var neighbours = reverse ? graph.get_parent_ids(node.id) : graph.get_child_ids(node.id);
+            if (direction=="both") return;
+            var neighbours;
+            if (direction=="up") neighbours = graph.get_parent_ids(node);
+            else neighbours = graph.get_child_ids(node);
             if (neighbours.length==0) next.remove(node.id);
         });
 
@@ -24,28 +30,28 @@ function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
     }
     
     this.calculate = function(a, b) {
-        return (this.calculate_forwards(a, b) + this.calculate_backwards(a, b)) / 2;
+        return this.do_calculate(a, b, "both");
     }
     
     this.calculate_forwards = function(a, b) {
-        return this.do_calculate(a, b, false);        
+        return this.do_calculate(a, b, "down");        
     }
     
     this.calculate_backwards = function(a, b) {
-        return this.do_calculate(a, b, true);
+        return this.do_calculate(a, b, "up");
     }
     
-    this.do_calculate = function(a, b, reverse) {
+    this.do_calculate = function(a, b, direction) {
         var score = this.kernel.calculate(a, b);
         for (var i = 1; i < this.depth; i++) {
-            a = relabel(a, reverse);
-            b = relabel(b, reverse);
+            a = relabel(a, direction);
+            b = relabel(b, direction);
             score += this.kernel.calculate(a, b);
         }
         return score;        
     }
     
-    this.calculate_node_stability = function(a, b) {        
+    this.calculate_node_stability = function(a, b, direction) {        
         var labels_a = {}, labels_b = {}; // For each node, keeps track of all the labels that get assigned to it for all iterations
         var scores_a = {}, scores_b = {}; // Counts the number of times a node's label exists in both graphs
         
@@ -61,7 +67,7 @@ function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
                 if (score > 1) score = 1/score;
                 a.get_node_ids_for_label(label).forEach(function(id) {
                     labels_a[id].push(label); // Save each node's labels from this round
-                    scores_a[id] += score;    // Update each node's aggregate score
+                    scores_a[id] += score==1? 1 : 0;    // Update each node's aggregate score
                 })
             });
             b.get_labels().forEach(function(label) {
@@ -69,14 +75,14 @@ function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
                 if (score > 1) score = 1/score;
                 b.get_node_ids_for_label(label).forEach(function(id) {
                     labels_b[id].push(label); // Save each node's labels from this round
-                    scores_b[id] += score;    // Update each node's aggregate score
+                    scores_b[id] += score==1? 1 : 0;    // Update each node's aggregate score
                 })
                 
             })
             
             // Relabel the graph for the next round
-            a = relabel(a);
-            b = relabel(b);
+            a = relabel(a, direction);
+            b = relabel(b, direction);
         }
         return [{"labels": labels_a, "scores": scores_a}, {"labels": labels_b, "scores": scores_b}];
     }
