@@ -1,10 +1,10 @@
-.compare-visualization > div {
+.compare-visualization > span {
 	width: 50%; 
 	height: 100%; 
 	position: absolute;
 }
 
-.compare-visualization > div.right {
+.compare-visualization > span.right {
 	right: 0;
 }
 

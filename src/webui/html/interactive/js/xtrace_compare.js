@@ -35,8 +35,8 @@ function XTraceCompareViz(attach, data, params) {
 
     // Set up the divs to attach the child graphs
     d3.select(attach).classed("compare-visualization", true);
-    var left = d3.select(attach).append("div").classed("left", true).node();
-    var right = d3.select(attach).append("div").classed("right", true).node();
+    var left = d3.select(attach).append("span").classed("left", true).node();
+    var right = d3.select(attach).append("span").classed("right", true).node();
     
     // Do the child graphs
     this.left_dag = new XTraceDAG(left, data_a.reports, params);
