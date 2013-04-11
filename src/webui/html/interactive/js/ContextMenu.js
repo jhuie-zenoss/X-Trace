@@ -116,7 +116,7 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
                                .on("mouseout", onOptionMouseOut);
     
     var menu = function(selection) {
-        menu.hide();
+        menu.hide.call(this, selection);
         selection.each(function(d) {
             
             var items = [];
@@ -198,13 +198,16 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
             d3.select(this).classed("hascontextmenu", true);
         });
     }
-    
+
     menu.hide = function(selection) {
-        d3.selectAll(".hascontextmenu").each(function(d) {
+        console.log("menu.hide");
+        d3.select(this).selectAll(".hascontextmenu").each(function(d) {
             $(this).unbind("contextmenu");
-        })            
-        $(".context-menu").remove();
+        })
+        console.log("removing", d3.select(this).selectAll(".context-menu"));
+        d3.select(this).selectAll(".context-menu").remove();
     }
+    
     var onhide = function(nodes, selectionname) {}
     
     var handlers = {
@@ -258,7 +261,7 @@ var CompareGraphContextMenu = function() {
                                .on("open", onMenuOpen);
 
     var menu = function(selection) {
-        menu.hide();
+        menu.hide.call(this, selection);
         selection.each(function(d) {
             var items = [];
 
@@ -306,10 +309,12 @@ var CompareGraphContextMenu = function() {
     }
     
     menu.hide = function(selection) {
-        d3.selectAll(".hascontextmenu").each(function(d) {
+        console.log("menu.hide");
+        d3.select(this).selectAll(".hascontextmenu").each(function(d) {
             $(this).unbind("contextmenu");
-        })            
-        $(".context-menu").remove();
+        })
+        console.log("removing", d3.select(this).selectAll(".context-menu"));
+        d3.select(this).selectAll(".context-menu").remove();
     }
     
     var handlers = {
