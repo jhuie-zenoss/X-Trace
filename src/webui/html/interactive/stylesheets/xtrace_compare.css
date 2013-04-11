@@ -23,7 +23,8 @@
   font-family: Verdana;
 }
 
-.graph .node:hover {
+.graph .node:hover,
+.graph .node.selected {
   opacity: 1;
 }
 
