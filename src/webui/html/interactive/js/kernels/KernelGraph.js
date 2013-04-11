@@ -63,6 +63,8 @@ function KernelGraph(id, nodelist) {
     // This function completely removes a node from the trace.
     // Each of the node's children get re-linked to the node's parents and vice versa
     this.remove = function(node) {
+        if (typeof node == "string") node = nodes[node];
+        
         // Do nothing if the node doesn't exist
         if (!nodes.hasOwnProperty(node.id)) return;
         
@@ -169,6 +171,28 @@ function KernelGraph(id, nodelist) {
     this.get_id = function() {
         return id;
     }
+    
+    this.relabel = function(nodeid, label) {
+        var node = nodes[nodeid];
+        
+        delete labels[node.label][node.id];
+        
+        // If there are no other nodes sharing this node's label, remove the label too
+        if (Object.keys(labels[node.label]).length==0) {
+            delete labels[node.label];
+        }
+        
+        node.label = label;
+        
+        if (!labels.hasOwnProperty(label)) {
+            labels[label] = {};
+        }
+        labels[label][node.id] = true;
+    }
+    
+    this.print = function() {
+        console.log(nodes, labels, parents, children);
+    }
 }
 
 KernelGraph.fromJSON = function(json) {
@@ -180,6 +204,11 @@ KernelGraph.fromJSON = function(json) {
             for (var i = 0; i < edges.length; i++) {
                 trace.link(edges[i], node.id);
             }
+        }
+    });
+    nodes.forEach(function(node) {
+        if (node.data["Operation"] && node.data["Operation"][0]=="merge") {
+            trace.remove(node);
         }
     });
     return trace;
