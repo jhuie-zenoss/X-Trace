@@ -54,11 +54,21 @@ function XTraceCompareViz(attach, data, params) {
         return kernelscore_opacity(d.source) + kernelscore_opacity(d.target) / 2;
     }
     
-    // Set the opacity of the nodes
-    d3.select(left).selectAll(".node").attr("opacity", kernelscore_opacity);
-    d3.select(right).selectAll(".node").attr("opacity", kernelscore_opacity);
-    d3.select(left).selectAll(".edge").attr("opacity", edge_kernelscore_opacity);
-    d3.select(right).selectAll(".edge").attr("opacity", edge_kernelscore_opacity);
+    var set_opacities = function() {
+        console.log("setting opacities!");
+        // Set the opacity of the nodes
+        d3.select(left).selectAll(".node").attr("opacity", kernelscore_opacity);
+        d3.select(right).selectAll(".node").attr("opacity", kernelscore_opacity);
+        d3.select(left).selectAll(".edge").attr("opacity", edge_kernelscore_opacity);
+        d3.select(right).selectAll(".edge").attr("opacity", edge_kernelscore_opacity);
+    }
+    set_opacities();
+    
+    // Override the draw functions of the DAGs to set opacities
+    var left_draw = this.left_dag.draw;
+    var right_draw = this.right_dag.draw;
+    this.left_dag.draw = function() { left_draw(); set_opacities(); };
+    this.right_dag.draw = function() { right_draw(); set_opacities(); };
     
     
 }
