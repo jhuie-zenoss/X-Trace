@@ -309,11 +309,9 @@ var CompareGraphContextMenu = function() {
     }
     
     menu.hide = function(selection) {
-        console.log("menu.hide");
         d3.select(this).selectAll(".hascontextmenu").each(function(d) {
             $(this).unbind("contextmenu");
         })
-        console.log("removing", d3.select(this).selectAll(".context-menu"));
         d3.select(this).selectAll(".context-menu").remove();
     }
     
