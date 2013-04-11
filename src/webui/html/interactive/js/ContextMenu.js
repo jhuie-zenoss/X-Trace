@@ -200,11 +200,9 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
     }
 
     menu.hide = function(selection) {
-        console.log("menu.hide");
         d3.select(this).selectAll(".hascontextmenu").each(function(d) {
             $(this).unbind("contextmenu");
         })
-        console.log("removing", d3.select(this).selectAll(".context-menu"));
         d3.select(this).selectAll(".context-menu").remove();
     }
     
@@ -235,7 +233,6 @@ var CompareGraphContextMenu = function() {
     }
         
     var onMenuClick = function(d) {
-        console.log("menu click", d);
         if (d.operation=="viewthis") {
             handlers.view.call(this, d3.select(this).datum());
         }
@@ -252,7 +249,6 @@ var CompareGraphContextMenu = function() {
         }
         if (d.operation=="comparetoselected") {
             var ds = d3.selectAll(".node.selected").data().concat(d3.select(this).data());
-            console.log(ds);
             handlers.compare.call(this, ds);
         }
     }
@@ -265,7 +261,6 @@ var CompareGraphContextMenu = function() {
         selection.each(function(d) {
             var items = [];
 
-            console.log("mace mace mace ", selection.filter(".selected"), selection);
             items.push({
                 "operation": "viewthis",
                 "name": "View execution graph"
