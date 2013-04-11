@@ -108,7 +108,7 @@ function XTraceClusterViz(attach, data) {
             });
     
     var refreshContextMenus = function() {
-        ctxmenu.call(svg, svg.selectAll(".node"));        
+        ctxmenu.call(svg.node(), svg.selectAll(".node"));        
     }
 
     // Now actually draw the nodes and edges
