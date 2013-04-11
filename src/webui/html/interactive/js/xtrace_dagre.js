@@ -1,5 +1,6 @@
 // lightweight is an optional argument that will try to draw the graph as fast as possible
 function XTraceDAG(attachPoint, reports, /*optional*/ params) {
+    var dag = this;
     
     // Get the necessary parameters
     var lightweight = params.lightweight ? true : false;
@@ -73,7 +74,7 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
                 }
             });
             
-            draw();
+            dag.draw();
 
             // Refresh selected edges
             var selected = {};
@@ -166,7 +167,7 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
             })
             
             // Redraw the graph and such
-            draw();
+            dag.draw();
         })
         
         function highlightPath(center) {        
@@ -210,7 +211,7 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
     }
     
     // The main draw function
-    function draw() {
+    this.draw = function() {
         DAGTooltip.hide();                  // Hide any tooltips
         console.log("draw begin")
         var begin = (new Date()).getTime();  
@@ -236,7 +237,7 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
     }
     
     //Call the draw function
-    draw();
+    this.draw();
     
     // Start with the graph all the way zoomed out
     resetViewport();
@@ -252,5 +253,4 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
     this.graph = graph;
     this.resetViewport = resetViewport;
     this.history = history;
-    this.draw = draw;
 }
