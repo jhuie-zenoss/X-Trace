@@ -121,14 +121,13 @@ function XTraceClusterViz(attach, data) {
 
     // Create the force layout
     var force = d3.layout.force().size([w, h]).gravity(0.03).linkStrength(0.05).charge(-10).alpha(0.5)
-                  .linkDistance(function(edge) { return 1 + edge.weight*w/2; })
-                  .linkStrength(function(edge) { return 1 - edge.weight; })
                   .on("tick", update_positions);
 
     // Callback for when a node is clicked
     function node_click(d, e) {
+        var alreadySelected = d3.select(this).classed("selected");
         if (!d3.event.ctrlKey) svg.selectAll(".node").classed("selected", false);
-        d3.select(this).classed("selected", !d3.select(this).classed("selected"));
+        d3.select(this).classed("selected", !alreadySelected);
         svg.selectAll(".node").each(function(d) { d.selected = d3.select(this).classed("selected"); });
         draw();
     }
@@ -150,8 +149,9 @@ function XTraceClusterViz(attach, data) {
         // Calculate the edge weights as being normalized scores
         if (minEdge.score!=maxEdge.score) {
             edges.forEach(function(edge) {
-                edge.weight = 1 - Math.pow((edge.score - minEdge.score) / (maxEdge.score - minEdge.score), 2);
+                edge.weight = 1-Math.pow((edge.score - minEdge.score) / (maxEdge.score - minEdge.score), 1);
             })
+            
         }
 
         // Now actually draw the nodes and edges        
@@ -168,15 +168,17 @@ function XTraceClusterViz(attach, data) {
         ctxmenu.call(svg.node(), svg.selectAll(".node"));
 
         // Update the selected stuff
-        svg.selectAll(".edge").classed("visible", function(d) {
-            return d.source.selected && d.target.selected;
+        svg.selectAll(".edge").classed("selected", function(d) {
+            return d.source.selected || d.target.selected;
         });
         svg.selectAll(".edgelabel").classed("visible", function(d) {
-            return d.source.selected && d.target.selected;
+            return d.source.selected || d.target.selected;
         });
         
         // Restart the force
-        force.stop().nodes(nodes).links(edges).alpha(0.5).start();
+        force.linkDistance(function(edge) { return 1 + edge.weight*w/2; })
+             .linkStrength(function(edge) { return 1 - edge.weight; })
+             .nodes(nodes).links(edges).alpha(0.5).start();
     }
     
     console.log("Extracting Yarnchild Graphs");

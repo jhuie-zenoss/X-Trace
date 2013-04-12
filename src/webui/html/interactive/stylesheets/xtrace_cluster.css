@@ -13,11 +13,13 @@
 .edge {
 	width: 1;
 	stroke: #BBB;
-	opacity: 1;
+	opacity: 0.3;
 }
 
-.edge.visible {
+.edge.selected {
 	opacity: 1;
+	width: 2;
+	stroke: #999;
 }
 
 .edgelabel {
