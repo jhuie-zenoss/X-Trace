@@ -13,6 +13,19 @@
 .edge {
 	width: 1;
 	stroke: #BBB;
+	opacity: 1;
+}
+
+.edge.visible {
+	opacity: 1;
+}
+
+.edgelabel {
+	opacity: 0;
+}
+
+.edgelabel.visible {
+	opacity: 1;
 }
 
 .xtrace-tooltip {
