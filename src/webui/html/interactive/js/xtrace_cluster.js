@@ -1,4 +1,60 @@
 function XTraceClusterViz(attach, data) {
+    
+    // First set up the workers
+    var numWorkers = 1;
+    
+    var workerOnMessage = function(event) {
+        // Give the worker a new task immediately
+        giveTaskToWorker(this);
+        
+        // Add the edge
+        var edge = event.data;
+        edge.source = nodemap[edge.source];
+        edge.target = nodemap[edge.target];
+        edges.push(edge);            
+        
+        // Make sure the source and target nodes exist
+        if (nodes.indexOf(edge.source)==-1) nodes.push(edge.source);
+        if (nodes.indexOf(edge.target)==-1) nodes.push(edge.target);
+        
+        draw();
+    }
+    
+    // A function to give workers stuff to do
+    var giveTaskToWorker = function() {
+        var i = 1, j = 0, n = data.length;
+        
+        function progress() { j++; if (i==j) { j=0; i++; } }
+
+        return function(worker) {
+            if (i < n) {
+                worker.postMessage({type: "calculate", a: i, b: j});
+                progress();
+            } else {
+                worker.terminate();
+            }
+        };
+    }();
+
+    console.log("Kicking off "+numWorkers+" workers");
+    var toKickoff = numWorkers;    
+    var createWorker = function() {
+        toKickoff--;
+        
+        // Set up the worker
+        console.log("Kicking off a worker, "+toKickoff+" remaining");
+        var worker = new Worker("js/kernels/KernelWorker.js");
+        worker.onmessage = workerOnMessage;
+        
+        // Give the data and some initial tasks to the worker
+        worker.postMessage({type: "data", data: data});
+        giveTaskToWorker(worker);
+        giveTaskToWorker(worker);
+        
+        // Schedule another worker to be created if necessary
+        if (toKickoff > 0) window.setTimeout(createWorker, 0);
+    }
+    createWorker();
 
     var w=1000, h=1000, edges = [], nodes = [], nodemap = {};
     
@@ -7,6 +63,9 @@ function XTraceClusterViz(attach, data) {
                                              .attr("viewBox", "0 0 " + w + " " + h )
                                              .attr("preserveAspectRatio", "xMidYMid meet");
     svg.node().oncontextmenu = function(d) { return false; };
+    var edgesAttach = svg.append("g").attr("class", "edges");
+    var labelsAttach = svg.append("g").attr("class", "labels");
+    var nodesAttach = svg.append("g").attr("class", "nodes");
     
     // Set up the tooltip and context menu
     var tooltip = CompareTooltip();
@@ -95,15 +154,15 @@ function XTraceClusterViz(attach, data) {
             })
         }
 
-        // Now actually draw the nodes and edges
-        svg.selectAll(".edge").data(edges).enter().insert("line", ":first-child").classed("edge", true);
-        svg.selectAll(".node").data(nodes).enter().append("circle").classed("node", true).attr("r", 10);
-        svg.selectAll(".node").call(tooltip).call(force.drag);//.on("click", node_click);
-        svg.selectAll(".edgelabel").data(edges).enter().append("g").attr("class", "edgelabel")
+        // Now actually draw the nodes and edges        
+        edgesAttach.selectAll(".edge").data(edges).enter().insert("line", ":first-child").classed("edge", true);
+        nodesAttach.selectAll(".node").data(nodes).enter().append("circle").classed("node", true).attr("r", 10);
+        nodesAttach.selectAll(".node").call(tooltip).call(force.drag).on("click", node_click);
+        labelsAttach.selectAll(".edgelabel").data(edges).enter().append("g").attr("class", "edgelabel")
                                                        .append("text").attr("dx", 1)
                                                        .attr("dy", ".35em")
                                                        .attr("text-anchor", "middle")
-                                                       .text(function(d) { return d.score; });
+                                                       .text(function(d) { return d.score.toFixed(3); });
         
         // Reattach new menus
         ctxmenu.call(svg.node(), svg.selectAll(".node"));
@@ -119,25 +178,6 @@ function XTraceClusterViz(attach, data) {
         // Restart the force
         force.stop().nodes(nodes).links(edges).alpha(0.5).start();
     }
-
-    // Set up the worker and start calculating the distances
-    console.log("Kicking off worker");
-    var worker = new Worker("js/kernels/KernelWorker.js");
-    worker.onmessage = function(event) {
-        if (event.data.hasOwnProperty("node")) {
-            var node = event.data.node;
-            console.log("Worker adding node", node.id);
-            nodes.push(nodemap[node.id]);
-        } else if (event.data.hasOwnProperty("edge")) {
-            var edge = event.data.edge;
-            console.log("Worker adding edge between", edge.source, edge.target);
-            edge.source = nodemap[edge.source];
-            edge.target = nodemap[edge.target];
-            edges.push(edge);
-        }
-        draw();
-    }
-    worker.postMessage(data);
     
     console.log("Extracting Yarnchild Graphs");
     data.forEach(function(report) { nodemap[report.id] = yarnchild_kernelgraph_for_trace(report); });
