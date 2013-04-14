@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
  * X-trace reporting context framework.  This context sends reports to a
  * TCP host and port set via the xtrace.tcpdest system property. For example,
  * to send reports to reports.x-trace.net:7000, run your program with:
- * 
+ *
  *   java -Dxtrace.reporter="edu.berkeley.xtrace.reporting.TcpReporter" \
  *        -Dxtrace.tcpdest="reports.x-trace.net:7000"
  *
@@ -46,83 +46,86 @@ import org.apache.log4j.Logger;
  */
 public final class TcpReporter extends Reporter
 {
-	private static final Logger LOG = Logger.getLogger(TcpReporter.class);
-	
-	// Connection to server or frontend daemon.
-	private Socket socket;
-	private DataOutputStream out;
-	
-	TcpReporter()
-	{
-		LOG.info("Creating TcpReportingContext");
-		
-		InetAddress host = null;
-		int port = 0;
-		
-		String tcpDest = System.getProperty("xtrace.tcpdest", "127.0.0.1:7831");
-		
-		try {
-			String[] split = tcpDest.split(":");
-			host = InetAddress.getByName(split[0]);
-			port = Integer.parseInt(split[1]);
-			
-		} catch (Exception e) {
-			LOG.warn("Invalid xtrace.tcpdest property. Expected host:port.", e);
-			System.exit(1);
-		}
-		
-		try {
-			socket = new Socket(host, port);
-			// TODO: Maybe use BufferedOutputStream? In that case, make sure
-			// to call flush() periodically for timely reporting.
-			out = new DataOutputStream(socket.getOutputStream());
-			
-		} catch (Exception se) {
-			LOG.warn("Failed to create X-Trace TCP socket", se);
-			socket = null;
-		}
-	}
+        private static final Logger LOG = Logger.getLogger(TcpReporter.class);
 
-	/**
-	 * Closes this reporter, releasing any resources
-	 */
-	public synchronized void close()
-	{
-		if (socket != null) {
-			LOG.info("Closing TcpReporter");
-			try {
-				out.flush();
-				socket.close();
-			} catch (IOException e) {;}
-			socket = null;
-		}
-	}
-	
-	public synchronized void flush() {
-		super.flush();
-		if (socket != null) {
-			try {
-				out.flush();
-			} catch (IOException e) {;}
-		}
-	}
+        // Connection to server or frontend daemon.
+        private Socket socket;
+        private DataOutputStream out;
 
-	/**
-	 * Sends a report to the local reporting daemon
-	 *
-	 * @param r the report to send
-	 */
-	@Override
-	public synchronized void sendReport(Report r) {
-		try {
-			if (socket != null) {
-				byte[] bytes = r.toString().getBytes("UTF-8");
-				out.writeInt(bytes.length);
-				out.write(bytes);
-			}
-		} catch (IOException e) {
-			LOG.warn("Couldn't send report", e);
-			close();
-		}
-	}
+        TcpReporter()
+        {
+                LOG.info("Creating TcpReportingContext");
+
+                InetAddress host = null;
+                int port = 0;
+
+                // String tcpDest =
+                // System.getProperty("xtrace.tcpdest",
+                // "127.0.0.1:7831");
+                String tcpDest = "127.0.0.1:7830";
+
+                try {
+                        String[] split = tcpDest.split(":");
+                        host = InetAddress.getByName(split[0]);
+                        port = Integer.parseInt(split[1]);
+
+                } catch (Exception e) {
+                        LOG.warn("Invalid xtrace.tcpdest property. Expected host:port.", e);
+                        System.exit(1);
+                }
+
+                try {
+                        socket = new Socket(host, port);
+                        // TODO: Maybe use BufferedOutputStream? In that case, make sure
+                        // to call flush() periodically for timely reporting.
+                        out = new DataOutputStream(socket.getOutputStream());
+
+                } catch (Exception se) {
+                        LOG.warn("Failed to create X-Trace TCP socket", se);
+                        socket = null;
+                }
+        }
+
+        /**
+         * Closes this reporter, releasing any resources
+         */
+        public synchronized void close()
+        {
+                if (socket != null) {
+                        LOG.info("Closing TcpReporter");
+                        try {
+                                out.flush();
+                                socket.close();
+                        } catch (IOException e) {;}
+                        socket = null;
+                }
+        }
+
+        public synchronized void flush() {
+                super.flush();
+                if (socket != null) {
+                        try {
+                                out.flush();
+                        } catch (IOException e) {;}
+                }
+        }
+
+        /**
+         * Sends a report to the local reporting daemon
+         *
+         * @param r the report to send
+         */
+        @Override
+        public synchronized void sendReport(Report r) {
+                try {
+                        if (socket != null) {
+                                byte[] bytes = r.toString().getBytes("UTF-8");
+                                out.writeInt(bytes.length);
+                                out.write(bytes);
+                        }
+                } catch (IOException e) {
+                        LOG.warn("Couldn't send report", e);
+                        close();
+                }
+        }
 }
