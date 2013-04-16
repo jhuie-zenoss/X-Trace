@@ -76,6 +76,9 @@ var createGraphFromReports = function(reports, params) {
     // First create a node for each report
     for (var i = 0; i < reports.length; i++) {
         var report = reports[i];
+        if (!report.hasOwnProperty("X-Trace")) {
+            console.error("Bad report found with no ID:", report);
+        }
         var id = report["X-Trace"][0].substr(18);
         nodes[id] = new Node(id);
         if (report["Operation"] && report["Operation"]=="merge") {
