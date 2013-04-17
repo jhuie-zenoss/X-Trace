@@ -155,7 +155,7 @@ var get_yarnchild_reports = function(trace) {
     var yarnchild_process_ids = {};
     for (var i = 0; i < trace.reports.length; i++) {
         var report = trace.reports[i];
-        if (report.hasOwnProperty("Agent") && report["Agent"][0]=="YarnChild") {
+        if (report.hasOwnProperty("Agent") && (report["Agent"][0]=="YarnChild" || report["Agent"][0]=="Hadoop Job")) {
             yarnchild_process_ids[report["ProcessID"][0]] = true;
         }
     }
