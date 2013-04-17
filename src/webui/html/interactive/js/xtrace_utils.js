@@ -87,19 +87,6 @@ var createGraphFromReports = function(reports, params) {
         nodes[id].report = report;
     }
     
-    // Second, filter any nodes as specified in params
-    if (params.hasOwnProperty("processid")) {
-        var processids = params["processid"].split(",");
-        var processid_map = {};
-        processids.forEach(function(id) { processid_map[id]=true; });
-        for (var id in nodes) {
-            var node = nodes[id];
-            if (!node.report["ProcessID"] || !processid_map.hasOwnProperty(node.report["ProcessID"][0])) {
-                node.never_visible = true;
-            }
-        }        
-    }
-    
     // Second link the nodes together
     for (var i = 0; i < reports.length; i++) {
         var report = reports[i];
@@ -163,6 +150,55 @@ function hash_report(report) {
  return hash & hash;
 }
 
+var get_yarnchild_reports = function(trace) {
+    // First, get the process IDs for the yarnchild nodes
+    var yarnchild_process_ids = {};
+    for (var i = 0; i < trace.reports.length; i++) {
+        var report = trace.reports[i];
+        if (report.hasOwnProperty("Agent") && report["Agent"][0]=="YarnChild") {
+            yarnchild_process_ids[report["ProcessID"][0]] = true;
+        }
+    }
+    
+    // Now figure out which reports have to be removed
+    var retained = [];
+    var removed = [];
+    for (var i = 0; i < trace.reports.length; i++) {
+        var report = trace.reports[i];
+        if (!yarnchild_process_ids.hasOwnProperty(report["ProcessID"][0])) {
+            removed.push(report);
+        } else {
+            retained.push(report);
+        }
+    }
+    
+    // Create the map of parents to remap
+    var parents_remap = {};
+    for (var i = 0; i < removed.length; i++) {
+        var report = removed[i];
+        var id = report["X-Trace"][0].substr(18);
+        parents_remap[id] = report["Edge"];
+    }
+    
+    // Finally, remap the parents of the retained reports
+    for (var i = 0; i < retained.length; i++) {
+        var report = retained[i];
+        var parents = report["Edge"];
+        var newparents = [];
+        while (parents.length > 0) {
+            var next = parents.splice(0, 1);
+            if (parents_remap.hasOwnProperty(next)) {
+                parents = parents.concat(parents_remap[next]);
+            } else {
+                newparents.push(next);
+            }
+        }
+        report["Edge"] = newparents;
+    }
+    trace.reports = retained;
+    
+    return trace;
+}
 
 var kernelgraph_for_trace = function(trace) {
     return KernelGraph.fromJSON(trace);

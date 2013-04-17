@@ -72,14 +72,7 @@ function XTraceClusterViz(attach, data) {
     var ctxmenu = CompareGraphContextMenu();
     ctxmenu.on("open", tooltip.hide)
            .on("view", function(d) {
-                var reports = d.get_node_data();
-                var process_ids = {};
-                reports.forEach(function(report) {
-                    if (report["ProcessID"]) {
-                        process_ids[report["ProcessID"][0]] = true;
-                    }
-                });
-                window.open("graph.html?id="+d.get_id()+"&processid="+Object.keys(process_ids).join(",")+"&lightweight=true", "_blank");
+                window.open("graph.html?id="+d.get_id()+"&mapreduceonly=true&lightweight=true", "_blank");
             }).on("hide", function(ds) {
                 ids = {};
                 graphs.map(function(d) {
