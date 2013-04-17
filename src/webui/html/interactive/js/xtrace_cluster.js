@@ -49,7 +49,6 @@ function XTraceClusterViz(attach, data) {
         // Give the data and some initial tasks to the worker
         worker.postMessage({type: "data", data: data});
         giveTaskToWorker(worker);
-        giveTaskToWorker(worker);
         
         // Schedule another worker to be created if necessary
         if (toKickoff > 0) window.setTimeout(createWorker, 0);
@@ -144,7 +143,8 @@ function XTraceClusterViz(attach, data) {
             edges.forEach(function(edge) {
                 edge.weight = 1-Math.pow((edge.score - minEdge.score) / (maxEdge.score - minEdge.score), 1);
             })
-            
+        } else {
+            edges.forEach(function(edge) { edge.weight = 0.5; });
         }
 
         // Now actually draw the nodes and edges        
