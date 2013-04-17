@@ -180,20 +180,45 @@ var get_yarnchild_reports = function(trace) {
         parents_remap[id] = report["Edge"];
     }
     
+    var remap_parents = function(id) {
+        if (!parents_remap.hasOwnProperty(id)) {
+            return [id];
+        }
+        var parents = parents_remap[id];
+        var newparents = {};
+        for (var i = 0; i < parents.length; i++) {
+            remap_parents(parents[i]).forEach(function(parentid) {
+                newparents[parentid] = true;
+            })
+        }
+        parents_remap[id] = Object.keys(newparents);
+        return parents_remap[id];
+    }
+    
+    // Condense the map
+    for (var id in parents_remap) {
+        remap_parents(id);
+    }
+    
+    var get_new_parents = function(parents) {
+        var new_parents = {};
+        parents.forEach(function(id) {
+            if (!parents_remap.hasOwnProperty(id)) {
+                new_parents[id] = true;
+            } else {
+                parents_remap[id].forEach(function(newparentid) {
+                    new_parents[newparentid] = true;
+                })
+            }
+        })
+        return Object.keys(new_parents);
+    }
+    
     // Finally, remap the parents of the retained reports
     for (var i = 0; i < retained.length; i++) {
         var report = retained[i];
         var parents = report["Edge"];
-        var newparents = [];
-        while (parents.length > 0) {
-            var next = parents.splice(0, 1);
-            if (parents_remap.hasOwnProperty(next)) {
-                parents = parents.concat(parents_remap[next]);
-            } else {
-                newparents.push(next);
-            }
-        }
-        report["Edge"] = newparents;
+        report["Edge"] = get_new_parents(report["Edge"]);
     }
     trace.reports = retained;
     
