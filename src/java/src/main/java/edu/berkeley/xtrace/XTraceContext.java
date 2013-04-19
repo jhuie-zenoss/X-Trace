@@ -543,10 +543,9 @@ public class XTraceContext {
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
 		pw.flush();
-		String exception = IoUtil.escapeNewlines(sw.toString());
 		joinContext(process.startCtx);
 		logEvent(process.msgclass, process.agent, process.name+" failed",
-				"Exception", exception);
+				"Exception", sw.toString());
 	}
 
 	public static void failProcess(XTraceProcess process, String reason) {

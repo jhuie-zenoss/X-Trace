@@ -133,7 +133,7 @@ public class XTraceEvent {
 	}
 
 	public void put(String key, String value) {
-		report.put(key, value);
+		report.put(key, IoUtil.escapeNewlines(value));
 	}
 	
 	public XTraceMetadata getNewMetadata() {
