@@ -60,6 +60,7 @@ var getAllReports = function(ids, callback, errback) {
         if (xhr.readyState==4) {
             if (xhr.status = 200) {
                 var json = JSON.parse(xhr.responseText);
+                json.forEach(function(trace) { sanitizeReports(trace.reports); });
                 callback(json);
             } else {
                 errback(xhr.status, xhr);
@@ -68,6 +69,21 @@ var getAllReports = function(ids, callback, errback) {
     };
     
     xhr.send(null);    
+}
+
+var sanitizeReports = function(reports) {
+    var i = 0;
+    while (i < reports.length) {
+        var report = reports[i];
+        if (!report.hasOwnProperty("X-Trace") || !report.hasOwnProperty("Edge")
+                || !report["X-Trace"].length==1 || !report["Edge"].hasOwnProperty("length")) {
+            reports.splice(i, 1);
+            console.warn("Got a bad report:", report);
+        } else {
+            i++;
+        }
+    }
+    return reports;    
 }
 
 var createGraphFromReports = function(reports, params) {
