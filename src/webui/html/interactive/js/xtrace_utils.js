@@ -117,6 +117,24 @@ var createGraphFromReports = function(reports, params) {
         }
     }
     
+    // Third, remove the 'never visible' nodes
+    for (var nodeid in nodes) {
+        var node = nodes[nodeid];
+        if (node.never_visible) {
+            delete nodes[nodeid];
+            var parents = node.getParents();
+            var children = node.getChildren();
+            parents.forEach(function(parent) {
+                children.forEach(function(child) {
+                    parent.addChild(child);
+                    child.addParent(parent);
+                    parent.removeChild(node);
+                    child.removeParent(node);
+                })
+            });
+        }
+    }
+    
     // Create the graph and add the nodes
     var graph = new Graph();
     for (var id in nodes) {

@@ -27,6 +27,14 @@ Node.prototype.addParent = function(parent) {
     this.parent_nodes[parent.id] = parent;
 }
 
+Node.prototype.removeChild = function(child) {
+    if (child.id in this.child_nodes) delete this.child_nodes[child.id];
+}
+
+Node.prototype.removeParent = function(parent) {
+    if (parent.id in this.parent_nodes) delete this.parent_nodes[parent.id];
+}
+
 Node.prototype.getParents = function() {
     return values(this.parent_nodes);
 }
