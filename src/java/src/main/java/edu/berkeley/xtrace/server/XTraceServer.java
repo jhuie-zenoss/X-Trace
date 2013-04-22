@@ -49,12 +49,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.DefaultServlet;
@@ -337,37 +337,37 @@ public final class XTraceServer {
 			String taskIdString = uri.length() > pathLen ? uri.substring(pathLen)
 					: null;
 			String[] taskIds = taskIdString.split(",");
-			Writer out = response.getWriter();
-			out.write("[");
-			boolean first = true;
-			int count = 0;
-			for (String taskId : taskIds) {
-				Log.info("Writing task "+count+": "+taskId);
-				count++;
-				Iterator<Report> iter;
-				try {
-					iter = reportstore.getReportsByTask(TaskID.createFromString(taskId));
-				} catch (XTraceException e) {
-					throw new ServletException(e);					
-				}
-				JSONObject task = new JSONObject();
-				try {
-					JSONArray reports = new JSONArray();
-					while (iter.hasNext()) {
-						reports.put(iter.next().toJSON());
-					}
-					task.put("id", taskId);
-					task.put("reports", reports);
-					if (!first) {
-						out.write(",");
-					}
-					first = false;
-					out.write(task.toString(2));
-				} catch (JSONException e) {
-					throw new ServletException(e);
-				}
-			}
-			out.write("]");			
+			
+			try {
+	      Writer out = response.getWriter();
+	      out.write("[");
+	      boolean firstTaskDone = false;
+	      int count = 0;
+  			for (String taskId : taskIds) {
+          Log.info("Writing task "+count+++": "+taskId);
+          
+          if (firstTaskDone) out.write("\n,");
+          firstTaskDone = true;
+
+          out.append("{\"id\":\"");
+          out.append(taskId);
+          out.append("\",\"reports\":[");
+          
+          boolean firstReportDone = false;
+          Iterator<Report> iter = reportstore.getReportsByTask(TaskID.createFromString(taskId));
+          while (iter.hasNext()) {
+            if (firstReportDone) out.append(",\n");
+            out.append(iter.next().toJSON());
+            firstReportDone = true;
+          }
+          
+          out.append("]}");
+          Log.info("... done");
+  			}
+  			out.write("]");			
+  		} catch (XTraceException e) {
+        throw new ServletException(e);          
+      }
 		}
 	}
 

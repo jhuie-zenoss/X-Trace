@@ -8,16 +8,21 @@
 	<name>xtrace</name>
 	<url>http://maven.apache.org</url>
 	<pluginRepositories>
-                <pluginRepository>
-                    <id>dtrott</id>
-                    <url>http://maven.davidtrott.com/repository</url>
-                </pluginRepository>
-        </pluginRepositories>
+		<pluginRepository>
+			<id>dtrott</id>
+			<url>http://maven.davidtrott.com/repository</url>
+		</pluginRepository>
+	</pluginRepositories>
 	<dependencies>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.14</version>
+		</dependency>
+		<dependency>
+			<groupId>net.minidev</groupId>
+			<artifactId>json-smart</artifactId>
+			<version>1.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>velocity</groupId>
@@ -128,7 +133,7 @@
 						</program>
 					</programs>
 				</configuration>
-			</plugin>	
+			</plugin>
 		</plugins>
 	</build>
 	<reporting>

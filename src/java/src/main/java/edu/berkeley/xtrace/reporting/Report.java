@@ -39,10 +39,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
 
 //import org.apache.log4j.Logger;
 
@@ -195,15 +194,8 @@ public class Report {
 		}
 
 		StringBuilder buf = new StringBuilder("X-Trace Report ver 1.0\n");
-
-		final Iterator<Map.Entry<String, List<String>>> iter = map.entrySet()
-				.iterator();
-		while (iter.hasNext()) {
-			final Map.Entry<String, List<String>> entry = iter.next();
-			final Iterator<String> values = entry.getValue().iterator();
-
-			while (values.hasNext()) {
-				final String v = values.next();
+		for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+			for (String v : entry.getValue()) {
 				buf.append(entry.getKey() + ": " + v + "\n");
 			}
 		}
@@ -217,24 +209,21 @@ public class Report {
 	 * @return the JSONObject containing this report's info
 	 * @throws JSONException 
 	 */
-	public JSONObject toJSON() throws JSONException {
+	public String toJSON() {
 		// First, try to convert to a map if it's not already a map
 		this.convertToMap();
 		
 		JSONObject jsonObj = new JSONObject();
 		jsonObj.put("version", "X-Trace Report ver 1.0");
-		
-		final Iterator<Map.Entry<String, List<String>>> iter = map.entrySet().iterator();
-		while (iter.hasNext()) {
-			final Map.Entry<String, List<String>> entry = iter.next();
+
+    for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+      JSONArray values = new JSONArray();
+			values.addAll(entry.getValue());
 			
-			String key = entry.getKey();
-			JSONArray values = new JSONArray(entry.getValue());
-			
-			jsonObj.put(key, values);
+			jsonObj.put(entry.getKey(), values);
 		}
 
-		return jsonObj;
+		return jsonObj.toString();
 	}
 
 	/**
