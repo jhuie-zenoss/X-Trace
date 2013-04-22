@@ -70,6 +70,9 @@ import java.util.Iterator;
  * @author Matei Zaharia <matei@berkeley.edu>
  */
 public class XTraceContext {	
+  
+  /** Limit on the size of a metadata collection before it's merged **/
+  private static final int MERGE_THRESHOLD = 6;
 
 	/** When the XTraceContext class is loaded, it will check to see whether there is 
 	 * an environment variable set.  If there is, it assumes that this process is the
@@ -135,6 +138,7 @@ public class XTraceContext {
 			return;
 		}
 		contexts.get().add(ctx);
+		if (contexts.get().size()>MERGE_THRESHOLD) logMerge();
 	}
 	
 	/**
@@ -149,6 +153,7 @@ public class XTraceContext {
 			return;
 		}
 		contexts.get().addAll(ctxs);
+    if (contexts.get().size()>MERGE_THRESHOLD) logMerge();
 	}
 
 	/**
