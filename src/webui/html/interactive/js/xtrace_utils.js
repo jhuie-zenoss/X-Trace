@@ -87,9 +87,27 @@ var sanitizeReports = function(reports) {
 }
 
 var createGraphFromReports = function(reports, params) {
-    var nodes = {};
+    console.log("Creating graph from reports");
+
+    // Filter hideagent elements
+    if (params["hideagent"]) {
+        console.info("Hiding agent", params["hideagent"], "in", reports.length, "reports");
+        reports = filter_agent_reports(reports, params["hideagent"]);
+    }
     
-    // First create a node for each report
+    // Filter 'merge' elements
+    console.info("Removing 'merge' operations in", reports.length, "reports");
+    reports = filter_merge_reports(reports);
+        
+    // Filter yarnchild reports
+    if (params["mapreduceonly"]) {
+        console.info("Filtering mapreduce reports in", reports.length, "reports");
+        reports = filter_yarnchild_reports(reports);
+    }
+    
+    // Create nodes
+    console.info("Creating graph nodes");
+    var nodes = {};
     for (var i = 0; i < reports.length; i++) {
         var report = reports[i];
         if (!report.hasOwnProperty("X-Trace")) {
@@ -97,42 +115,19 @@ var createGraphFromReports = function(reports, params) {
         }
         var id = report["X-Trace"][0].substr(18);
         nodes[id] = new Node(id);
-        if (report["Operation"] && report["Operation"]=="merge") {
-            nodes[id].never_visible = true;
-        }
         nodes[id].report = report;
     }
     
     // Second link the nodes together
-    for (var i = 0; i < reports.length; i++) {
-        var report = reports[i];
-        var id = report["X-Trace"][0].substr(18);
-        if (report["Edge"]) {
-            report["Edge"].forEach(function(parentid) {
-                if (nodes[parentid] && nodes[id]) {
-                    nodes[parentid].addChild(nodes[id]);
-                    nodes[id].addParent(nodes[parentid]);
-                }
-            });
-        }
-    }
-    
-    // Third, remove the 'never visible' nodes
+    console.info("Linking graph nodes");
     for (var nodeid in nodes) {
         var node = nodes[nodeid];
-        if (node.never_visible) {
-            delete nodes[nodeid];
-            var parents = node.getParents();
-            var children = node.getChildren();
-            parents.forEach(function(parent) {
-                children.forEach(function(child) {
-                    parent.addChild(child);
-                    child.addParent(parent);
-                    parent.removeChild(node);
-                    child.removeParent(node);
-                })
-            });
-        }
+        node.report["Edge"].forEach(function(parentid) {
+            if (nodes[parentid]) {
+                nodes[parentid].addChild(node);
+                node.addParent(nodes[parentid]);
+            }
+        })
     }
     
     // Create the graph and add the nodes
@@ -141,6 +136,7 @@ var createGraphFromReports = function(reports, params) {
         graph.addNode(nodes[id]);
     }
     
+    console.log("Done creating graph from reports");
     return graph;
 }
 
@@ -184,106 +180,95 @@ function hash_report(report) {
  return hash & hash;
 }
 
-var get_yarnchild_reports = function(trace) {
+var filter_yarnchild_reports = function(reports) {
     // First, get the process IDs for the yarnchild nodes
     var yarnchild_process_ids = {};
-    for (var i = 0; i < trace.reports.length; i++) {
-        var report = trace.reports[i];
+    for (var i = 0; i < reports.length; i++) {
+        var report = reports[i];
         if (report.hasOwnProperty("Agent") && (report["Agent"][0]=="YarnChild" || report["Agent"][0]=="Hadoop Job")) {
             yarnchild_process_ids[report["ProcessID"][0]] = true;
         }
     }
     
-    // Now figure out which reports have to be removed
-    var retained = [];
-    var removed = [];
-    for (var i = 0; i < trace.reports.length; i++) {
-        var report = trace.reports[i];
-        if (!yarnchild_process_ids.hasOwnProperty(report["ProcessID"][0])) {
-            removed.push(report);
-        } else {
-            retained.push(report);
-        }
+    // A function to decide whether a report stays or goes
+    var filter = function(report) {
+        return yarnchild_process_ids[report["ProcessID"][0]] ? false : true;
     }
     
-    // Create the map of parents to remap
-    var parents_remap = {};
-    for (var i = 0; i < removed.length; i++) {
-        var report = removed[i];
-        var id = report["X-Trace"][0].substr(18);
-        parents_remap[id] = report["Edge"];
-    }
-    
-    var remap_parents = function(id) {
-        if (!parents_remap.hasOwnProperty(id)) {
-            return [id];
-        }
-        var parents = parents_remap[id];
-        var newparents = {};
-        for (var i = 0; i < parents.length; i++) {
-            remap_parents(parents[i]).forEach(function(parentid) {
-                newparents[parentid] = true;
-            })
-        }
-        parents_remap[id] = Object.keys(newparents);
-        return parents_remap[id];
-    }
-    
-    // Condense the map
-    for (var id in parents_remap) {
-        remap_parents(id);
-    }
-    
-    var get_new_parents = function(parents) {
-        var new_parents = {};
-        parents.forEach(function(id) {
-            if (!parents_remap.hasOwnProperty(id)) {
-                new_parents[id] = true;
-            } else {
-                parents_remap[id].forEach(function(newparentid) {
-                    new_parents[newparentid] = true;
-                })
-            }
-        })
-        return Object.keys(new_parents);
-    }
-    
-    // Finally, remap the parents of the retained reports
-    for (var i = 0; i < retained.length; i++) {
-        var report = retained[i];
-        var parents = report["Edge"];
-        report["Edge"] = get_new_parents(report["Edge"]);
-    }
-    trace.reports = retained;
-    
-    return trace;
+    return filter_reports(reports, filter);
 }
+
+var filter_merge_reports = function(reports) {
+    var filter = function(report) {
+        return report["Operation"] && report["Operation"][0]=="merge";
+    }
+    
+    return filter_reports(reports, filter);
+}
+
+var filter_agent_reports = function(reports, agent) {
+    var filter = function(report) {
+        return report["Agent"] && report["Agent"][0]==agent;
+    }
+    
+    return filter_reports(reports, filter);
+}
+
+
+var filter_reports = function(reports, f) {    
+    // Figure out which reports have to be removed
+    var retained = {};
+    var removed = {};
+    var reportmap = {};
+    for (var i = 0; i < reports.length; i++) {
+        var report = reports[i];
+        var id = report["X-Trace"][0].substr(18);
+        reportmap[id] = report;
+        if (f(report)) {
+            removed[id]=report;
+        } else {
+            retained[id]=report;
+        }
+    }
+
+    var remapped = {};
+    var num_calculated = 0;
+    var remap_parents = function(id) {
+        if (remapped[id]) {
+            return;
+        } else {
+            var report = reportmap[id];
+            var parents = report["Edge"];
+            var newparents = {};
+            for (var i = 0; i < parents.length; i++) {
+                if (removed[parents[i]]) {
+                    remap_parents(parents[i]);
+                    reportmap[parents[i]]["Edge"].forEach(function(grandparent) {
+                        newparents[grandparent] = true;
+                    })
+                } else {
+                    newparents[parents[i]] = true;
+                }
+            }
+            report["Edge"] = Object.keys(newparents);
+            remapped[id] = true;
+        }
+    }
+    
+    return Object.keys(retained).map(function(id) {
+        remap_parents(id);
+        return retained[id];
+    })
+}
+
 
 var kernelgraph_for_trace = function(trace) {
     return KernelGraph.fromJSON(trace);
 }
 
 var yarnchild_kernelgraph_for_trace = function(trace) {
-    // Create the full graph
-    var graph = kernelgraph_for_trace(trace);
-    
-    
-    // Find the process IDs for yarnchild processes
-    var yarnchild_process_ids = {};
-    graph.get_nodes().forEach(function(node) {
-        if (node.data["Agent"] &&
-                node.data["Agent"][0]=="YarnChild") {
-            yarnchild_process_ids[node.data["ProcessID"][0]]=true;
-        }
-    });
-    
-    // Remove any nodes that aren't yarnchild processes
-    graph.get_nodes().forEach(function(node) {
-        if (!node.data["ProcessID"] || !yarnchild_process_ids.hasOwnProperty(node.data["ProcessID"][0])) {
-            graph.remove(node);
-        }
-    });
-    
-    return graph;
+    trace.reports = filter_yarnchild_reports(trace.reports);
+    trace.reports = filter_merge_reports(trace.reports);
+    return kernelgraph_for_trace(trace);
 }
 
