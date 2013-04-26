@@ -48,7 +48,7 @@ function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
             b = relabel(b, direction);
             score += this.kernel.calculate(a, b);
         }
-        return score;        
+        return score / this.depth;        
     }
     
     this.calculate_node_stability = function(a, b, direction) {        

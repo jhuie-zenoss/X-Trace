@@ -17,7 +17,8 @@ NodeCountKernel.prototype.calculate = function(a, b) {
         va.push(a.get_label_count(label));
         vb.push(b.get_label_count(label));
     }
-    return dotProduct(normalize(va), normalize(vb));
+    var total = a.get_nodes().length * b.get_nodes().length;
+    return dotProduct(va, vb)/total;
 }
 
 function dotProduct(a, b) {
@@ -26,9 +27,4 @@ function dotProduct(a, b) {
         score += a[i]*b[i];
     }
     return score;
-}
-
-function normalize(v) {
-    var sum = v.reduce(function(prev, cur){ return prev+cur; }, 0);
-    return sum > 0 ? v.map(function(e) { return e/sum; }) : v;
 }
