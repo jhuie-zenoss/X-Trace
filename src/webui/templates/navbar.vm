@@ -1,6 +1,53 @@
 ## Render the nav bar for going to the previous/next tasks in a result set.
-<p>
-<a href="$request.requestURI?offset=$prevOffset&length=$length">[&lt;&lt; Previous $length]</a>
-- Showing Tasks ${offset} - $lastResultNum -
-<a href="$request.requestURI?offset=$nextOffset&length=$length">[Next $length &gt;&gt;]</a>
-</p>
+<div style="padding-top: 5px; padding-bottom: 3px;">
+    <div style="float: left; display: inline-block;">
+        <input class="get-selected" type="submit" value="Get Selected JSON" onclick="getSelected()" title="Get raw JSON for selected graphs"/>
+        <input class="cluster-selected" type="submit" value="Cluster Selected" onclick="clusterSelected()" title="View clustering visualization for selected graphs"/>
+        <input class="compare-selected" type="submit" value="Side-by-side Comparison" onclick="compareSelected()" title="Compare two graphs side-by-side using the graph visualization"/>
+    </div>
+    <div style="float: right; display: inline-block;">
+        <a href="$request.requestURI?offset=$prevOffset&length=$length">[&lt;&lt; Previous $length]</a>
+        - Showing Tasks ${offset} - $lastResultNum -
+        <a href="$request.requestURI?offset=$nextOffset&length=$length">[Next $length &gt;&gt;]</a>
+    </div>
+    <div style="clear: both"></div>
+</div>
+
+<script language="javascript">
+
+function getSelectedIDs() {
+    var ids = [];
+    var checkboxes = document.getElementsByClassName("select-trace");
+    for (var i = 0; i < checkboxes.length; i++) {
+        var checkbox = checkboxes[i];
+        if (checkbox.checked) {
+            ids.push(checkbox.value);
+        }
+    }
+    return ids;
+}
+
+function getSelected() {
+    var selected = getSelectedIDs();
+    if (selected.length >= 1) {
+        window.open("/interactive/reports/"+selected.join(), "_blank");
+    }
+}
+
+function clusterSelected() {
+    var selected = getSelectedIDs();
+    if (selected.length >= 2) {
+        window.open("/interactive/cluster.html?id="+selected.join(), "_blank");
+    }
+}
+
+function compareSelected() {
+    var selected = getSelectedIDs();
+    if (selected.length == 2) {
+        window.open("/interactive/compare.html?id="+selected.join(), "_blank");
+    }
+}
+
+checkControlsEnabled();
+
+</script>

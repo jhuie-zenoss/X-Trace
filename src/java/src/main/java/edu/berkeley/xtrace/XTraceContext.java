@@ -70,12 +70,21 @@ import java.util.Iterator;
  * @author Matei Zaharia <matei@berkeley.edu>
  */
 public class XTraceContext {	
+  
+  /** Limit on the size of a metadata collection before it's merged **/
+  private static final int MERGE_THRESHOLD = 6;
 
 	/** When the XTraceContext class is loaded, it will check to see whether there is 
 	 * an environment variable set.  If there is, it assumes that this process is the
 	 * continuation of some previous trace, and sets the thread context accordingly. **/
 	public static final String XTRACE_CONTEXT_ENV_VARIABLE = "XTRACE_STARTING_CONTEXT";
 	public static final String XTRACE_SUBPROCESS_ENV_VARIABLE = "XTRACE_SUBPROCESS_CONTEXT";
+	
+	/**
+	 * Loaded when XTrace initializes, if this is a subprocess, 
+	 * save the ending context to rejoin with the joinParentProcess call 
+	 */
+	private static XTraceMetadata xtrace_parent_rejoin_context;
 	
 	
 	
@@ -129,6 +138,7 @@ public class XTraceContext {
 			return;
 		}
 		contexts.get().add(ctx);
+		if (contexts.get().size()>MERGE_THRESHOLD) logMerge();
 	}
 	
 	/**
@@ -143,6 +153,7 @@ public class XTraceContext {
 			return;
 		}
 		contexts.get().addAll(ctxs);
+    if (contexts.get().size()>MERGE_THRESHOLD) logMerge();
 	}
 
 	/**
@@ -537,10 +548,9 @@ public class XTraceContext {
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
 		pw.flush();
-		String exception = IoUtil.escapeNewlines(sw.toString());
 		joinContext(process.startCtx);
 		logEvent(process.msgclass, process.agent, process.name+" failed",
-				"Exception", exception);
+				"Exception", sw.toString());
 	}
 
 	public static void failProcess(XTraceProcess process, String reason) {
@@ -553,7 +563,7 @@ public class XTraceContext {
 	 * If there is no current valid context, start a new trace, otherwise log an
 	 * event on the existing task.
 	 */
-	public static void startTrace(String agent, String title, String... tags) {
+	public static void startTrace(String agent, String title, Object... tags) {
 		if (!isValid()) {
 			TaskID taskId = new TaskID(8);
 			setThreadContext(new XTraceMetadata(taskId, 0L));
@@ -562,22 +572,22 @@ public class XTraceContext {
 		if (!isValid()) {
 			event.put("Title", title);
 		}
-		for (String tag : tags) {
-			event.put("Tag", tag);
+		for (Object tag : tags) {
+			event.put("Tag", tag.toString());
 		}
 		event.sendReport();
 	}
 
 	public static void startTraceSeverity(String agent, String title,
-			int severity, String... tags) {
+			int severity, Object... tags) {
 		TaskID taskId = new TaskID(8);
 		XTraceMetadata metadata = new XTraceMetadata(taskId, 0L);
 		setThreadContext(metadata);
 		metadata.setSeverity(severity);
 		XTraceEvent event = createEvent(agent, "Start Trace: " + title);
 		event.put("Title", title);
-		for (String tag : tags) {
-			event.put("Tag", tag);
+		for (Object tag : tags) {
+			event.put("Tag", tag.toString());
 		}
 		event.sendReport();
 	}
@@ -718,34 +728,33 @@ public class XTraceContext {
 	}
 	
 	public static void joinParentProcess() {
-	    String xtrace_start_context = System.getenv(XTRACE_SUBPROCESS_ENV_VARIABLE);
-	    if (xtrace_start_context==null || xtrace_start_context.equals("")) {
-	    	// No parent process metadata, so do nothing
-	    	return;
-	    }
-  	    XTraceMetadata m = XTraceMetadata.createFromString(xtrace_start_context);
-		
-		XTraceEvent event = new XTraceEvent(m);
+    if (xtrace_parent_rejoin_context==null) return;
 
-		for (XTraceMetadata parent : contexts.get()) {
-			event.addEdge(parent);
-		}
+    XTraceEvent event = new XTraceEvent(xtrace_parent_rejoin_context);
 
-		try {
-			if (hostname == null) {
-				hostname = InetAddress.getLocalHost().getHostName();
-			}
-		} catch (UnknownHostException e) {
-			hostname = "unknown";
-		}
+    for (XTraceMetadata parent : contexts.get()) {
+      event.addEdge(parent);
+    }
 
-		event.put("Host", hostname);
-		event.put("Operation", "merge");
+    try {
+      if (hostname == null) {
+        hostname = InetAddress.getLocalHost().getHostName();
+      }
+    } catch (UnknownHostException e) {
+      hostname = "unknown";
+    }
 
-		XTraceMetadata newcontext = event.getNewMetadata();
-		setThreadContext(newcontext);
-		event.sendReport();
-	}
+    event.put("Host", hostname);
+    event.put("Operation", "merge");
+
+    XTraceMetadata newcontext = event.getNewMetadata();
+    setThreadContext(newcontext);
+    event.sendReport();
+
+    // Also, importantly, make sure to update the parent rejoin context in case
+    // somebody else joins to it further down the line
+    xtrace_parent_rejoin_context = XTraceContext.logMerge();
+  }
 	
 	public static void joinChildProcess(XTraceMetadata m) {
 		joinContext(m);
@@ -757,9 +766,16 @@ public class XTraceContext {
 	 * and resume any trace according to the environment variable that was set.
 	 */
 	static {
+		// Get a starting context if one was provided
 	    String xtrace_start_context = System.getenv(XTRACE_CONTEXT_ENV_VARIABLE);
 	    if (xtrace_start_context!=null && !xtrace_start_context.equals("")) {
-	  	  XTraceContext.setThreadContext(XTraceMetadata.createFromString(xtrace_start_context));
+	    	XTraceContext.setThreadContext(XTraceMetadata.createFromString(xtrace_start_context));
 	    }
+	    
+	    // Save the ending context if one was provided
+	    String xtrace_end_context = System.getenv(XTRACE_SUBPROCESS_ENV_VARIABLE);
+	    if (xtrace_end_context!=null && !xtrace_end_context.equals("")) {
+	      xtrace_parent_rejoin_context = XTraceMetadata.createFromString(xtrace_end_context);
+	    } 
 	}
 }

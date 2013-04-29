@@ -3,25 +3,28 @@
 	cursor: default
 }
 
-.graph .node {
+.graph.animate .node {
   opacity: 0;
   transition:fill 0.5s, stroke 0.5s, opacity 1s;
   -webkit-transition:fill 0.5s, stroke 0.5s, opacity 1s;
 }
 
-.graph .node.visible {
+.graph.animate .node.visible {
   opacity: 1;
   transition:fill 0.5s, stroke 0.5s, opacity 0.5s;
   -webkit-transition:fill 0.5s, stroke 0.5s, opacity 0.5s;
 }
 
-.graph .node.visible.entering {
+.graph.animate .node.visible.entering {
   transition:fill 0.5s, stroke 0.5s, opacity 1.5s;
   -webkit-transition:fill 0.5s, stroke 0.5s, opacity 1.5s;	
 }
 
 .hovering .graph .node.visible {
   opacity: 0.2;
+}
+
+.hovering .graph.animate .node.visible {
   transition:fill 0.5s, stroke 0.5s, opacity 0.4s;
   -webkit-transition:fill 0.5s, stroke 0.5s, opacity 0.4s;
 }
@@ -40,6 +43,9 @@
   fill: #FFF2CC;
   stroke-width: 2px;
   stroke: #A16D00;
+}
+
+.graph.animate .node rect {
   transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s;
   -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s;
 }
@@ -66,6 +72,9 @@
   stroke-width: 2.5px;
   stroke: #D19D00;
   opacity: 0;
+}
+
+.graph.animate .edge {
   transition:fill 0.1s, stroke 0.1s, stroke-width 0.1s, opacity 0.3s;
   -webkit-transition:fill 0.1s, stroke 0.1s, stroke-width 0.1s, opacity 0.3s;
 }
@@ -88,11 +97,14 @@
 
 .graph .edge.visible {
   opacity: 1;
+}
+
+.graph.animate .edge.visible {
   transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.5s;
   -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.5s;
 }
 
-.graph .edge.visible.entering {
+.graph.animate .edge.visible.entering {
   transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
   transition-delay:0,0,0,0.5s;
   -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
@@ -101,6 +113,9 @@
 
 .hovering .graph .edge.visible {
   opacity: 0.1;
+}
+
+.hovering .graph.animate .edge.visible {
   transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.4s;
   -webkit-transition:fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.4s;
 }

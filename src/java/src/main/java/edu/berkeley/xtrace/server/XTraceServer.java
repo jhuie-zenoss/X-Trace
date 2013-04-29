@@ -49,16 +49,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.DefaultServlet;
 import org.mortbay.jetty.servlet.ServletHolder;
+import org.mortbay.log.Log;
 import org.mortbay.servlet.CGI;
 
 import edu.berkeley.xtrace.TaskID;
@@ -67,518 +68,506 @@ import edu.berkeley.xtrace.reporting.Report;
 
 /**
  * @author George Porter
- *
+ * 
  */
 public final class XTraceServer {
-        private static final Logger LOG = Logger.getLogger(XTraceServer.class);
+	private static final Logger LOG = Logger.getLogger(XTraceServer.class);
 
-        private static ReportSource[] sources;
+	private static ReportSource[] sources;
 
-        private static BlockingQueue<String> incomingReportQueue,
-                        reportsToStorageQueue;
+	private static BlockingQueue<String> incomingReportQueue,
+			reportsToStorageQueue;
 
-        private static ThreadPerTaskExecutor sourcesExecutor;
+	private static ThreadPerTaskExecutor sourcesExecutor;
 
-        private static ExecutorService storeExecutor;
+	private static ExecutorService storeExecutor;
 
-        private static QueryableReportStore reportstore;
+	private static QueryableReportStore reportstore;
 
-        private static final DateFormat JSON_DATE_FORMAT = new SimpleDateFormat(
-                        "yyyy-MM-dd HH:mm:ss");
-        private static final DateFormat HTML_DATE_FORMAT = new SimpleDateFormat(
-                        "MMM dd yyyy, HH:mm:ss");
+	private static final DateFormat JSON_DATE_FORMAT = new SimpleDateFormat(
+			"yyyy-MM-dd HH:mm:ss");
+	private static final DateFormat HTML_DATE_FORMAT = new SimpleDateFormat(
+			"MMM dd yyyy, HH:mm:ss");
 
-        // Default number of results to show per page for web UI
-        private static final int PAGE_LENGTH = 25;
+	// Default number of results to show per page for web UI
+	private static final int PAGE_LENGTH = 25;
 
-    private static TcpLocalDaemon tldaemon;
+	public static void main(String[] args) {
 
-        public static void main(String[] args) {
+		// If they use the default configuration (the FileTree report store),
+		// then they have to specify the directory in which to store reports
+		if (System.getProperty("xtrace.server.store") == null) {
+			if (args.length < 1) {
+				System.err.println("Usage: XTraceServer <dataDir>");
+				System.exit(1);
+			}
+			System.setProperty("xtrace.server.storedirectory", args[0]);
+		}
+		setupReportSources();
+		setupReportStore();
+		setupBackplane();
+		setupWebInterface();
+	}
 
-                // If they use the default configuration (the FileTree report store),
-                // then they have to specify the directory in which to store reports
-                if (System.getProperty("xtrace.server.store") == null) {
-                        if (args.length < 1) {
-                                System.err.println("Usage: XTraceServer <dataDir>");
-                                System.exit(1);
-                        }
-                        System.setProperty("xtrace.server.storedirectory", args[0]);
-                }
-                // startupTcpLocalDaemon();
-                setupReportSources();
-                setupReportStore();
-                setupBackplane();
-                setupWebInterface();
-                // tcpLocalDaemonInit();
-        }
+	private static void setupReportSources() {
 
-    private static void startupTcpLocalDaemon() {
-        try {
-            tldaemon = new TcpLocalDaemon();
-        } catch (XTraceException xte) {
-            LOG.warn("Unable to initialize local tcp daemon", xte);
-            System.exit(-1);
-        }
-        new Thread(tldaemon).start();
-    }
+		incomingReportQueue = new ArrayBlockingQueue<String>(1024, true);
+		sourcesExecutor = new ThreadPerTaskExecutor();
 
-    private static void tcpLocalDaemonInit () {
-        try {
-            tldaemon.setupSocketToServer();
-        } catch (XTraceException xte) {
-            LOG.warn("Unable to finish initialize local tcp daemon", xte);
-            System.exit(-1);
-        }
-    }
+		// Default input sources
+		String sourcesStr = "edu.berkeley.xtrace.server.UdpReportSource,"
+				+ "edu.berkeley.xtrace.server.TcpReportSource,"
+				+ "edu.berkeley.xtrace.server.ThriftReportSource";
 
-        private static void setupReportSources() {
+		if (System.getProperty("xtrace.server.sources") != null) {
+			sourcesStr = System.getProperty("xtrace.server.sources");
+		} else {
+			LOG.warn("No server report sources specified... using defaults (Udp,Tcp,Thrift)");
+		}
+		String[] sourcesLst = sourcesStr.split(",");
 
-                incomingReportQueue = new ArrayBlockingQueue<String>(1024, true);
-                sourcesExecutor = new ThreadPerTaskExecutor();
+		sources = new ReportSource[sourcesLst.length];
+		for (int i = 0; i < sourcesLst.length; i++) {
+			try {
+				LOG.info("Starting report source '" + sourcesLst[i] + "'");
+				sources[i] = (ReportSource) Class.forName(sourcesLst[i])
+						.newInstance();
+			} catch (InstantiationException e1) {
+				LOG.fatal("Could not instantiate report source", e1);
+				System.exit(-1);
+			} catch (IllegalAccessException e1) {
+				LOG.fatal("Could not access report source", e1);
+				System.exit(-1);
+			} catch (ClassNotFoundException e1) {
+				LOG.fatal("Could not find report source class", e1);
+				System.exit(-1);
+			}
+			sources[i].setReportQueue(incomingReportQueue);
+			try {
+				sources[i].initialize();
+			} catch (XTraceException e) {
+				LOG.warn("Unable to initialize report source", e);
+				// TODO: gracefully shutdown any previously started threads?
+				System.exit(-1);
+			}
+			sourcesExecutor.execute((Runnable) sources[i]);
+		}
+	}
 
-                // Default input sources
-                String sourcesStr = "edu.berkeley.xtrace.server.UdpReportSource,"
-                                + "edu.berkeley.xtrace.server.TcpReportSource,"
-                                + "edu.berkeley.xtrace.server.ThriftReportSource";
+	private static void setupReportStore() {
+		reportsToStorageQueue = new ArrayBlockingQueue<String>(1024);
 
-                if (System.getProperty("xtrace.server.sources") != null) {
-                        sourcesStr = System.getProperty("xtrace.server.sources");
-                } else {
-                        LOG.warn("No server report sources specified... using defaults (Udp,Tcp,Thrift)");
-                }
-                String[] sourcesLst = sourcesStr.split(",");
+		String storeStr = "edu.berkeley.xtrace.server.FileTreeReportStore";
+		if (System.getProperty("xtrace.server.store") != null) {
+			storeStr = System.getProperty("xtrace.server.store");
+		} else {
+			LOG.warn("No server report store specified... using default (FileTreeReportStore)");
+		}
 
-                sources = new ReportSource[sourcesLst.length];
-                for (int i = 0; i < sourcesLst.length; i++) {
-                        try {
-                                LOG.info("Starting report source '" + sourcesLst[i] + "'");
-                                sources[i] = (ReportSource) Class.forName(sourcesLst[i])
-                                                .newInstance();
-                        } catch (InstantiationException e1) {
-                                LOG.fatal("Could not instantiate report source", e1);
-                                System.exit(-1);
-                        } catch (IllegalAccessException e1) {
-                                LOG.fatal("Could not access report source", e1);
-                                System.exit(-1);
-                        } catch (ClassNotFoundException e1) {
-                                LOG.fatal("Could not find report source class", e1);
-                                System.exit(-1);
-                        }
-                        sources[i].setReportQueue(incomingReportQueue);
-                        try {
-                                sources[i].initialize();
-                        } catch (XTraceException e) {
-                                LOG.warn("Unable to initialize report source", e);
-                                // TODO: gracefully shutdown any previously started threads?
-                                System.exit(-1);
-                        }
-                        sourcesExecutor.execute((Runnable) sources[i]);
-                }
-        }
+		reportstore = null;
+		try {
+			reportstore = (QueryableReportStore) Class.forName(storeStr)
+					.newInstance();
+		} catch (InstantiationException e1) {
+			LOG.fatal("Could not instantiate report store", e1);
+			System.exit(-1);
+		} catch (IllegalAccessException e1) {
+			LOG.fatal("Could not access report store class", e1);
+			System.exit(-1);
+		} catch (ClassNotFoundException e1) {
+			LOG.fatal("Could not find report store class", e1);
+			System.exit(-1);
+		}
 
-        private static void setupReportStore() {
-                reportsToStorageQueue = new ArrayBlockingQueue<String>(1024);
+		reportstore.setReportQueue(reportsToStorageQueue);
+		try {
+			reportstore.initialize();
+		} catch (XTraceException e) {
+			LOG.fatal("Unable to start report store", e);
+			System.exit(-1);
+		}
 
-                String storeStr = "edu.berkeley.xtrace.server.FileTreeReportStore";
-                if (System.getProperty("xtrace.server.store") != null) {
-                        storeStr = System.getProperty("xtrace.server.store");
-                } else {
-                        LOG.warn("No server report store specified... using default (FileTreeReportStore)");
-                }
+		storeExecutor = Executors.newSingleThreadExecutor();
+		storeExecutor.execute(reportstore);
 
-                reportstore = null;
-                try {
-                        reportstore = (QueryableReportStore) Class.forName(storeStr)
-                                        .newInstance();
-                } catch (InstantiationException e1) {
-                        LOG.fatal("Could not instantiate report store", e1);
-                        System.exit(-1);
-                } catch (IllegalAccessException e1) {
-                        LOG.fatal("Could not access report store class", e1);
-                        System.exit(-1);
-                } catch (ClassNotFoundException e1) {
-                        LOG.fatal("Could not find report store class", e1);
-                        System.exit(-1);
-                }
+		/* Every N seconds we should sync the report store */
+		String syncIntervalStr = System.getProperty(
+				"xtrace.server.syncinterval", "5");
+		long syncInterval = Integer.parseInt(syncIntervalStr);
+		Timer timer = new Timer();
+		timer.schedule(new SyncTimer(reportstore), syncInterval * 1000,
+				syncInterval * 1000);
 
-                reportstore.setReportQueue(reportsToStorageQueue);
-                try {
-                        reportstore.initialize();
-                } catch (XTraceException e) {
-                        LOG.fatal("Unable to start report store", e);
-                        System.exit(-1);
-                }
+		/* Add a shutdown hook to flush and close the report store */
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				reportstore.shutdown();
+			}
+		});
+	}
 
-                storeExecutor = Executors.newSingleThreadExecutor();
-                storeExecutor.execute(reportstore);
+	private static void setupBackplane() {
+		new Thread(new Runnable() {
+			public void run() {
+				LOG.info("Backplane waiting for packets");
 
-                /* Every N seconds we should sync the report store */
-                String syncIntervalStr = System.getProperty(
-                                "xtrace.server.syncinterval", "5");
-                long syncInterval = Integer.parseInt(syncIntervalStr);
-                Timer timer = new Timer();
-                timer.schedule(new SyncTimer(reportstore), syncInterval * 1000,
-                                syncInterval * 1000);
+				while (true) {
+					String msg = null;
+					try {
+						msg = incomingReportQueue.take();
+					} catch (InterruptedException e) {
+						LOG.warn("Interrupted", e);
+						continue;
+					}
+					reportsToStorageQueue.offer(msg);
+				}
+			}
+		}).start();
+	}
 
-                /* Add a shutdown hook to flush and close the report store */
-                Runtime.getRuntime().addShutdownHook(new Thread() {
-                        public void run() {
-                                reportstore.shutdown();
-                        }
-                });
-        }
+	private static class ThreadPerTaskExecutor implements Executor {
+		public void execute(Runnable r) {
+			new Thread(r).start();
+		}
+	}
 
-        private static void setupBackplane() {
-                new Thread(new Runnable() {
-                        public void run() {
-                                LOG.info("Backplane waiting for packets");
+	private static void setupWebInterface() {
+		String webDir = System.getProperty("xtrace.backend.webui.dir");
+		if (webDir == null) {
+			LOG.warn("No webui directory specified... using default (./src/webui)");
+			webDir = "./src/webui";
+		}
 
-                                while (true) {
-                                        String msg = null;
-                                        try {
-                                                msg = incomingReportQueue.take();
-                                        } catch (InterruptedException e) {
-                                                LOG.warn("Interrupted", e);
-                                                continue;
-                                        }
-                                        reportsToStorageQueue.offer(msg);
-                                }
-                        }
-                }).start();
-        }
+		int httpPort = Integer.parseInt(System.getProperty(
+				"xtrace.backend.httpport", "8080"));
+		System.out.println("xtrace http port is " + httpPort);
 
-        private static class ThreadPerTaskExecutor implements Executor {
-                public void execute(Runnable r) {
-                        new Thread(r).start();
-                }
-        }
+		// Initialize Velocity template engine
+		try {
+			Velocity.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM_CLASS,
+					"org.apache.velocity.runtime.log.Log4JLogChute");
+			Velocity.setProperty("runtime.log.logsystem.log4j.logger",
+					"edu.berkeley.xtrace.server.XTraceServer");
+			Velocity.setProperty("file.resource.loader.path", webDir
+					+ "/templates");
+			Velocity.setProperty("file.resource.loader.cache", "true");
+			Velocity.init();
+		} catch (Exception e) {
+			LOG.warn("Failed to initialize Velocity", e);
+		}
 
-        private static void setupWebInterface() {
-                String webDir = System.getProperty("xtrace.backend.webui.dir");
-                if (webDir == null) {
-                        LOG.warn("No webui directory specified... using default (./src/webui)");
-                        webDir = "./src/webui";
-                }
+		// Create Jetty server
+		Server server = new Server(httpPort);
+		Context context = new Context(server, "/");
 
-                int httpPort = Integer.parseInt(System.getProperty(
-                                "xtrace.backend.httpport", "8080"));
-                System.out.println("xtrace http port is " + httpPort);
+		// Create a CGI servlet for scripts in webui/cgi-bin
+		ServletHolder cgiHolder = new ServletHolder(new CGI());
+		cgiHolder.setInitParameter("cgibinResourceBase", webDir + "/cgi-bin");
+		if (System.getenv("PATH") != null) {
+			// Pass any special PATH setting on to the execution environment
+			cgiHolder.setInitParameter("Path", System.getenv("PATH"));
+		}
+		context.addServlet(cgiHolder, "*.cgi");
+		context.addServlet(cgiHolder, "*.pl");
+		context.addServlet(cgiHolder, "*.py");
+		context.addServlet(cgiHolder, "*.rb");
+		context.addServlet(cgiHolder, "*.tcl");
 
-                // Initialize Velocity template engine
-                try {
-                        Velocity.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM_CLASS,
-                                        "org.apache.velocity.runtime.log.Log4JLogChute");
-                        Velocity.setProperty("runtime.log.logsystem.log4j.logger",
-                                        "edu.berkeley.xtrace.server.XTraceServer");
-                        Velocity.setProperty("file.resource.loader.path", webDir
-                                        + "/templates");
-                        Velocity.setProperty("file.resource.loader.cache", "true");
-                        Velocity.init();
-                } catch (Exception e) {
-                        LOG.warn("Failed to initialize Velocity", e);
-                }
+		context.addServlet(new ServletHolder(new GetReportsServlet()),
+				"/reports/*");
+		context.addServlet(new ServletHolder(new GetJSONReportsServlet()),
+				"/interactive/reports/*");
+		context.addServlet(new ServletHolder(new GetLatestTaskServlet()),
+				"/latestTask");
+		context.addServlet(new ServletHolder(new TagServlet()), "/tag/*");
+		context.addServlet(new ServletHolder(new TitleServlet()), "/title/*");
+		context.addServlet(new ServletHolder(new TitleLikeServlet()),
+				"/titleLike/*");
 
-                // Create Jetty server
-                Server server = new Server(httpPort);
-                Context context = new Context(server, "/");
+		// Add an IndexServlet as the default servlet. This servlet will serve
+		// a human-readable (HTML) latest tasks page for "/" and serve static
+		// content for any other URL. Being the default servlet, it will get
+		// invoked only for URLs that does not match the other patterns where we
+		// have registered servlets above.
+		context.setResourceBase(webDir + "/html");
+		context.addServlet(new ServletHolder(new IndexServlet()), "/");
 
-                // Create a CGI servlet for scripts in webui/cgi-bin
-                ServletHolder cgiHolder = new ServletHolder(new CGI());
-                cgiHolder.setInitParameter("cgibinResourceBase", webDir + "/cgi-bin");
-                if (System.getenv("PATH") != null) {
-                        // Pass any special PATH setting on to the execution environment
-                        cgiHolder.setInitParameter("Path", System.getenv("PATH"));
-                }
-                context.addServlet(cgiHolder, "*.cgi");
-                context.addServlet(cgiHolder, "*.pl");
-                context.addServlet(cgiHolder, "*.py");
-                context.addServlet(cgiHolder, "*.rb");
-                context.addServlet(cgiHolder, "*.tcl");
+		try {
+			server.start();
+		} catch (Exception e) {
+			LOG.warn("Unable to start web interface", e);
+		}
+	}
 
-                context.addServlet(new ServletHolder(new GetReportsServlet()),
-                                "/reports/*");
-                context.addServlet(new ServletHolder(new GetJSONReportsServlet()),
-                                "/interactive/reports/*");
-                context.addServlet(new ServletHolder(new GetLatestTaskServlet()),
-                                "/latestTask");
-                context.addServlet(new ServletHolder(new TagServlet()), "/tag/*");
-                context.addServlet(new ServletHolder(new TitleServlet()), "/title/*");
-                context.addServlet(new ServletHolder(new TitleLikeServlet()),
-                                "/titleLike/*");
+	private static class GetReportsServlet extends HttpServlet {
+		protected void doGet(HttpServletRequest request,
+				HttpServletResponse response) throws ServletException,
+				IOException {
+			response.setContentType("text/plain");
+			response.setStatus(HttpServletResponse.SC_OK);
+			String uri = request.getRequestURI();
+			int pathLen = request.getServletPath().length() + 1;
+			String taskId = uri.length() > pathLen ? uri.substring(pathLen)
+					: null;
+			Writer out = response.getWriter();
+			if (taskId != null) {
+				Iterator<Report> iter;
+				try {
+					iter = reportstore.getReportsByTask(TaskID
+							.createFromString(taskId));
+				} catch (XTraceException e) {
+					throw new ServletException(e);
+				}
+				while (iter.hasNext()) {
+					out.write(iter.next().toString());
+					out.write("\n");
+				}
+			}
+		}
+	}
 
-                // Add an IndexServlet as the default servlet. This servlet will serve
-                // a human-readable (HTML) latest tasks page for "/" and serve static
-                // content for any other URL. Being the default servlet, it will get
-                // invoked only for URLs that does not match the other patterns where we
-                // have registered servlets above.
-                context.setResourceBase(webDir + "/html");
-                context.addServlet(new ServletHolder(new IndexServlet()), "/");
+	private static class GetJSONReportsServlet extends HttpServlet {
+		protected void doGet(HttpServletRequest request,
+				HttpServletResponse response) throws ServletException,
+				IOException {
+			response.setContentType("text/json");
+			response.setStatus(HttpServletResponse.SC_OK);
+			String uri = request.getRequestURI();
+			int pathLen = request.getServletPath().length() + 1;
+			String taskIdString = uri.length() > pathLen ? uri.substring(pathLen)
+					: null;
+			String[] taskIds = taskIdString.split(",");
+			
+			try {
+	      Writer out = response.getWriter();
+	      out.write("[");
+	      boolean firstTaskDone = false;
+	      int count = 0;
+  			for (String taskId : taskIds) {
+          Log.info("Writing task "+count+++": "+taskId);
+          
+          if (firstTaskDone) out.write("\n,");
+          firstTaskDone = true;
 
-                try {
-                        server.start();
-                } catch (Exception e) {
-                        LOG.warn("Unable to start web interface", e);
-                }
-        }
+          out.append("{\"id\":\"");
+          out.append(taskId);
+          out.append("\",\"reports\":[");
+          
+          boolean firstReportDone = false;
+          Iterator<Report> iter = reportstore.getReportsByTask(TaskID.createFromString(taskId));
+          while (iter.hasNext()) {
+            if (firstReportDone) out.append(",\n");
+            out.append(iter.next().toJSON());
+            firstReportDone = true;
+          }
+          
+          out.append("]}");
+          Log.info("... done");
+  			}
+  			out.write("]");			
+  		} catch (XTraceException e) {
+        throw new ServletException(e);          
+      }
+		}
+	}
 
-        private static class GetReportsServlet extends HttpServlet {
-                protected void doGet(HttpServletRequest request,
-                                HttpServletResponse response) throws ServletException,
-                                IOException {
-                        response.setContentType("text/plain");
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        String uri = request.getRequestURI();
-                        int pathLen = request.getServletPath().length() + 1;
-                        String taskId = uri.length() > pathLen ? uri.substring(pathLen)
-                                        : null;
-                        Writer out = response.getWriter();
-                        if (taskId != null) {
-                                Iterator<Report> iter;
-                                try {
-                                        iter = reportstore.getReportsByTask(TaskID
-                                                        .createFromString(taskId));
-                                } catch (XTraceException e) {
-                                        throw new ServletException(e);
-                                }
-                                while (iter.hasNext()) {
-                                        out.write(iter.next().toString());
-                                        out.write("\n");
-                                }
-                        }
-                }
-        }
+	private static class GetLatestTaskServlet extends HttpServlet {
+		protected void doGet(HttpServletRequest request,
+				HttpServletResponse response) throws ServletException,
+				IOException {
+			response.setContentType("text/plain");
+			response.setStatus(HttpServletResponse.SC_OK);
+			Writer out = response.getWriter();
 
-        private static class GetJSONReportsServlet extends HttpServlet {
-                protected void doGet(HttpServletRequest request,
-                                HttpServletResponse response) throws ServletException,
-                                IOException {
-                        response.setContentType("text/json");
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        String uri = request.getRequestURI();
-                        int pathLen = request.getServletPath().length() + 1;
-                        String taskId = uri.length() > pathLen ? uri.substring(pathLen)
-                                        : null;
-                        Writer out = response.getWriter();
-                        if (taskId != null) {
-                                Iterator<Report> iter;
-                                try {
-                                        iter = reportstore.getReportsByTask(TaskID
-                                                        .createFromString(taskId));
-                                } catch (XTraceException e) {
-                                        throw new ServletException(e);
-                                }
-                                JSONObject jsonObj = new JSONObject();
-                                try {
-                                        JSONArray reports = new JSONArray();
-                                        while (iter.hasNext()) {
-                                                reports.put(iter.next().toJSON());
-                                        }
-                                        jsonObj.put("reports", reports);
-                                } catch (JSONException e) {
-                                        throw new ServletException(e);
-                                }
-                                out.write(jsonObj.toString());
-                        }
-                }
-        }
+			List<TaskRecord> task = reportstore.getLatestTasks(0, 1);
+			if (task.size() != 1) {
+				LOG.warn("getLatestTasks(1) returned " + task.size()
+						+ " entries");
+				return;
+			}
+			try {
+				Iterator<Report> iter = reportstore.getReportsByTask(task
+						.get(0).getTaskId());
+				while (iter.hasNext()) {
+					Report r = iter.next();
+					out.write(r.toString());
+					out.write("\n");
+				}
+			} catch (XTraceException e) {
+				LOG.warn("Internal error", e);
+				out.write("Internal error: " + e);
+			}
+		}
+	}
 
-        private static class GetLatestTaskServlet extends HttpServlet {
-                protected void doGet(HttpServletRequest request,
-                                HttpServletResponse response) throws ServletException,
-                                IOException {
-                        response.setContentType("text/plain");
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        Writer out = response.getWriter();
+	private static class TagServlet extends HttpServlet {
+		protected void doGet(HttpServletRequest request,
+				HttpServletResponse response) throws ServletException,
+				IOException {
+			String tag = getUriPastServletName(request);
+			if (tag == null || tag.equalsIgnoreCase("")) {
+				response.sendError(505, "No tag given");
+			} else {
+				Collection<TaskRecord> taskInfos = reportstore.getTasksByTag(
+						tag, getOffset(request), getLength(request));
+				showTasks(request, response, taskInfos, "Tasks with tag: "
+						+ tag, false);
+			}
+		}
+	}
 
-                        List<TaskRecord> task = reportstore.getLatestTasks(0, 1);
-                        if (task.size() != 1) {
-                                LOG.warn("getLatestTasks(1) returned " + task.size()
-                                                + " entries");
-                                return;
-                        }
-                        try {
-                                Iterator<Report> iter = reportstore.getReportsByTask(task
-                                                .get(0).getTaskId());
-                                while (iter.hasNext()) {
-                                        Report r = iter.next();
-                                        out.write(r.toString());
-                                        out.write("\n");
-                                }
-                        } catch (XTraceException e) {
-                                LOG.warn("Internal error", e);
-                                out.write("Internal error: " + e);
-                        }
-                }
-        }
+	private static class TitleServlet extends HttpServlet {
+		protected void doGet(HttpServletRequest request,
+				HttpServletResponse response) throws ServletException,
+				IOException {
+			String title = getUriPastServletName(request);
+			if (title == null || title.equalsIgnoreCase("")) {
+				response.sendError(505, "No title given");
+			} else {
+				Collection<TaskRecord> taskInfos = reportstore.getTasksByTitle(
+						title, getOffset(request), getLength(request));
+				showTasks(request, response, taskInfos, "Tasks with title: "
+						+ title, false);
+			}
+		}
+	}
 
-        private static class TagServlet extends HttpServlet {
-                protected void doGet(HttpServletRequest request,
-                                HttpServletResponse response) throws ServletException,
-                                IOException {
-                        String tag = getUriPastServletName(request);
-                        if (tag == null || tag.equalsIgnoreCase("")) {
-                                response.sendError(505, "No tag given");
-                        } else {
-                                Collection<TaskRecord> taskInfos = reportstore.getTasksByTag(
-                                                tag, getOffset(request), getLength(request));
-                                showTasks(request, response, taskInfos, "Tasks with tag: "
-                                                + tag, false);
-                        }
-                }
-        }
+	private static class TitleLikeServlet extends HttpServlet {
+		protected void doGet(HttpServletRequest request,
+				HttpServletResponse response) throws ServletException,
+				IOException {
+			String title = getUriPastServletName(request);
+			if (title == null || title.equalsIgnoreCase("")) {
+				response.sendError(505, "No title given");
+			} else {
+				Collection<TaskRecord> taskInfos = reportstore
+						.getTasksByTitleSubstring(title, getOffset(request),
+								getLength(request));
+				showTasks(request, response, taskInfos,
+						"Tasks with title like: " + title, false);
+			}
+		}
+	}
 
-        private static class TitleServlet extends HttpServlet {
-                protected void doGet(HttpServletRequest request,
-                                HttpServletResponse response) throws ServletException,
-                                IOException {
-                        String title = getUriPastServletName(request);
-                        if (title == null || title.equalsIgnoreCase("")) {
-                                response.sendError(505, "No title given");
-                        } else {
-                                Collection<TaskRecord> taskInfos = reportstore.getTasksByTitle(
-                                                title, getOffset(request), getLength(request));
-                                showTasks(request, response, taskInfos, "Tasks with title: "
-                                                + title, false);
-                        }
-                }
-        }
+	private static class IndexServlet extends DefaultServlet {
+		protected void doGet(HttpServletRequest request,
+				HttpServletResponse response) throws ServletException,
+				IOException {
+			if (request.getRequestURI().equals("/")) {
+				Collection<TaskRecord> tasks = reportstore.getLatestTasks(
+						getOffset(request), getLength(request));
+				showTasks(request, response, tasks, "X-Trace Latest Tasks",
+						true);
+			} else {
+				super.doGet(request, response);
+			}
+		}
+	}
 
-        private static class TitleLikeServlet extends HttpServlet {
-                protected void doGet(HttpServletRequest request,
-                                HttpServletResponse response) throws ServletException,
-                                IOException {
-                        String title = getUriPastServletName(request);
-                        if (title == null || title.equalsIgnoreCase("")) {
-                                response.sendError(505, "No title given");
-                        } else {
-                                Collection<TaskRecord> taskInfos = reportstore
-                                                .getTasksByTitleSubstring(title, getOffset(request),
-                                                                getLength(request));
-                                showTasks(request, response, taskInfos,
-                                                "Tasks with title like: " + title, false);
-                        }
-                }
-        }
+	private static String getUriPastServletName(HttpServletRequest request) {
+		String uri = request.getRequestURI();
+		int pathLen = request.getServletPath().length() + 1;
+		String text = uri.length() > pathLen ? uri.substring(pathLen) : null;
+		if (text != null) {
+			try {
+				text = URLDecoder.decode(text, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		return text;
+	}
 
-        private static class IndexServlet extends DefaultServlet {
-                protected void doGet(HttpServletRequest request,
-                                HttpServletResponse response) throws ServletException,
-                                IOException {
-                        if (request.getRequestURI().equals("/")) {
-                                Collection<TaskRecord> tasks = reportstore.getLatestTasks(
-                                                getOffset(request), getLength(request));
-                                showTasks(request, response, tasks, "X-Trace Latest Tasks",
-                                                true);
-                        } else {
-                                super.doGet(request, response);
-                        }
-                }
-        }
+	private static void showTasks(HttpServletRequest request,
+			HttpServletResponse response, Collection<TaskRecord> tasks,
+			String title, boolean showDbStats) throws IOException {
+		if ("json".equals(request.getParameter("format"))) {
+			response.setContentType("text/plain");
+		} else {
+			response.setContentType("text/html");
+		}
+		int offset = getOffset(request);
+		int length = getLength(request);
+		// Create Velocity context
+		VelocityContext context = new VelocityContext();
+		context.put("tasks", tasks);
+		context.put("title", title);
+		context.put("reportStore", reportstore);
+		context.put("request", request);
+		context.put("offset", offset);
+		context.put("length", length);
+		context.put("lastResultNum", offset + length - 1);
+		context.put("prevOffset", Math.max(0, offset - length));
+		context.put("nextOffset", offset + length);
+		context.put("showStats", showDbStats);
+		context.put("JSON_DATE_FORMAT", JSON_DATE_FORMAT);
+		context.put("HTML_DATE_FORMAT", HTML_DATE_FORMAT);
+		context.put("PAGE_LENGTH", PAGE_LENGTH);
+		// Return Velocity results
+		try {
+			Velocity.mergeTemplate("tasks.vm", "UTF-8", context,
+					response.getWriter());
+			response.setStatus(HttpServletResponse.SC_OK);
+		} catch (Exception e) {
+			LOG.warn("Failed to display tasks.vm", e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+					"Failed to display tasks.vm");
+		}
+	}
 
-        private static String getUriPastServletName(HttpServletRequest request) {
-                String uri = request.getRequestURI();
-                int pathLen = request.getServletPath().length() + 1;
-                String text = uri.length() > pathLen ? uri.substring(pathLen) : null;
-                if (text != null) {
-                        try {
-                                text = URLDecoder.decode(text, "UTF-8");
-                        } catch (UnsupportedEncodingException e) {
-                                e.printStackTrace();
-                                return null;
-                        }
-                }
-                return text;
-        }
+	/**
+	 * Get the length GET parameter from a HTTP request, or return the default
+	 * (of PAGE_LENGTH) when it is not specified or invalid.
+	 * 
+	 * @param request
+	 * @return
+	 */
+	private static int getLength(HttpServletRequest request) {
+		int length = getIntParam(request, "length", PAGE_LENGTH);
+		return Math.max(length, 0); // Don't allow negative
+	}
 
-        private static void showTasks(HttpServletRequest request,
-                        HttpServletResponse response, Collection<TaskRecord> tasks,
-                        String title, boolean showDbStats) throws IOException {
-                if ("json".equals(request.getParameter("format"))) {
-                        response.setContentType("text/plain");
-                } else {
-                        response.setContentType("text/html");
-                }
-                int offset = getOffset(request);
-                int length = getLength(request);
-                // Create Velocity context
-                VelocityContext context = new VelocityContext();
-                context.put("tasks", tasks);
-                context.put("title", title);
-                context.put("reportStore", reportstore);
-                context.put("request", request);
-                context.put("offset", offset);
-                context.put("length", length);
-                context.put("lastResultNum", offset + length - 1);
-                context.put("prevOffset", Math.max(0, offset - length));
-                context.put("nextOffset", offset + length);
-                context.put("showStats", showDbStats);
-                context.put("JSON_DATE_FORMAT", JSON_DATE_FORMAT);
-                context.put("HTML_DATE_FORMAT", HTML_DATE_FORMAT);
-                context.put("PAGE_LENGTH", PAGE_LENGTH);
-                // Return Velocity results
-                try {
-                        Velocity.mergeTemplate("tasks.vm", "UTF-8", context,
-                                        response.getWriter());
-                        response.setStatus(HttpServletResponse.SC_OK);
-                } catch (Exception e) {
-                        LOG.warn("Failed to display tasks.vm", e);
-                        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                        "Failed to display tasks.vm");
-                }
-        }
+	/**
+	 * Get the offset HTTP parameter from a request, or return the default (of
+	 * 0) when it is not specified.
+	 * 
+	 * @param request
+	 * @return
+	 */
+	private static int getOffset(HttpServletRequest request) {
+		int offset = getIntParam(request, "offset", 0);
+		return Math.max(offset, 0); // Don't allow negative
+	}
 
-        /**
-         * Get the length GET parameter from a HTTP request, or return the default
-         * (of PAGE_LENGTH) when it is not specified or invalid.
-         *
-         * @param request
-         * @return
-         */
-        private static int getLength(HttpServletRequest request) {
-                int length = getIntParam(request, "length", PAGE_LENGTH);
-                return Math.max(length, 0); // Don't allow negative
-        }
+	/**
+	 * Read an integer parameter from a HTTP request, or return a default value
+	 * if the parameter is not specified.
+	 * 
+	 * @param request
+	 * @param name
+	 * @param defaultValue
+	 * @return
+	 */
+	private static final int getIntParam(HttpServletRequest request,
+			String name, int defaultValue) {
+		int value;
+		try {
+			return Integer.parseInt(request.getParameter(name));
+		} catch (Exception ex) {
+			return defaultValue;
+		}
+	}
 
-        /**
-         * Get the offset HTTP parameter from a request, or return the default (of
-         * 0) when it is not specified.
-         *
-         * @param request
-         * @return
-         */
-        private static int getOffset(HttpServletRequest request) {
-                int offset = getIntParam(request, "offset", 0);
-                return Math.max(offset, 0); // Don't allow negative
-        }
+	private static final class SyncTimer extends TimerTask {
+		private QueryableReportStore reportstore;
 
-        /**
-         * Read an integer parameter from a HTTP request, or return a default value
-         * if the parameter is not specified.
-         *
-         * @param request
-         * @param name
-         * @param defaultValue
-         * @return
-         */
-        private static final int getIntParam(HttpServletRequest request,
-                        String name, int defaultValue) {
-                int value;
-                try {
-                        return Integer.parseInt(request.getParameter(name));
-                } catch (Exception ex) {
-                        return defaultValue;
-                }
-        }
+		public SyncTimer(QueryableReportStore reportstore) {
+			this.reportstore = reportstore;
+		}
 
-        private static final class SyncTimer extends TimerTask {
-                private QueryableReportStore reportstore;
-
-                public SyncTimer(QueryableReportStore reportstore) {
-                        this.reportstore = reportstore;
-                }
-
-                public void run() {
-                        reportstore.sync();
-                }
-        }
+		public void run() {
+			reportstore.sync();
+		}
+	}
 }
