@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
 import java.io.Closeable;
 
@@ -49,9 +50,10 @@ public class TcpLocalDaemon implements Closeable, Runnable {
     //used to send reports to central server
     private Socket sockToServer;
 
-    public void TcpLocalDaemon() throws XTraceException {
+    public TcpLocalDaemon() throws XTraceException{
         rwriter = new ReportFileWriter();
         String tcpportstr = System.getProperty("xtrace.backend.localproxy.tcpport", "7830");
+        LOG.info("TCPREPORSTRTCPREPORSTR: " + tcpportstr);
         try {
             inPort = Integer.parseInt(tcpportstr);
         } catch (NumberFormatException nfe) {
@@ -61,11 +63,21 @@ public class TcpLocalDaemon implements Closeable, Runnable {
         }
 
         try {
-            serversock = new ServerSocket(inPort);
+            serversock = new ServerSocket();
+            serversock.setReuseAddress(true);
+            serversock.bind(new InetSocketAddress(inPort));
+            LOG.warn("TCPLOCAL serversock created.");
         } catch (IOException e) {
+            LOG.warn("1234ioexception coming through could not open serversock:  " + inPort + e.getMessage());
             throw new XTraceException("Unable to open TCP server socket for local proxy", e);
         }
 
+        if (serversock == null) {
+            LOG.warn("Serversock null after attempted creation.");
+        }
+    }
+
+    public void setupSocketToServer() throws XTraceException{
         InetAddress host = null;
         int port = 0;
         String tcpDest = System.getProperty("xtrace.tcpdest", "127.0.0.1:7831");
@@ -74,12 +86,13 @@ public class TcpLocalDaemon implements Closeable, Runnable {
             String[] split = tcpDest.split(":");
             host = InetAddress.getByName(split[0]);
             port = Integer.parseInt(split[1]);
-
         } catch (Exception e) {
             LOG.warn("Invalid xtrace.tcpdest property. Expected host:port.", e);
             System.exit(1);
         }
 
+
+        LOG.info("HOST: " + host + " port:" + port);
         try {
             sockToServer = new Socket(host, port);
             // TODO: Maybe use BufferedOutputStream? In that case, make sure
@@ -104,7 +117,7 @@ public class TcpLocalDaemon implements Closeable, Runnable {
     public void run() {
         try {
             LOG.info("TcpReportSource started on port " + inPort);
-
+            LOG.info("serversock: " + serversock);
             while (true) {
                 Socket sock = serversock.accept();
                 new TcpClientHandler(sock).start();
@@ -139,6 +152,7 @@ public class TcpLocalDaemon implements Closeable, Runnable {
                     }
                     in.readFully(buf, 0, length);
                     String message = new String(buf, 0, length, "UTF-8");
+                    rwriter.writeOut(message);
                 }
             } catch(EOFException e) {
                 LOG.info("Closing ReadReportsThread for "
@@ -150,7 +164,6 @@ public class TcpLocalDaemon implements Closeable, Runnable {
             }
 
         }
-
     }
 
     public final class ReportFileWriter {
@@ -163,7 +176,8 @@ public class TcpLocalDaemon implements Closeable, Runnable {
         private final long executorTerminationTimeoutDuration = 60;
 
         protected ReportFileWriter() {
-            this.file = System.getProperty("xtrace.backend.localproxy.file", "localproxyFile.txt");
+            this.file = System.getProperty("xtrace.backend.localproxy.file", "/vagrant/localreports/localproxyFile.txt");
+            this.file += Math.random();
             this.executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS,
                                                    new LinkedBlockingQueue<Runnable>(CAPACITY));
             try {

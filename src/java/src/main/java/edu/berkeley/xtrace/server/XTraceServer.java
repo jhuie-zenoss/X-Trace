@@ -91,6 +91,8 @@ public final class XTraceServer {
         // Default number of results to show per page for web UI
         private static final int PAGE_LENGTH = 25;
 
+    private static TcpLocalDaemon tldaemon;
+
         public static void main(String[] args) {
 
                 // If they use the default configuration (the FileTree report store),
@@ -102,15 +104,31 @@ public final class XTraceServer {
                         }
                         System.setProperty("xtrace.server.storedirectory", args[0]);
                 }
+                // startupTcpLocalDaemon();
                 setupReportSources();
                 setupReportStore();
                 setupBackplane();
                 setupWebInterface();
-                startupTcpLocalDaemon();
+                // tcpLocalDaemonInit();
         }
 
     private static void startupTcpLocalDaemon() {
-        new Thread(new TcpLocalDaemon()).start();
+        try {
+            tldaemon = new TcpLocalDaemon();
+        } catch (XTraceException xte) {
+            LOG.warn("Unable to initialize local tcp daemon", xte);
+            System.exit(-1);
+        }
+        new Thread(tldaemon).start();
+    }
+
+    private static void tcpLocalDaemonInit () {
+        try {
+            tldaemon.setupSocketToServer();
+        } catch (XTraceException xte) {
+            LOG.warn("Unable to finish initialize local tcp daemon", xte);
+            System.exit(-1);
+        }
     }
 
         private static void setupReportSources() {
