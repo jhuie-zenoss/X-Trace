@@ -49,12 +49,11 @@
     function checkControlsEnabled() {
         var numChecked = 0;
         var checkboxes = document.getElementsByClassName("select-trace");
+        var checked = [];
         for (var i = 0; i < checkboxes.length; i++) {
             if (checkboxes[i].checked) {
                 numChecked++;
-            }
-            if (numChecked>=3) {
-                break;
+                checked.push(checkboxes[i].value);
             }
         }
         var get_selected_buttons = document.getElementsByClassName("get-selected");
@@ -69,6 +68,15 @@
         for (var i = 0; i < compare_selected_buttons.length; i++) {
             compare_selected_buttons[i].disabled = numChecked==2 ? false : true;
         }
+        displayCheckedIDs(checked);
+    }
+    
+    function displayCheckedIDs(checked) {
+        var attachPoint = document.getElementById("selected_ids");
+        attachPoint.innerHTML="";
+        attachPoint.appendChild(document.createTextNode(checked.join(" ")));
+        attachPoint.appendChild(document.createElement("br"));
+        attachPoint.appendChild(document.createTextNode(checked.join(",")));
     }
 </script>
 </head>
@@ -129,6 +137,7 @@
             <input type="submit" value="Change" />
         </div>
     </form>
+    <div id="selected_ids"></div>
     #if ($showStats)
     <hr />
     <p>Database size: $reportStore.numTasks() tasks, $reportStore.numReports() reports.</p>
