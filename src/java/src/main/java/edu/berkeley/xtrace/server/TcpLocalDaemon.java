@@ -63,10 +63,13 @@ public class TcpLocalDaemon implements Closeable, Runnable {
         }
 
         try {
+            LOG.warn("TCP1");
             serversock = new ServerSocket();
+            LOG.warn("TCP2");
             serversock.setReuseAddress(true);
+            LOG.warn("TCP3");
             serversock.bind(new InetSocketAddress(inPort));
-            LOG.warn("TCPLOCAL serversock created.");
+            LOG.warn("TCP3");
         } catch (IOException e) {
             LOG.warn("1234ioexception coming through could not open serversock:  " + inPort + e.getMessage());
             throw new XTraceException("Unable to open TCP server socket for local proxy", e);
