@@ -63,7 +63,7 @@ public class TcpLocalDaemon implements Closeable, Runnable {
         }
 
         try {
-            LOG.warn("TCP1");
+            LOG.warn("TCP1 - test");
             serversock = new ServerSocket();
             LOG.warn("TCP2");
             serversock.setReuseAddress(true);
