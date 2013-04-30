@@ -27,100 +27,84 @@
 
 package edu.berkeley.xtrace.reporting;
 
-import org.apache.log4j.Logger;
-import edu.berkeley.xtrace.server.TcpLocalDaemon;
-import edu.berkeley.xtrace.XTraceException;
-
+//import org.apache.log4j.Logger;
 
 /**
  * X-trace reporting context framework.  This context is the abstract
  * base class for different report contexts
- *
+ * 
  * By default, this uses the "classic" front-end daemon report context.
  * To change this behavior, specify a different class using the
  * 'xtrace.reportctx' system property.  You can do this on the
  * command line via:
- *
+ *     
  *    java -Dxtrace.reportctx=edu.berkeley.reporting.classname
  *
  * @author George Porter
  */
 public abstract class Reporter
 {
-        private static final Logger LOG = Logger.getLogger(Reporter.class);
+	//private static final Logger LOG = Logger.getLogger(Reporter.class);
 
-        static Reporter reporter;
+	static Reporter reporter;
 
-        /**
-         * Retrieve a handle to the reporter.  Once a reporter
-         * is created, this operation is very cheap.
-         *
-         * @return a handle to a reporter (creating one if necessary)
-         */
-        public final static synchronized Reporter getReporter() {
-                if (reporter == null) {
-                    TcpLocalDaemon tld = null;
-                    try {
-                        tld = new TcpLocalDaemon();
-                    } catch (Exception xte) {
-                        LOG.warn("Could not create tcp local daemon.");
-                        System.exit(-1);
-                    }
+	/**
+	 * Retrieve a handle to the reporter.  Once a reporter
+	 * is created, this operation is very cheap.
+	 * 
+	 * @return a handle to a reporter (creating one if necessary)
+	 */
+	public final static synchronized Reporter getReporter() {
+		if (reporter == null) {
+			String systemprop = System.getProperty("xtrace.reporter");
 
-                    String systemprop = System.getProperty("xtrace.reporter");
+			if (systemprop == null) {
+				systemprop = "edu.berkeley.xtrace.reporting.TcpReporter";
+			}
 
-                        if (systemprop == null) {
-                                systemprop = "edu.berkeley.xtrace.reporting.TcpReporter";
-                        }
+			try {
+				reporter = (Reporter) (Class.forName(systemprop)).newInstance();
+				
+			} catch (InstantiationException e) {
+				//LOG.warn("Unable to instantiate reporting class: " + systemprop, e);
+				System.exit(1);
+				
+			} catch (IllegalAccessException e) {
+				//LOG.warn("Unable to access reporting class: " + systemprop, e);
+				System.exit(1);
+				
+			} catch (ClassNotFoundException e) {
+				//LOG.warn("Unable to find reporting class: " + systemprop, e);
+				System.exit(1);
+			}
 
-                        try {
-                                reporter = (Reporter) (Class.forName(systemprop)).newInstance();
-                                tld.setupSocketToServer();
-                                new Thread(tld).start();
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				public void run() {
+					if (reporter != null) {
+					   reporter.close();
+					}
+				}
+			});
+		}
+		return reporter;
+	}
 
-                        } catch (InstantiationException e) {
-                                //LOG.warn("Unable to instantiate reporting class: " + systemprop, e);
-                                System.exit(1);
+	/**
+	 * Sends a report to the reporting domain
+	 * 
+	 * @param r
+	 *            the report to send
+	 */
+	public abstract void sendReport(Report r);
 
-                        } catch (IllegalAccessException e) {
-                                //LOG.warn("Unable to access reporting class: " + systemprop, e);
-                                System.exit(1);
+	/**
+	 * Closes this reporter, releasing any resources
+	 */
+	public abstract void close();
 
-                        } catch (ClassNotFoundException e) {
-                                //LOG.warn("Unable to find reporting class: " + systemprop, e);
-                                System.exit(1);
-                        } catch (XTraceException e) {
-                            LOG.warn("xtrace exception on tld setup and thread start.");
-                            System.exit(1);
-                        }
-
-                        Runtime.getRuntime().addShutdownHook(new Thread() {
-                                public void run() {
-                                        if (reporter != null) {
-                                           reporter.close();
-                                        }
-                                }
-                            });
-                }
-                return reporter;
-        }
-
-        /**
-         * Sends a report to the reporting domain
-         *
-         * @param r
-         *            the report to send
-         */
-        public abstract void sendReport(Report r);
-
-        /**
-         * Closes this reporter, releasing any resources
-         */
-        public abstract void close();
-
-        /**
-         * Send any pending reports, blocking if necessary.
-         * Default implementation does nothing.
-         */
-        public void flush() {}
+	/**
+	 * Send any pending reports, blocking if necessary.
+	 * Default implementation does nothing.
+	 */
+	public void flush() {}
 }
