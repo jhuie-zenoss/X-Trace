@@ -14,6 +14,7 @@ import java.io.Closeable;
 // import org.apache.log4j.Logger;
 
 import edu.berkeley.xtrace.XTraceException;
+import edu.berkeley.xtrace.reporting.Report;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -50,18 +51,22 @@ public class TcpLocalDaemon implements Closeable, Runnable {
     //used to send reports to central server
     private Socket sockToServer;
 
+    private LocalDaemonStore store;
+
+
     public TcpLocalDaemon() {
-        rwriter = new ReportFileWriter();
+        this.rwriter = new ReportFileWriter();
         String tcpportstr = System.getProperty("xtrace.backend.localproxy.tcpport", "7830");
 
         try {
-            inPort = Integer.parseInt(tcpportstr);
+            this.inPort = Integer.parseInt(tcpportstr);
         } catch (NumberFormatException nfe) {
             //Is this right approach to a misformed property string?
             // LOG.warn("Invalid tcp report port for local proxy: " + tcpportstr, nfe);
-            inPort = 7830;
+            this.inPort = 7830;
         }
 
+        this.store = new LocalDaemonStoreInMemoryImpl();
     }
 
     public void initialize() throws XTraceException {
@@ -157,6 +162,7 @@ public class TcpLocalDaemon implements Closeable, Runnable {
                     }
                     in.readFully(buf, 0, length);
                     String message = new String(buf, 0, length, "UTF-8");
+                    store.storeReport(Report.createFromString(message));
                     rwriter.writeOut(message);
                 }
             } catch(EOFException e) {
