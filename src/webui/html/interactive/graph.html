@@ -46,11 +46,7 @@ window.onload = function() {
 	};
 	if (id==null) {
 	    document.body.appendChild(document.createTextNode("No Trace ID specified"));
-	} else if (id.indexOf(".json")!=-1) {
-        console.info("Loading reports from JSON file", id)
-        d3.json(id, callback);
     } else {
-        console.info("Retrieving from X-Trace:", id);
         getReports(id, callback, errback);
     }
 }

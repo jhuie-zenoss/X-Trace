@@ -33,20 +33,48 @@ var getReports = function(ids_str, callback, errback) {
     var batch_size = 20;
     ids = ids_str.split(",");
     
+    json_ids = [];
+    regular_ids = [];
+    for (var i = 0; i < ids.length; i++) {
+        var id = ids[i];
+        if (id.indexOf(".json")!=-1) {
+            json_ids.push(id);
+        } else {
+            regular_ids.push(id);
+        }
+    }
+    
     var results = [];
+    var jsondone = false, batchdone = false;
     var batch_callback = function(json) {
         results = results.concat(json);
         i++;
-        if (ids.length == 0) {
-            callback(results);
+        if (regular_ids.length == 0) {
+            batchdone = true;
+            if (jsondone && batchdone) callback(results);
         } else {
-            next_request_ids = ids.splice(0, batch_size);
+            next_request_ids = regular_ids.splice(0, batch_size);
             console.info("Retrieving batch "+i+":", next_request_ids);
             getAllReports(next_request_ids.join(), batch_callback, errback);
         }
     }
     
+    var json_fecthing_id = null;
+    var json_batch_callback = function(json) {
+        if (json.length==1) json[0].id = json_fecthing_id;
+        results = results.concat(json);
+        if (json_ids.length == 0) {
+            jsondone = true;   
+            if (jsondone && batchdone) callback(results);
+        } else {
+            json_fecthing_id = json_ids.splice(0, 1);
+            d3.json(json_fecthing_id, json_batch_callback);
+            console.info("Retrieving JSON file " + id);
+        }
+    }
+    
     batch_callback([]);
+    json_batch_callback([]);
 }
 
 var getAllReports = function(ids, callback, errback) {

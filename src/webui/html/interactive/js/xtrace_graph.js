@@ -253,4 +253,48 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
     this.graph = graph;
     this.resetViewport = resetViewport;
     this.history = history;
+    
+    
+    // Add a play button
+    console.log("appending play button");
+    var playbutton = rootSVG.append("svg").attr("x", "10").attr("y", "5").append("text").attr("text-anchor", "left").append("tspan").attr("x", 0).attr("dy", "1em").text("Click To Play").on("click",
+            function(d) {
+        animate();
+    });
+    
+    var animate = function() {
+        var startTime = new Date().getTime();
+        
+        // Find the min and max times
+        var max = 0;
+        var min = Infinity;
+        graphSVG.selectAll(".node").each(function(d) {
+            var time = parseFloat(d.report["Timestamp"]);
+            if (time < min) {
+                min = time;
+            }
+            if (time > max) {
+                max = time;
+            }
+        })
+        
+        var playDuration = 10000;
+        
+        var update = function() {
+            var elapsed = new Date().getTime() - startTime
+            var threshold = (elapsed * (max - min) / playDuration) + min;
+            graphSVG.selectAll(".node").attr("display", function(d) {
+                d.animation_hiding = parseFloat(d.report["Timestamp"]) < threshold ? null : true;
+                return d.animation_hiding ? "none" : "";
+            });
+            graphSVG.selectAll(".edge").attr("display", function(d) {
+                return (d.source.animation_hiding || d.target.animation_hiding) ? "none" : ""; 
+            })
+            if (elapsed < playDuration) {
+                window.setTimeout(update, 10);
+            }
+        }
+        update();
+        
+    }
 }
