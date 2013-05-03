@@ -1,5 +1,5 @@
 function WeisfeilerLehmanKernel(/*optional*/ depth, /*optional*/ kernel) {
-    this.depth = (depth && depth > 0) ? depth : 10;
+    this.depth = (depth && depth > 0) ? depth : 4;
     this.kernel = kernel ? kernel : new NodeCountKernel();
     
     var generator = new WLMultisetLabelGenerator();

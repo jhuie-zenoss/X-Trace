@@ -40,14 +40,10 @@ window.onload = function() {
 	var errback = function(message, error) {
 		console.log("Error retrieving reports", error);
 	};
-    if (trace_id.indexOf(".json")!=-1) {
-        console.info("Loading reports from JSON file", trace_id)
-        d3.json(trace_id, callback);
-    } else if (trace_id!=""){
-        console.info("Retrieving from X-Trace:", trace_id);
-        getReports(trace_id, callback, errback);
+    if (trace_id==null) {
+        document.body.appendChild(document.createTextNode("No Trace ID or JSON file specified"));
     } else {
-        document.body.appendChild(document.createTextNode("No trace ID or JSON file specified"));
+        getReports(trace_id, callback, errback);
     }
 }
 </script>
