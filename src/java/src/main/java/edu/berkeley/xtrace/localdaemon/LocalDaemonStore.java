@@ -8,5 +8,5 @@ public interface LocalDaemonStore {
 
     public void storeReport(Report report);
 
-    public Collection<Report> getReportsForTaskId (TaskID tid);
+    public Collection<Report> getReportsForTaskId(TaskID tid);
 }

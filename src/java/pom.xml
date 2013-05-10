@@ -7,6 +7,12 @@
 	<version>2.1-20120824</version>
 	<name>xtrace</name>
 	<url>http://maven.apache.org</url>
+        <repositories>
+            <repository>
+                <id>sonatype-nexus-snapshots</id>
+                <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            </repository>
+        </repositories>
 	<pluginRepositories>
 		<pluginRepository>
 			<id>dtrott</id>
@@ -19,6 +25,11 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.14</version>
 		</dependency>
+                <dependency>
+    	            <groupId>com.googlecode.cliche</groupId>
+    	            <artifactId>cliche</artifactId>
+    	            <version>1.0-SNAPSHOT</version>
+                </dependency>
 		<dependency>
 			<groupId>net.minidev</groupId>
 			<artifactId>json-smart</artifactId>
@@ -122,6 +133,14 @@
 								<extraArgument>-Dxtrace.backend.httpport=4080</extraArgument>
 							</jvmSettings>
 						</program>
+                                                <program>
+                                                    <mainClass>edu.berkeley.xtrace.localdaemon.LocalDaemonStarter</mainClass>
+                                                    <name>tld_start_local_daemon</name>
+                                                </program>
+                                                <program>
+                                                    <mainClass>edu.berkeley.xtrace.localdaemon.MasterStarter</mainClass>
+                                                    <name>tld_start_master</name>
+                                                </program>
 						<program>
 							<mainClass>edu.berkeley.xtrace.server.XTraceProxy</mainClass>
 							<name>proxy</name>
