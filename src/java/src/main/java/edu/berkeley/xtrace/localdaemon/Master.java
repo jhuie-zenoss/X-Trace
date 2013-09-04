@@ -45,10 +45,16 @@ public class Master implements Closeable {
         daemons = Collections.synchronizedCollection(new HashSet<Integer>());
         serviceImpl = new MasterServiceImpl(daemons);
         try {
-            // this should be a property
-            serverTransport = new TServerSocket(7833);
+            // TODO: this should be a property
+            String portStr = System.getProperty("xtrace.backend.localproxy.masterPort",
+                                                "7833");
+            int masterPort = Integer.parseInt(portStr);
+            serverTransport = new TServerSocket(masterPort);
         } catch (TTransportException tte) {
             LOG.warn("Unable to initialize server transport. Exiting.", tte);
+            return false;
+        } catch (NumberFormatException nfe) {
+            LOG.warn("Unable to initialize server transport. Exiting.", nfe);
             return false;
         }
 

@@ -2,14 +2,18 @@ package edu.berkeley.xtrace.localdaemon;
 
 import edu.berkeley.xtrace.XTraceException;
 
+import org.apache.log4j.Logger;
+
 public class LocalDaemonStarter {
+    private static final Logger LOG = Logger.getLogger(LocalDaemonStarter.class);
+
     public static void main(String args[]) {
         final TcpLocalDaemon tld = new TcpLocalDaemon();
         System.out.println("initalizing tld");
         try {
             tld.initialize();
         } catch (XTraceException xte) {
-            System.err.println("Unable to initialize local daemon. Exiting.");
+            LOG.warn("Unable to initialize local daemon. Exiting.");
             System.exit(1);
         }
 
@@ -22,7 +26,7 @@ public class LocalDaemonStarter {
 
         Thread tldThread = new Thread(tld);
         tldThread.start();
-        System.out.println("Started tld thread");
+        LOG.info("Started tld thread");
 
         try {
             tldThread.join();

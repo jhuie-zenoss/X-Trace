@@ -121,8 +121,12 @@ public class TcpLocalDaemon implements Closeable, Runnable {
 
         // now we need to tell the master about us
 
-        // TODO: this should come from a property
-        TTransport transport = new TSocket("127.0.0.1", 7833);
+        String masterPortStr = System.getProperty("xtrace.backend.localproxy.masterPort", "7833");
+        int masterPort = Integer.parseInt(masterPortStr);
+        // Default to localhost
+        String masterHost = System.getProperty("xtrace.backend.localproxy.masterHost",
+                                               "127.0.0.1");
+        TTransport transport = new TSocket(masterHost, masterPort);
 
         try {
             transport.open();
