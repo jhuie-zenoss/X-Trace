@@ -31,4 +31,11 @@ public class MasterStarter {
             System.out.println(s);
         }
     }
+
+    @Command
+    public static void printTaskIDs() {
+        for (String tid : master.getTaskIDs()) {
+            System.out.println(tid);
+        }
+    }
 }

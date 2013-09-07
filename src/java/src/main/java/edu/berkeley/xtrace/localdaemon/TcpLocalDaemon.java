@@ -18,13 +18,15 @@ import edu.berkeley.xtrace.reporting.Report;
 import edu.berkeley.xtrace.TaskID;
 
 import java.io.BufferedWriter;
+import java.util.Collection;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
-import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -71,14 +73,18 @@ public class TcpLocalDaemon implements Closeable, Runnable {
     private LocalDaemonStore store;
 
     // stuff for the thrift server
+    // TODO: this needs to be thread-safe set
+    private final Set<String> taskIDs;
     private int thriftPort;
     private LocalDaemonQueryServiceImpl thriftQueryImpl;
     private TServerTransport serverTransport;
     private TServer thriftServer;
+    private MasterService.Client client;
+    private long id; //unique id to identify with server (could be port?)
 
     public TcpLocalDaemon() {
         this.store = new LocalDaemonStoreInMemoryImpl();
-
+        this.taskIDs = new HashSet<String>();
         this.rwriter = new ReportFileWriter();
         String tcpportstr = System.getProperty("xtrace.backend.localproxy.tcpport", "7830");
 
@@ -104,6 +110,7 @@ public class TcpLocalDaemon implements Closeable, Runnable {
             LOG.warn("Unable to create server socket for Local Daemon thrift server.", e);
             return false;
         }
+
         LOG.info("Starting thrift server.");
         System.out.println("starting thrift server");
         thriftServer = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(new LocalDaemonQueryService.Processor<LocalDaemonQueryServiceImpl>(thriftQueryImpl)));
@@ -136,11 +143,10 @@ public class TcpLocalDaemon implements Closeable, Runnable {
         }
 
         TProtocol protocol = new TBinaryProtocol(transport);
-        MasterService.Client client = new MasterService.Client(protocol);
+        this.client = new MasterService.Client(protocol);
 
-        // id may be unecessary for now
         try {
-            client.registerDaemon(0, ssock.getLocalPort());
+            this.id = client.registerDaemon(ssock.getLocalPort());
         } catch (TException te) {
             LOG.warn("Unable to tell master about local daemons existence.", te);
             return false;
@@ -250,7 +256,12 @@ public class TcpLocalDaemon implements Closeable, Runnable {
                     String message = new String(buf, 0, length, "UTF-8");
                     toSend = Report.createFromString(message);
                     store.storeReport(toSend);
-                    System.out.println(toSend.getMetadata().getTaskId());
+                    String tidStr = toSend.getMetadata().getTaskId().toString();
+
+                    if (!taskIDs.contains(tidStr)) {
+                        client.haveReportWithTaskID(id, tidStr);
+                        taskIDs.add(tidStr);
+                    }
                     rwriter.writeOut(message);
                 }
             } catch(EOFException e) {

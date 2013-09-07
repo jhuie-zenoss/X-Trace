@@ -4,5 +4,7 @@ namespace java edu.berkeley.xtrace.localdaemon
 
 
 service MasterService { 
-        void registerDaemon(1:i64 id, 2: i32 port);
+        i64 registerDaemon(1: i32 port);
+        void haveReportWithTaskID(1: i64 id, 2: string taskID);
 }
+

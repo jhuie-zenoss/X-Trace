@@ -21,13 +21,16 @@ import java.io.Closeable;
 import java.util.Collections;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 
 public class Master implements Closeable {
-    private Collection<Integer> daemons;
+    private Map<Long, LocalDaemonInfo> daemons;
     private MasterServiceImpl serviceImpl;
     private TServerTransport serverTransport;
     private TServer server;
@@ -42,10 +45,9 @@ public class Master implements Closeable {
 
     // return whether successful
     public boolean initialize() {
-        daemons = Collections.synchronizedCollection(new HashSet<Integer>());
+        daemons = Collections.synchronizedMap(new HashMap<Long, LocalDaemonInfo>());
         serviceImpl = new MasterServiceImpl(daemons);
         try {
-            // TODO: this should be a property
             String portStr = System.getProperty("xtrace.backend.localproxy.masterPort",
                                                 "7833");
             int masterPort = Integer.parseInt(portStr);
@@ -71,6 +73,17 @@ public class Master implements Closeable {
         }.start();
     }
 
+
+    public Set<String> getTaskIDs() {
+        Set<String> toReturn = new HashSet<String>();
+
+        for (LocalDaemonInfo info : daemons.values()) {
+            toReturn.addAll(info.getTaskIDs());
+        }
+
+        return toReturn;
+    }
+
     // TODO: better to keep connections or make them occasionally?
     public Collection<String> getReportsForTaskId(String taskid) {
         ThriftTaskID tid = new ThriftTaskID();
@@ -79,7 +92,9 @@ public class Master implements Closeable {
         Collection<ThriftReport> incomingReports = null;
         Collection<String> reportsToReturn = new LinkedList<String>();
 
-        for (Integer port : daemons) {
+        for (LocalDaemonInfo info : daemons.values()) {
+            int port = info.getPort();
+
             // TODO: the port and the string should come from the clients in register
             TTransport transport = new TSocket("localhost", port);
             try {
@@ -102,7 +117,6 @@ public class Master implements Closeable {
             for (ThriftReport tr : incomingReports) {
                 reportsToReturn.add(tr.getReportStr());
             }
-
 
         }
         return reportsToReturn;

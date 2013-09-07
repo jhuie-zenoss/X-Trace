@@ -30,6 +30,8 @@ public class LocalDaemonStarter {
 
         try {
             tldThread.join();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            LOG.error("Exception joining on threads at close.", e);
+        }
     }
 }
