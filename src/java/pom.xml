@@ -6,7 +6,7 @@
 	<packaging>jar</packaging>
 	<version>2.1-20120824</version>
 	<name>xtrace</name>
-	<url>http://maven.apache.org</url>
+    <url>http://www.x-trace.net</url>
 	<pluginRepositories>
 		<pluginRepository>
 			<id>dtrott</id>
