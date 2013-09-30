@@ -25,8 +25,7 @@ public class LocalDaemonInfo {
     }
 
     public Set<String> getTaskIDs() {
-        //TODO: return a copy
-        return taskIDs;
+        return new HashSet<String>(taskIDs);
     }
 
     // Should be fine on duplicates bx adding to set.
