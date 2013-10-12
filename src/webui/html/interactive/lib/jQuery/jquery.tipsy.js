@@ -232,7 +232,7 @@
         gravity: 'n',
         html: false,
         live: false,
-        offset: 0,
+        offset: 10,
         opacity: 0.8,
         title: 'title',
         trigger: 'hover',

@@ -2,9 +2,9 @@ jQuery.fn.outerHTML = function() {
     return jQuery('<div />').append(this.eq(0).clone()).html();
 };
 
-var DirectedAcyclicGraphTooltip = function() {
+var DirectedAcyclicGraphTooltip = function(gravity) {
     
-    var tooltip = Tooltip().title(function(d) {
+    var tooltip = Tooltip(gravity).title(function(d) {
         var report = d.report;
 
         var reserved = ["Agent", "Label", "Class", "Timestamp", "Host", "ProcessID", "ThreadID", "ThreadName", "X-Trace"];
@@ -68,12 +68,14 @@ var CompareTooltip = function() {
 }
 
 
-var Tooltip = function() {
+var Tooltip = function(gravity) {
+    if (gravity==null)
+        gravity = $.fn.tipsy.autoWE;
     
     var tooltip = function(selection) {
         selection.each(function(d) {
             $(this).tipsy({
-                gravity: $.fn.tipsy.autoWE,
+                gravity: gravity,
                 html: true,
                 title: function() { return title(d); },
                 opacity: 1

@@ -1,0 +1,89 @@
+
+.mini text {
+    font: 9px sans-serif;   
+}
+
+.month text {
+    text-anchor: start;
+}
+
+.todayLine {
+    stroke: blue;
+    stroke-width: 1.5;
+}
+
+.axis line, .axis path {
+    stroke: black;
+}
+
+.miniItem {
+    stroke-width: 6;    
+}
+
+.laneText {
+	font-weight: bold;
+}
+
+rect.thread {
+    stroke: gray;
+    stroke-width: 1.1px;
+}
+
+rect.thread.waiting {
+    opacity: 0.7;
+    stroke: none;
+}
+
+circle.event {
+    fill: black;
+}
+
+line.edge {
+    stroke: red;
+    stroke-width: 2px;
+    opacity: 0.5;
+}
+
+.miniItem {
+    stroke: green;
+    fill: lightgreen;
+}
+
+.brush .extent {
+    stroke: gray;
+    fill: blue;
+    fill-opacity: .165;
+    stroke-width: 1.1px;
+}
+
+.xtrace-tooltip {
+	text-align: left;
+}
+
+.xtrace-tooltip .key {
+	display: inline-block;
+	float: left;
+	width: 90px;
+    font-weight: bold;	
+}
+
+.xtrace-tooltip .value {
+	display: inline-block;
+	float: left;
+	word-wrap: break-word;
+	max-width: 410px;
+}
+
+.xtrace-tooltip .clear {
+	clear: both;
+}
+
+
+text, tspan, .tipsy {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}

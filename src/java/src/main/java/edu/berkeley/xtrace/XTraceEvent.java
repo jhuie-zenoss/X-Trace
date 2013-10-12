@@ -170,6 +170,9 @@ public class XTraceEvent {
 		long time = System.currentTimeMillis();
 		String value = String.format("%d.%03d", time/1000, time%1000);
 		report.put("Timestamp", value);
+		
+		long nanotime = System.nanoTime();
+		report.put("HRT", Long.toString(nanotime));
 	}
 	
 	/**

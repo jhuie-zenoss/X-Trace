@@ -124,7 +124,8 @@
             <td>
                 <a href="/interactive/graph.html?id=$task.taskId">Animated</a>,
                 <a href="/interactive/graph.html?id=$task.taskId&lightweight=true">Lite</a>,
-                <a href="/interactive/graph.html?id=$task.taskId&lightweight=true&mapreduceonly=true">MapReduce Only</a>,
+                <a href="/interactive/graph.html?id=$task.taskId&lightweight=true&mapreduceonly=true">Lite-MapReduce</a>,
+                <a href="/interactive/swimlane.html?id=$task.taskId">SwimLane</a>,
             </td>
         </tr>
     #end
