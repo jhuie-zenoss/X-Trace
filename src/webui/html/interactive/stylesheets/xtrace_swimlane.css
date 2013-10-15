@@ -1,3 +1,6 @@
+.main .lane-background {
+	cursor: move;
+}
 
 .mini text {
     font: 9px sans-serif;   
@@ -39,9 +42,22 @@ circle.event {
 }
 
 line.edge {
-    stroke: red;
     stroke-width: 2px;
     opacity: 0.5;
+}
+
+line.edge.internal {
+	stroke: blue;
+	opacity: 0.2;
+}
+
+line.edge.interthread {
+	stroke: blue;
+	opacity: 0.3;
+}
+
+line.edge.interprocess {
+	stroke: red;
 }
 
 .miniItem {

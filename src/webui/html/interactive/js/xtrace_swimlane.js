@@ -16,10 +16,8 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
     }
 
     var datalen = data.max - data.min;
-    console.log("datalen is", datalen);
     var rangemin = data.min - datalen / 10.0;
     var rangemax = data.max + datalen / 10.0;
-    console.log(rangemin, rangemax);
     
     var DAGTooltip = DirectedAcyclicGraphTooltip($.fn.tipsy.autoNS);
     
@@ -28,6 +26,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
 //    , items = data.items
 //    , now = new Date();
 
+    
   var margin = {top: 20, right: 15, bottom: 15, left: 120}
     , width = $(window).width() - margin.left - margin.right
     , height = $(window).height() - margin.top - margin.bottom
@@ -67,7 +66,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
 
   // draw the lanes for the main chart
   
-  main.append('g').selectAll('laneBackground')
+  main.append('g').attr("class", "lane-background").selectAll('laneBackground')
       .data(lanes)
       .enter().append('rect')
       .attr('fill', function(d) { return d.process.color.brighter(0.3); })
@@ -181,6 +180,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
 
   mini.append('g')
       .attr('class', 'x brush')
+      .attr('clip-path', 'url(#clip)')
       .call(brush)
       .selectAll('rect')
           .attr('y', 1)
@@ -189,12 +189,54 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
   mini.selectAll('rect.background').remove();
   display();
 
+  // Zoom behavior for the main display
+  // For zoom's translating
+  var moving = false,
+      lastx = null;
+  main.on("mousedown", function() { moving = true; lastx = null; });
+  main.on("mouseup", function() { moving = false; lastx = null; });
+
+  var zoom = d3.behavior.zoom();
+  zoom.on("zoom", function() {
+      console.log("zoom", d3.event);
+      var mousex = x1.invert(d3.mouse(d3.select(this).select(".main").node())[0]);
+      var brushExtent = brush.extent();
+      
+      // do the zoom in or out, clamping if necessary
+      var newx0 = mousex +  ((brushExtent[0] - mousex) / d3.event.scale);
+      var newx1 = mousex + ((brushExtent[1] - mousex) / d3.event.scale);
+      newx0 = Math.max(newx0, rangemin);
+      newx1 = Math.min(newx1, rangemax);
+      
+      // Apply any translate
+      if (moving) {
+          if (lastx!=null) {
+              var deltax = x1.invert(lastx) - x1.invert(d3.event.translate[0]);
+              if ((newx0 > rangemin || deltax > 0) && (newx1 < rangemax || deltax < 0)) {
+                  newx0 = newx0 + deltax;
+                  newx1 = newx1 + deltax;
+              }
+          }
+          lastx = d3.event.translate[0];
+      }
+      
+      // apply the extent and redisplay
+      brush.extent([newx0, newx1]);
+      display();
+      zoom.scale(1);
+  });
+  zoom.call(main);
+
   function display () {
 
       var rects, dots
         , minExtent = brush.extent()[0]
-        , maxExtent = brush.extent()[1]
-        , visItems = items.filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent});
+        , maxExtent = brush.extent()[1];
+      
+      if (maxExtent - minExtent < 0.00001)
+          maxExtent = minExtent+0.00001;
+      
+      var visItems = items.filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent});
 
       mini.select('.brush').call(brush.extent([minExtent, maxExtent]));       
 
@@ -234,7 +276,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
       
       // update the causality edges
       edges = causalityEdges.selectAll('line.edge')
-          .data(data.ExternalEdges(), function(d) { return d.id; })
+          .data(data.Edges(), function(d) { return d.id; })
           .attr('x1', function(d) { return x1(d.parent.Timestamp()); })
           .attr('x2', function(d) { return x1(d.child.Timestamp()); });
       edges.enter().append('line')
@@ -242,7 +284,14 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
           .attr('x2', function(d) { return x1(d.child.Timestamp()); })
           .attr('y1', function(d) { return y1(d.parent.span.thread.lanenumber) + .5 * y1(1); })
           .attr('y2', function(d) { return y1(d.child.span.thread.lanenumber) + .5 * y1(1); })
-          .attr('class', 'edge');
+          .attr('class', function(d) {
+              if (d.parent.span.thread.process!=d.child.span.thread.process)
+                  return "edge interprocess";
+              else if (d.parent.span.thread!=d.child.span.thread)
+                  return "edge interthread";
+              else
+                  return "edge internal";
+          });
   }
 
   function moveBrush () {

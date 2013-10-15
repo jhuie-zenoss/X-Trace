@@ -59,12 +59,8 @@ SwimLaneData.prototype.Events = function() {
     return [].concat.apply([], this.Spans().map(function(span) { return span.Events(); }));   
 }
 
-SwimLaneData.prototype.ExternalEdges = function() {
-    return [].concat.apply([], this.Events().map(function(event) { return event.ExternalEdges(); }));
-}
-
-SwimLaneData.prototype.InternalEdges = function() {
-    return [].concat.apply([], this.Events().map(function(event) { return event.InternalEdges(); }));
+SwimLaneData.prototype.Edges = function() {
+    return [].concat.apply([], this.Events().map(function(event) { return event.Edges(); }));
 }
 
 var Event = function(span, report) {
@@ -77,7 +73,7 @@ var Event = function(span, report) {
     this.span.thread.process.machine.swimlane.reports_by_id[this.id] = this;
 }
 
-Event.prototype.ExternalEdges = function() {
+Event.prototype.Edges = function() {
     if (this.edges==null) {
         this.edges = [];
         var parents = this.report["Edge"];
@@ -85,31 +81,15 @@ Event.prototype.ExternalEdges = function() {
             var edge = {
                 id: this.id+parents[i],
                 parent: this.span.thread.process.machine.swimlane.reports_by_id[parents[i]],
-                child: this,
+                child: this
             }
-            if (edge.parent && edge.child && edge.parent.span.thread.process!=edge.child.span.thread.process)
-                this.edges.push(edge);
-        }
-    }
-    return this.edges;
-}
-
-Event.prototype.InternalEdges = function() {
-    if (this.edges==null) {
-        this.edges = [];
-        var parents = this.report["Edge"];
-        for (var i = 0; i < parents.length; i++) {
-            var edge = {
-                id: this.id+parents[i],
-                parent: this.span.thread.process.machine.swimlane.reports_by_id[parents[i]],
-                child: this,
-            }
-            if (edge.parent && edge.child && edge.parent.span!=edge.child.span && edge.parent.span.thread.process==edge.child.span.thread.process)
+            if (edge.parent && edge.child) 
                 this.edges.push(edge);
         }
     }
     return this.edges;    
 }
+
 
 Event.prototype.Timestamp = function() {
     return this.timestamp;
