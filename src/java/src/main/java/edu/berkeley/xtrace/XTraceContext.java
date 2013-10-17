@@ -113,10 +113,14 @@ public class XTraceContext {
 	 *            the new context
 	 */
 	public static void setThreadContext(XTraceMetadata ctx) {
-	  if (XTraceContext.isValid())
-	    XTraceResourceTracing.threadEnd();
-	  doSetThreadContext(ctx);
-    XTraceResourceTracing.threadStart();
+	  setThreadContext(ctx, null);
+	}
+	
+	public static void setThreadContext(XTraceMetadata ctx, String name) {
+    if (XTraceContext.isValid())
+      XTraceResourceTracing.threadEnd();
+    doSetThreadContext(ctx);
+    XTraceResourceTracing.threadStart(name);
 	}
 	
 	static void doSetThreadContext(XTraceMetadata ctx) {
@@ -132,12 +136,16 @@ public class XTraceContext {
 	 * @param ctx
 	 *            the new context
 	 */
-	public static void setThreadContext(Collection<XTraceMetadata> ctxs) {
+  public static void setThreadContext(Collection<XTraceMetadata> ctxs) {
+    setThreadContext(ctxs, null);
+  }
+
+  public static void setThreadContext(Collection<XTraceMetadata> ctxs, String name) {
     if (XTraceContext.isValid())
       XTraceResourceTracing.threadEnd();
     doSetThreadContext(ctxs);
-    XTraceResourceTracing.threadStart();
-	}
+    XTraceResourceTracing.threadStart(name);
+  }
 	
 	static void doSetThreadContext(Collection<XTraceMetadata> ctxs) {
 		doClearThreadContext();
