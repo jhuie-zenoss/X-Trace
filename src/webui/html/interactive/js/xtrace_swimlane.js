@@ -88,17 +88,17 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
       .data(lanes)
       .enter();
   
-  mainlabels.append('text')
-      .text(function(d) { return d.process.id; })
-      .attr('x', -5)
-      .attr('y', function(d) { return y1(d.lanenumber + .5)-10; })
-      .attr('dy', '0.5ex')
-      .attr('text-anchor', 'end')
-      .attr('class', 'laneText')
-      .attr('fill', function(d) { return d.process.color.darker(1); });
+//  mainlabels.append('text')
+//      .text(function(d) { return d.process.Name(); })
+//      .attr('x', -5)
+//      .attr('y', function(d) { return y1(d.lanenumber + .5)-10; })
+//      .attr('dy', '0.5ex')
+//      .attr('text-anchor', 'end')
+//      .attr('class', 'laneText')
+//      .attr('fill', function(d) { return d.process.color.darker(1); });
 
   mainlabels.append('text')
-      .text(function(d) { return "Thread-"+d.id; })
+      .text(function(d) { return d.Name(); })
       .attr('x', -5)
       .attr('y', function(d) { return y1(d.lanenumber + .5)+10; })
       .attr('dy', '0.5ex')
@@ -156,6 +156,8 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
   var causalityEdges = main.append('g')
   .attr('clip-path', 'url(#clip)');
   var eventDots = main.append('g')
+  .attr('clip-path', 'url(#clip)');
+  var lockLines = main.append('g')
   .attr('clip-path', 'url(#clip)');
 
   mini.append('g').selectAll('miniItems')

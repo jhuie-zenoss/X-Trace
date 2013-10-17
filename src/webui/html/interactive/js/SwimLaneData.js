@@ -36,6 +36,7 @@ SwimLaneData.prototype.Machines = function() {
     var machines = this.machines;
     var keys = Object.keys(this.machines);
     var values = keys.map(function(k) { return machines[k]; });
+    values.sort(function(a, b) { return a.Start() - b.Start(); });
     return values;
 }
 
@@ -44,7 +45,9 @@ SwimLaneData.prototype.Processes = function() {
 }
 
 SwimLaneData.prototype.Threads = function() {
-    return [].concat.apply([], this.Machines().map(function(machine) { return machine.Threads(); }));   
+    var threads = [].concat.apply([], this.Machines().map(function(machine) { return machine.Threads(); }));
+    console.log(threads.map(function(thread) { return thread.Start(); }));
+    return threads;
 }
 
 SwimLaneData.prototype.Spans = function() {
@@ -95,6 +98,15 @@ Event.prototype.Timestamp = function() {
     return this.timestamp;
 }
 
+Event.prototype.Name = function() {
+    if (this.report["Name"] && this.report["Name"].length >= 1)
+        return this.report["Name"][0];
+}
+
+Event.prototype.ProcessName = function() {
+    
+}
+
 var Span = function(thread, id, reports) {
     this.thread = thread;
     this.id = id;
@@ -110,6 +122,15 @@ var Span = function(thread, id, reports) {
             var eventHRT = Number(event.report["HRT"][0]);
             event.timestamp = startTS + (eventHRT - startHRT) / 1000000000.0;
         }
+    }
+    this.events.sort(function(a, b) { return a.timestamp - b.timestamp; });
+}
+
+Span.prototype.Name = function() {
+    for (var i = 0; i < this.events.length; i++) {
+        var eventname = this.events[i].Name();
+        if (eventname)
+            return eventname;
     }
 }
 
@@ -156,6 +177,16 @@ var Thread = function(process, id, reports) {
     }
     if (span.length > 0)
         this.spans.push(new Span(this, this.spans.length, span));
+    this.spans.sort(function(a, b) { return a.Start() - b.Start(); });
+}
+
+Thread.prototype.Name = function() {
+    for (var i = 0; i < this.spans.length; i++) {
+        var spanname = this.spans[i].Name();
+        if (spanname)
+            return spanname;
+    }
+    return "Thread-"+this.id;
 }
 
 Thread.prototype.Spans = function() {
@@ -164,6 +195,10 @@ Thread.prototype.Spans = function() {
 
 Thread.prototype.Events = function() {
     return [].concat.apply([], this.Spans().map(function(span) { return span.Events(); }));
+}
+
+Thread.prototype.Start = function() {
+    return Math.min.apply(this, this.Spans().map(function(span) { return span.Start(); }));
 }
 
 var Process = function(machine, id, reports) {
@@ -181,7 +216,18 @@ Process.prototype.Threads = function() {
     var threads = this.threads;
     var keys = Object.keys(this.threads);
     var values = keys.map(function(k) { return threads[k]; });
+    values.sort(function(a, b) { return a.Start() - b.Start(); });
     return values;
+}
+
+Process.prototype.Name = function() {
+    var events = this.Events();
+    for (var i = 0; i < events.length; i++) {
+        var spanprocess = events[i].ProcessName();
+        if (spanprocess)
+            return spanprocess;
+    }
+    return this.id;
 }
 
 Process.prototype.Spans = function() {
@@ -190,6 +236,10 @@ Process.prototype.Spans = function() {
 
 Process.prototype.Events = function() {
     return [].concat.apply([], this.Threads().map(function(thread) { return thread.Events(); }));
+}
+
+Process.prototype.Start = function() {
+    return Math.min.apply(this, this.Threads().map(function(thread) { return thread.Start(); }));
 }
 
 var Machine = function(swimlane, id, reports) {
@@ -207,11 +257,12 @@ Machine.prototype.Processes = function() {
     var processes = this.processes;
     var keys = Object.keys(this.processes);
     var values = keys.map(function(k) { return processes[k]; });
+    values.sort(function(a, b) { return a.Start() - b.Start(); });
     return values;
 }
 
 Machine.prototype.Threads = function() {
-    return [].concat.apply([], this.Processes().map(function(process) { return process.Threads(); }));    
+    return [].concat.apply([], this.Processes().map(function(process) { return process.Threads(); }));
 }
 
 Machine.prototype.Spans = function() {
@@ -220,6 +271,10 @@ Machine.prototype.Spans = function() {
 
 Machine.prototype.Events = function() {
     return [].concat.apply([], this.Processes().map(function(process) { return process.Events(); }));    
+}
+
+Machine.prototype.Start = function() {
+    return Math.min.apply(this, this.Processes().map(function(process) { return process.Start(); }));
 }
 
 function group_reports_by_field(reports, field) {
@@ -236,8 +291,6 @@ function group_reports_by_field(reports, field) {
     }
     return grouping;
 }
-
-
 
 
 
