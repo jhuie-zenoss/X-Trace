@@ -1,12 +1,12 @@
-package edu.berkeley.xtrace3;
+package edu.berkeley.xtrace;
 
-import edu.berkeley.xtrace3.api.XTraceAPI;
-import edu.berkeley.xtrace3.impl.XTraceImpl;
-import edu.berkeley.xtrace3.repr.XStatus;
+import edu.berkeley.xtrace.api.XTraceAPI;
+import edu.berkeley.xtrace.impl.XStatus;
+import edu.berkeley.xtrace.impl.XTraceImpl;
 
 public class XTrace {
   
-  private static XTraceAPI xtrace = new XTraceImpl();
+  public static XTraceAPI xtrace = new XTraceImpl();
 
   /**
    * Creates and sets a new XTrace status for this thread.  If this thread already has an XTrace status, then this method does nothing.
@@ -14,6 +14,23 @@ public class XTrace {
    */
   public static void Begin(Object... tags) {
     xtrace.Begin(tags);
+  }
+  
+  /**
+   * Get this thread's current XStatus
+   * @return
+   */
+  public XStatus Get() {
+    return xtrace.Get();
+  }
+  
+  /**
+   * Get this thread's current XStatus as bytes.  Calling this method
+   * may trigger a 'merge' event to be sent
+   * @return
+   */
+  public byte[] GetBytes() {
+    return xtrace.GetBytes();
   }
   
   /**

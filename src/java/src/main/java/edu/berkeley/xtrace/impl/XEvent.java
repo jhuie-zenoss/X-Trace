@@ -1,11 +1,9 @@
-package edu.berkeley.xtrace3.repr;
+package edu.berkeley.xtrace.impl;
 
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import edu.berkeley.xtrace.IoUtil;
-import edu.berkeley.xtrace.XTraceMetadata;
 import edu.berkeley.xtrace.reporting.Report;
 import edu.berkeley.xtrace.reporting.Reporter;
 
@@ -96,13 +94,21 @@ public class XEvent {
    * Adds thread id, name, process id, etc. to the report
    */
   public XEvent verbose() {
-    this.put("ThreadID", String.valueOf(Thread.currentThread().getId()));
-    this.put("ThreadName", String.valueOf(Thread.currentThread().getName()));
-    this.put("ProcessID", ManagementFactory.getRuntimeMXBean().getName());      
-    return this;
+    return this.put("ThreadID", String.valueOf(Thread.currentThread().getId()))
+        .put("ThreadName", String.valueOf(Thread.currentThread().getName()))
+        .put("ProcessID", ManagementFactory.getRuntimeMXBean().getName());
   }
   
-  public void sendReport() {
+  /**
+   * Specify that this event is an 'operation' type event
+   * @param op
+   * @return
+   */
+  public XEvent operation(String op) {
+    return this.put("Operation", op);
+  }
+  
+  void sendReport() {
     Reporter.getReporter().sendReport(report);
   }
   

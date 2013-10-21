@@ -1,6 +1,6 @@
-package edu.berkeley.xtrace3.api;
+package edu.berkeley.xtrace.api;
 
-import edu.berkeley.xtrace3.repr.XStatus;
+import edu.berkeley.xtrace.impl.XStatus;
 
 /**
  * Contains methods for creating, setting, and unsetting X-Trace metadata.  Use these methods
@@ -95,5 +95,24 @@ public interface XTraceAPI {
      * @return
      */
     public byte[] ToBytes();
+    
+    /**
+     * Logs an XTrace event using the thread's current XTrace status
+     * @param format A format string
+     * @param args Arguments for the format string
+     */
+    public void Log(String format, Object... args);
+    
+    /**
+     * Logs an XTrace event using the thread's current XTrace status
+     * @param cls The class against which to log the message.  Classes can be filtered in the X-Trace conf to ignore messages
+     * @param format A format string
+     * @param args Arguments for the format string
+     */
+    public void Log(Class<?> cls, String format, Object... args);
+
+    public byte[] GetBytes();
+    
+    public String GetString();
 
 }

@@ -1,4 +1,4 @@
-package edu.berkeley.xtrace3.repr;
+package edu.berkeley.xtrace.impl;
 
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;

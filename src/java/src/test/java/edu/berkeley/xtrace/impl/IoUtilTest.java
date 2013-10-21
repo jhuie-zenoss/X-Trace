@@ -1,12 +1,15 @@
-package edu.berkeley.xtrace;
+package edu.berkeley.xtrace.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import edu.berkeley.xtrace.IoUtil;
+import edu.berkeley.xtrace.TaskID;
 
 public class IoUtilTest {
 
@@ -47,7 +50,7 @@ public class IoUtilTest {
 	public void testFastOpIdExtraction() {
 		
 		/* 4 byte taskid; 4 byte opid */
-		XTraceMetadata md = new XTraceMetadata(new TaskID(4), (int) 0);
+		XStatus md = new XStatus(new TaskID(4), (int) 0);
 		assertEquals("00000000", IoUtil.fastOpIdExtraction(md.toString()));
 		/* 4 byte taskid; 8 byte opid */
 		md = new XTraceMetadata(new TaskID(4), (long) 0);

@@ -1,4 +1,4 @@
-package edu.berkeley.xtrace3;
+package edu.berkeley.xtrace.impl;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -10,15 +10,9 @@ import org.junit.Test;
 
 import edu.berkeley.xtrace.OptionField;
 import edu.berkeley.xtrace.TaskID;
-import edu.berkeley.xtrace.XTraceContext;
-import edu.berkeley.xtrace3.repr.XStatus;
+import edu.berkeley.xtrace.impl.XStatus;
 
 public class XStatusTest extends TestCase {
-  
-  @Override
-  public void setUp() {
-    XTraceContext.clearThreadContext();
-  }
   
   /**
    * Reflectively extracts the Task ID from the provided XStatus.
