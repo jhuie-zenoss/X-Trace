@@ -7,7 +7,7 @@ var DirectedAcyclicGraphTooltip = function(gravity) {
     var tooltip = Tooltip(gravity).title(function(d) {
         var report = d.report;
 
-        var reserved = ["Agent", "Label", "Class", "Timestamp", "Host", "ProcessID", "ThreadID", "ThreadName", "X-Trace"];
+        var reserved = ["Operation", "Agent", "Label", "Class", "Timestamp", "Host", "ProcessID", "ThreadID", "ThreadName", "X-Trace"];
         
         function appendRow(key, value, tooltip) {
             var keyrow = $("<div>").attr("class", "key").append(key);
@@ -17,7 +17,7 @@ var DirectedAcyclicGraphTooltip = function(gravity) {
         }
         
         var tooltip = $("<div>").attr("class", "xtrace-tooltip");
-        var seen = {"Operation": true, "Edge": true, "version": true};
+        var seen = {"Edge": true, "version": true};
         
         // Do the reserved first
         for (var i = 0; i < reserved.length; i++) {

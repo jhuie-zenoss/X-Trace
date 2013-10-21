@@ -264,14 +264,14 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
       
       // update the event dots
       dots = eventDots.selectAll('circle.event')
-          .data(data.VisibleEvents(), function(d) { return d.id; })
+          .data(data.Events(), function(d) { return d.span.id + d.id; })
           .attr('cx', function(d) { return x1(d.Timestamp()); })
-          .attr('r', 5);
+          .attr('r', function(d) { return d.visible ? 5 : 2; });
       dots.enter().append('circle')
           .attr('cx', function(d) { return x1(d.Timestamp()); })
           .attr('cy', function(d) { return y1(d.span.thread.lanenumber) + .5 * y1(1); })
-          .attr('r', 5)
-          .attr('class', "event")
+          .attr('r', function(d) { return d.visible ? 5 : 2; })
+          .attr('class', function(d) { return d.visible ? "event visible" : "event" })
           .attr('id', function(d) { return d.id; })
           .call(DAGTooltip);
       dots.exit().remove();

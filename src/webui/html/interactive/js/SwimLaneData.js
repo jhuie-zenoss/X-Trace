@@ -54,10 +54,6 @@ SwimLaneData.prototype.Spans = function() {
     return [].concat.apply([], this.Machines().map(function(machine) { return machine.Spans(); }));   
 }
 
-SwimLaneData.prototype.VisibleEvents = function() {
-    return this.Events().filter(function(event) { return event.visible; });   
-}
-
 SwimLaneData.prototype.Events = function() {
     return [].concat.apply([], this.Spans().map(function(span) { return span.Events(); }));   
 }
@@ -112,7 +108,7 @@ var Span = function(thread, id, reports) {
     this.id = id;
     this.events = [];
     this.waiting = false; // is this a span where a thread is waiting?
-    for (var i = 0; i < reports.length; i++) 
+    for (var i = 0; i < reports.length; i++)
         this.events.push(new Event(this, reports[i]));
     var startTS = this.events[0].timestamp;
     if (this.events[0].report["HRT"]) {
@@ -153,26 +149,35 @@ var Thread = function(process, id, reports) {
     this.spans = [];
     var span = [];
     for (var i = 0; i < reports.length; i++) {
-        var isWaitStart = reports[i]["Operation"] && reports[i]["Operation"][0]=="waitstart";
-        if (isWaitStart) {
+        if (reports[i]["Operation"] && reports[i]["Operation"][0]=="waited") {
+            /* Special case: a 'wait' report.  A 'wait' report translates into two events; a start and end.
+             * A 'wait' report is generated at the end of the wait, and contains a field specifying the duration
+             * of the wait.  So we must manually reconstruct the begin event of the wait */
+            
+            // The duration of the wait event
+            var duration = Number(reports[i]["Duration"][0]) / 1000000000.0;
+            
+            // Add an event to the end of the prior span and modify the timestamp
             span.push(reports[i]);
-            if (span.length > 0) {
-                this.spans.push(new Span(this, this.spans.length, span));
-                span = [];
-            }
+            var preWait = new Span(this, this.spans.length, span);
+            var preWaitEndEvent = preWait.events[preWait.events.length-1];
+            this.spans.push(preWait);
+            
+            // Create a span just for the event
+            var Wait = new Span(this, this.spans.length, [reports[i], reports[i]]);
+            Wait.waiting = true;
+            Wait.events[0].timestamp = Wait.events[0].timestamp - duration;
+            preWaitEndEvent.timestamp = Wait.events[0].timestamp; // modify the timestamp of the end event of the prior span
+            this.spans.push(Wait);
+            
+            // Create the start of the next span;
+            span = [reports[i]];
+        } else if (reports[i]["Operation"] && reports[i]["Operation"][0]=="unset") {
             span.push(reports[i]);
-            span.push(reports[i+1]);
-            var waitspan = new Span(this, this.spans.length, span);
-            waitspan.waiting = true;
-            this.spans.push(waitspan);
-            span = [];
-            continue;
-        }
-        span.push(reports[i]);
-        var isSpanEnd = reports[i]["Operation"] && reports[i]["Operation"][0]=="threadend";
-        if (isSpanEnd) {
             this.spans.push(new Span(this, this.spans.length, span));
             span = [];
+        } else {
+            span.push(reports[i]);            
         }
     }
     if (span.length > 0)
