@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import edu.berkeley.xtrace.IoUtil;
 import edu.berkeley.xtrace.OptionField;
 import edu.berkeley.xtrace.TaskID;
 
@@ -47,6 +48,14 @@ public class XStatus {
   XStatus(TaskID taskid, byte[] opid) {
     this.taskid = taskid;
     this.previous = new byte[][] { opid };
+  }
+  
+  XStatus(TaskID taskid, int opid) {
+    this(taskid, ByteBuffer.allocate(4).putInt(opid).array());
+  }
+  
+  XStatus(TaskID taskid, long opid) {
+    this(taskid, ByteBuffer.allocate(8).putLong(opid).array());
   }
   
   /**

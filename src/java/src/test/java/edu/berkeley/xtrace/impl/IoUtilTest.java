@@ -2,6 +2,7 @@ package edu.berkeley.xtrace.impl;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.Random;
 
 import org.junit.After;
@@ -47,20 +48,20 @@ public class IoUtilTest {
 	}
 	
 	@Test
-	public void testFastOpIdExtraction() {
+	public void testFastOpIdExtraction() throws IOException {
 		
 		/* 4 byte taskid; 4 byte opid */
 		XStatus md = new XStatus(new TaskID(4), (int) 0);
-		assertEquals("00000000", IoUtil.fastOpIdExtraction(md.toString()));
+		assertEquals("00000000", IoUtil.fastOpIdExtraction(md.stringRepr()));
 		/* 4 byte taskid; 8 byte opid */
-		md = new XTraceMetadata(new TaskID(4), (long) 0);
-		assertEquals("0000000000000000", IoUtil.fastOpIdExtraction(md.toString()));
+		md = new XStatus(new TaskID(4), (long) 0);
+		assertEquals("0000000000000000", IoUtil.fastOpIdExtraction(md.stringRepr()));
 		/* 12 byte taskid; 4 byte opid */
-		md = new XTraceMetadata(new TaskID(12), (int) 0);
-		assertEquals("00000000", IoUtil.fastOpIdExtraction(md.toString()));
+		md = new XStatus(new TaskID(12), (int) 0);
+		assertEquals("00000000", IoUtil.fastOpIdExtraction(md.stringRepr()));
 		/* 12 byte taskid; 8 byte opid */
-		md = new XTraceMetadata(new TaskID(12), (long) 0);
-		assertEquals("0000000000000000", IoUtil.fastOpIdExtraction(md.toString()));
+		md = new XStatus(new TaskID(12), (long) 0);
+		assertEquals("0000000000000000", IoUtil.fastOpIdExtraction(md.stringRepr()));
 		
 		/* 10,000 stochastic tests */
 		final int NUM_TESTS = 10000;
@@ -69,35 +70,35 @@ public class IoUtilTest {
 			
 			if (rnd.nextBoolean()) {
 				// 4-byte opid
-				md = new XTraceMetadata(tasks[rnd.nextInt(4)], rnd.nextInt());
+				md = new XStatus(tasks[rnd.nextInt(4)], rnd.nextInt());
 			} else {
 				// 8-byte opid
-				md = new XTraceMetadata(tasks[rnd.nextInt(4)], rnd.nextLong());
+				md = new XStatus(tasks[rnd.nextInt(4)], rnd.nextLong());
 			}
 			
-			assertEquals(md.getOpIdString(), IoUtil.fastOpIdExtraction(md.toString()));
+			assertEquals(IoUtil.bytesToString(md.previous[0]), IoUtil.fastOpIdExtraction(md.toString()));
 		}
 	}
 	
 	@Test
-	public void opidExtractionPerformance() {
+	public void opidExtractionPerformance() throws IOException {
 		final int NUM_TESTS = 100000;
 		String[] md = new String[NUM_TESTS];
 		
 		for (int i = 0; i < NUM_TESTS; i++) {	
 			if (rnd.nextBoolean()) {
 				// 4-byte opid
-				md[i] = new XTraceMetadata(tasks[rnd.nextInt(4)], rnd.nextInt()).toString();
+				md[i] = new XStatus(tasks[rnd.nextInt(4)], rnd.nextInt()).toString();
 			} else {
 				// 8-byte opid
-				md[i] = new XTraceMetadata(tasks[rnd.nextInt(4)], rnd.nextLong()).toString();
+				md[i] = new XStatus(tasks[rnd.nextInt(4)], rnd.nextLong()).toString();
 			}
 		}
 		
 		long startStandard = System.currentTimeMillis();
 		for (int i = 0; i < md.length; i++) {
-			XTraceMetadata mdobj = XTraceMetadata.createFromString(md[i]);
-			String opidstr = mdobj.getOpIdString();
+		  XStatus mdobj = XStatus.fromString(md[i]);
+			String opidstr = IoUtil.bytesToString(mdobj.previous[0]);
 		}
 		long endStandard = System.currentTimeMillis();
 		
