@@ -65,7 +65,8 @@ public class XTraceEvent {
 	private Report report;
 	private byte[] myOpId;
 	private boolean willReport;
-	private Class<?> msgclass; 
+	private Class<?> msgclass;
+  private XTraceMetadata newmd; 
 
 	/**
 	 * Initialize a new XTraceEvent.  This should be done for each
@@ -118,12 +119,14 @@ public class XTraceEvent {
 				}
 			}
 		}
-		
-		XTraceMetadata newmd = new XTraceMetadata(xtr);
-		newmd.setOpId(myOpId);
-		
-		report.put("X-Trace", newmd.toString(), false);
-		report.put("Edge", xtr.getOpIdString());
+
+    report.put("Edge", xtr.getOpIdString());
+    
+    if (newmd==null) {
+      newmd = new XTraceMetadata(xtr.getTaskId(), myOpId);
+      report.put("X-Trace", newmd.toString(), false); 
+    }
+    
 	}
 	
 	public void addEdges(Collection<XTraceMetadata> xtrs) {
@@ -137,20 +140,7 @@ public class XTraceEvent {
 	}
 	
 	public XTraceMetadata getNewMetadata() {
-		XTraceMetadata xtr = report.getMetadata();
-		XTraceMetadata xtr2;
-		
-		/* If we don't know the task id, return an
-		 * invalid metadata
-		 */
-		if (xtr == null) {
-			return new XTraceMetadata();
-		}
-		
-		xtr2 = new XTraceMetadata(xtr);
-		xtr2.setOpId(myOpId);
-		
-		return xtr2;
+	  return newmd;
 	}
 	
 	/**
@@ -167,12 +157,8 @@ public class XTraceEvent {
 	 * Add a timestamp property with the current time.
 	 */
 	private void setTimestamp() {
-		long time = System.currentTimeMillis();
-		String value = String.format("%d.%03d", time/1000, time%1000);
-		report.put("Timestamp", value);
-		
-		long nanotime = System.nanoTime();
-		report.put("HRT", Long.toString(nanotime));
+		report.put("Timestamp", Long.toString(System.currentTimeMillis()));
+		report.put("HRT", Long.toString(System.nanoTime()));
 	}
 	
 	/**

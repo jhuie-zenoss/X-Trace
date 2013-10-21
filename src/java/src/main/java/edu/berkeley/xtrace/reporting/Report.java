@@ -75,11 +75,20 @@ public class Report {
 	private StringBuilder buf;
 	private HashMap<String, List<String>> map; // lazily-built to enhance performance
 
+	private void initializeBuffer() {
+	  initializeBuffer("X-Trace Report ver 1.0\n");
+	}
+	
+	private void initializeBuffer(String s) {
+	  buf = new StringBuilder(1024);
+	  buf.append(s);
+	}
+	
 	/**
 	 * Build a new, empty report
 	 */
 	public Report() {
-		buf = new StringBuilder("X-Trace Report ver 1.0\n");
+	  initializeBuffer();
 		map = null;
 	}
 
@@ -88,7 +97,7 @@ public class Report {
 	 * All it does it store the string locally.
 	 */
 	private Report(String s) {
-		buf = new StringBuilder(s);
+		initializeBuffer(s);
 
 		// Check to make sure that we're ready to start
 		// appending the next key-value pair
@@ -193,7 +202,7 @@ public class Report {
 			return buf.toString();
 		}
 
-		StringBuilder buf = new StringBuilder("X-Trace Report ver 1.0\n");
+    initializeBuffer();
 		for (Map.Entry<String, List<String>> entry : map.entrySet()) {
 			for (String v : entry.getValue()) {
 				buf.append(entry.getKey() + ": " + v + "\n");
@@ -248,11 +257,11 @@ public class Report {
 		try {
 			String firstLine = in.readLine();
 			if (!firstLine.equals("X-Trace Report ver 1.0")) {
-				buf = new StringBuilder("X-Trace Report ver 1.0\n");
+		    initializeBuffer();
 				map = null;
 			}
 		} catch (IOException e) {
-			buf = new StringBuilder("X-Trace Report ver 1.0\n");
+	    initializeBuffer();
 			map = null;
 		}
 
@@ -267,7 +276,7 @@ public class Report {
 				}
 			}
 		} catch (IOException e) {
-			buf = new StringBuilder("X-Trace Report ver 1.0\n");
+	    initializeBuffer();
 			map = null;
 		}
 	}
