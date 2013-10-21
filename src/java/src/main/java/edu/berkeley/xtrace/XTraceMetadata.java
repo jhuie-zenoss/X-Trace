@@ -663,7 +663,7 @@ public final class XTraceMetadata {
 	 */
 	public static XTraceMetadata random() {
 		Collection<XTraceMetadata> oldContext = XTraceContext.getThreadContext();
-		int opIdLength = XTraceContext.defaultOpIdLength;
+		int opIdLength = XTraceContext.getDefaultOpIdLength();
 		TaskID taskId = null;
 		if (oldContext.size()!=0) {
 			XTraceMetadata m = oldContext.iterator().next();

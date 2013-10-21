@@ -27,28 +27,15 @@
 
 package edu.berkeley.xtrace;
 
-import java.io.BufferedReader;
 import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * High-level API for maintaining a per-thread X-Trace context (task and
@@ -100,9 +87,19 @@ public class XTraceContext {
 		}
 	};
 
-	/** Cached hostname of the current machine. **/
-	static String hostname = null;
-	static int defaultOpIdLength = 8;
+	private static int defaultOpIdLength = 8;
+
+  /** Cached hostname of the current machine. **/
+  public static final String hostname;	
+	static {
+	  String inet_hostname;
+    try {
+      inet_hostname = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      inet_hostname = "unknown";
+    }
+    hostname = inet_hostname;
+	}
 
 	/**
 	 * Set the X-Trace context for the current thread, to link it causally to
@@ -113,19 +110,8 @@ public class XTraceContext {
 	 *            the new context
 	 */
 	public static void setThreadContext(XTraceMetadata ctx) {
-	  setThreadContext(ctx, null);
-	}
-	
-	public static void setThreadContext(XTraceMetadata ctx, String name) {
-    if (XTraceContext.isValid())
-      XTraceResourceTracing.threadEnd();
-    doSetThreadContext(ctx);
-    XTraceResourceTracing.threadStart(name);
-	}
-	
-	static void doSetThreadContext(XTraceMetadata ctx) {
-		doClearThreadContext();
-		doJoinContext(ctx);
+    clearThreadContext();
+    joinContext(ctx);
 	}
 
 	/**
@@ -137,21 +123,10 @@ public class XTraceContext {
 	 *            the new context
 	 */
   public static void setThreadContext(Collection<XTraceMetadata> ctxs) {
-    setThreadContext(ctxs, null);
+    clearThreadContext();
+    joinContext(ctxs);
   }
 
-  public static void setThreadContext(Collection<XTraceMetadata> ctxs, String name) {
-    if (XTraceContext.isValid())
-      XTraceResourceTracing.threadEnd();
-    doSetThreadContext(ctxs);
-    XTraceResourceTracing.threadStart(name);
-  }
-	
-	static void doSetThreadContext(Collection<XTraceMetadata> ctxs) {
-		doClearThreadContext();
-		doJoinContext(ctxs);
-	}
-	
 	/**
 	 * Adds the provided X-Trace context to the current contexts.  The
 	 * next event will be causally linked to all of the current contexts.
@@ -160,21 +135,12 @@ public class XTraceContext {
 	 * 			  a context to add
 	 */
   public static void joinContext(XTraceMetadata ctx) {
-    if (!XTraceContext.isValid()) {
-      doJoinContext(ctx);
-      XTraceResourceTracing.threadStart();
-    } else {
-      doJoinContext(ctx);
+    if (ctx==null || !ctx.isValid()) {
+      return;
     }
+    contexts.get().add(ctx);
+    if (contexts.get().size()>MERGE_THRESHOLD) logMerge();
   }
-  
-	static void doJoinContext(XTraceMetadata ctx) {
-		if (ctx==null || !ctx.isValid()) {
-			return;
-		}
-		contexts.get().add(ctx);
-		if (contexts.get().size()>MERGE_THRESHOLD) logMerge();
-	}
 	
 	/**
 	 * Adds the provided X-Trace contexts to the current contexts.  The
@@ -184,22 +150,13 @@ public class XTraceContext {
 	 * 			  prior context(s) to add
 	 */
 	public static void joinContext(Collection<XTraceMetadata> ctxs) {
-    if (!XTraceContext.isValid()) {
-      doJoinContext(ctxs);
-      XTraceResourceTracing.threadStart();
-    } else {
-      doJoinContext(ctxs);
+    if (ctxs == null) {
+      return;
     }
-	}
-	
-	static void doJoinContext(Collection<XTraceMetadata> ctxs) {
-		if (ctxs == null) {
-			return;
-		}
-		contexts.get().addAll(ctxs);
+    contexts.get().addAll(ctxs);
     if (contexts.get().size()>MERGE_THRESHOLD) logMerge();
 	}
-
+	
 	/**
 	 * Get the current thread's X-Trace context, that is, the metadata for the
 	 * last event to have been logged by this thread.
@@ -238,14 +195,9 @@ public class XTraceContext {
 	 * Clear current thread's X-Trace context.
 	 */
 	public static void clearThreadContext() {
-    XTraceResourceTracing.threadEnd();
-	  doClearThreadContext();
+    contexts.get().clear();
 	}
 	
-	static void doClearThreadContext() {
-		contexts.get().clear();
-	}
-
 	
 	/**
 	 * This method ensures that the current thread context consists of only a single
@@ -279,19 +231,11 @@ public class XTraceContext {
 			event.addEdge(m);
 		}
 
-		try {
-			if (hostname == null) {
-				hostname = InetAddress.getLocalHost().getHostName();
-			}
-		} catch (UnknownHostException e) {
-			hostname = "unknown";
-		}
-
 		event.put("Host", hostname);
 		event.put("Operation", "merge");
 
 		XTraceMetadata newcontext = event.getNewMetadata();
-		doSetThreadContext(newcontext);
+		setThreadContext(newcontext);
 		event.sendReport();
 		return newcontext;
 	}
@@ -352,9 +296,11 @@ public class XTraceContext {
 		}
 		XTraceEvent event = createEvent(XTraceLogLevel.DEFAULT, agent, label);
 		for (int i = 0; i < args.length / 2; i++) {
-			String key = args[2 * i].toString();
-			String value = args[2 * i + 1].toString();
-			event.put(key, value);
+      if (args[2*i]!=null && args[2*i+1]!=null) {
+        String key = args[2 * i].toString();
+        String value = args[2 * i + 1].toString();
+        event.put(key, value);
+      }
 		}
 		event.sendReport();
 	}
@@ -385,9 +331,11 @@ public class XTraceContext {
 		}
 		XTraceEvent event = createEvent(msgclass, agent, label);
 		for (int i = 0; i < args.length / 2; i++) {
-			String key = args[2 * i].toString();
-			String value = args[2 * i + 1].toString();
-			event.put(key, value);
+		  if (args[2*i]!=null && args[2*i+1]!=null) {
+  			String key = args[2 * i].toString();
+  			String value = args[2 * i + 1].toString();
+  			event.put(key, value);
+		  }
 		}
 		event.sendReport();
 	}
@@ -442,20 +390,12 @@ public class XTraceContext {
 			event.addEdge(m);
 		}
 
-		try {
-			if (hostname == null) {
-				hostname = InetAddress.getLocalHost().getHostName();
-			}
-		} catch (UnknownHostException e) {
-			hostname = "unknown";
-		}
-
 		event.put("Host", hostname);
 		event.put("Agent", agent);
 		event.put("Label", label);
 
 		if (XTraceLogLevel.isOn(msgclass)) {
-			doSetThreadContext(event.getNewMetadata());
+			setThreadContext(event.getNewMetadata());
 		}
 		return event;		
 	}
@@ -570,7 +510,7 @@ public class XTraceContext {
 	 *            label for the end process X-Trace node
 	 */
 	public static void endProcess(XTraceProcess process, String label) {
-		doJoinContext(process.startCtx);
+		joinContext(process.startCtx);
 		logEvent(process.msgclass, process.agent, label);
 	}
 
@@ -597,13 +537,13 @@ public class XTraceContext {
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
 		pw.flush();
-		doJoinContext(process.startCtx);
+		joinContext(process.startCtx);
 		logEvent(process.msgclass, process.agent, process.name+" failed",
 				"Exception", sw.toString());
 	}
 
 	public static void failProcess(XTraceProcess process, String reason) {
-		doJoinContext(process.startCtx);
+		joinContext(process.startCtx);
 		logEvent(process.msgclass, process.agent, process.name+" failed",
 				"Reason", reason);
 	}
@@ -615,7 +555,7 @@ public class XTraceContext {
 	public static void startTrace(String agent, String title, Object... tags) {
 		if (!isValid()) {
 			TaskID taskId = new TaskID(8);
-			doSetThreadContext(new XTraceMetadata(taskId, 0L));
+			setThreadContext(new XTraceMetadata(taskId, 0L));
 		}
 		XTraceEvent event = createEvent(agent, "Start Trace: " + title);
 		if (!isValid()) {
@@ -631,7 +571,7 @@ public class XTraceContext {
 			int severity, Object... tags) {
 		TaskID taskId = new TaskID(8);
 		XTraceMetadata metadata = new XTraceMetadata(taskId, 0L);
-		doSetThreadContext(metadata);
+		setThreadContext(metadata);
 		metadata.setSeverity(severity);
 		XTraceEvent event = createEvent(agent, "Start Trace: " + title);
 		event.put("Title", title);
@@ -650,7 +590,7 @@ public class XTraceContext {
 	}
 
 	public static void readThreadContext(DataInput in) throws IOException {
-		doSetThreadContext(XTraceMetadata.read(in));
+		setThreadContext(XTraceMetadata.read(in));
 	}
 
 	/**
@@ -785,19 +725,11 @@ public class XTraceContext {
       event.addEdge(parent);
     }
 
-    try {
-      if (hostname == null) {
-        hostname = InetAddress.getLocalHost().getHostName();
-      }
-    } catch (UnknownHostException e) {
-      hostname = "unknown";
-    }
-
     event.put("Host", hostname);
     event.put("Operation", "merge");
 
     XTraceMetadata newcontext = event.getNewMetadata();
-    doSetThreadContext(newcontext);
+    setThreadContext(newcontext);
     event.sendReport();
 
     // Also, importantly, make sure to update the parent rejoin context in case
@@ -806,7 +738,7 @@ public class XTraceContext {
   }
 	
 	public static void joinChildProcess(XTraceMetadata m) {
-		doJoinContext(m);
+		joinContext(m);
 	}
 	
 	/**
@@ -818,7 +750,7 @@ public class XTraceContext {
 		// Get a starting context if one was provided
 	    String xtrace_start_context = System.getenv(XTRACE_CONTEXT_ENV_VARIABLE);
 	    if (xtrace_start_context!=null && !xtrace_start_context.equals("")) {
-	    	XTraceContext.doSetThreadContext(XTraceMetadata.createFromString(xtrace_start_context));
+	    	XTraceContext.setThreadContext(XTraceMetadata.createFromString(xtrace_start_context));
 	    }
 	    
 	    // Save the ending context if one was provided
