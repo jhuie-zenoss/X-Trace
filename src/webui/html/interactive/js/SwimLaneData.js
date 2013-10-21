@@ -66,6 +66,7 @@ var Event = function(span, report) {
     this.report = report;
     this.span = span;
     this.id = report["X-Trace"][0].substr(18);
+    this.fqid = this.span.ID() + "_Event(" + this.id + ")";
     this.timestamp = parseFloat(this.report["Timestamp"][0]);
     this.visible = !(report["Operation"]);    
     
@@ -103,9 +104,14 @@ Event.prototype.ProcessName = function() {
     
 }
 
+Event.prototype.ID = function() {
+    return this.fqid;
+}
+
 var Span = function(thread, id, reports) {
     this.thread = thread;
     this.id = id;
+    this.fqid = this.thread.ID() + "_Span(" + this.id + ")";
     this.events = [];
     this.waiting = false; // is this a span where a thread is waiting?
     for (var i = 0; i < reports.length; i++)
@@ -120,6 +126,10 @@ var Span = function(thread, id, reports) {
         }
     }
     this.events.sort(function(a, b) { return a.timestamp - b.timestamp; });
+}
+
+Span.prototype.ID = function() {
+    return this.fqid;
 }
 
 Span.prototype.Name = function() {
@@ -143,8 +153,10 @@ Span.prototype.End = function() {
 }
 
 var Thread = function(process, id, reports) {
+    reports.sort(function(a, b) { return parseFloat(a["Timestamp"][0]) - parseFloat(b["Timestamp"][0]); })
     this.process = process;
     this.id = id;
+    this.fqid = this.process.ID() + "_Thread("+this.id+")";
     
     this.spans = [];
     var span = [];
@@ -185,6 +197,10 @@ var Thread = function(process, id, reports) {
     this.spans.sort(function(a, b) { return a.Start() - b.Start(); });
 }
 
+Thread.prototype.ID = function() {
+    return this.fqid;
+}
+
 Thread.prototype.Name = function() {
     for (var i = 0; i < this.spans.length; i++) {
         var spanname = this.spans[i].Name();
@@ -209,12 +225,17 @@ Thread.prototype.Start = function() {
 var Process = function(machine, id, reports) {
     this.machine = machine;
     this.id = id;
+    this.fqid = this.machine.ID() + "_Process("+id+")";
     
     var reports_by_thread = group_reports_by_field(reports, "ThreadID");
     
     this.threads = {};
     for (var thread_id in reports_by_thread)
         this.threads[thread_id] = new Thread(this, thread_id, reports_by_thread[thread_id]);
+}
+
+Process.prototype.ID = function() {
+    return this.fqid;
 }
 
 Process.prototype.Threads = function() {
@@ -250,12 +271,17 @@ Process.prototype.Start = function() {
 var Machine = function(swimlane, id, reports) {
     this.swimlane = swimlane;
     this.id = id;
+    this.fqid = "Machine("+this.id+")";
     
     var reports_by_process = group_reports_by_field(reports, "ProcessID");
     
     this.processes = {};
     for (var process_id in reports_by_process)
         this.processes[process_id] = new Process(this, process_id, reports_by_process[process_id]);
+}
+
+Machine.prototype.ID = function() {
+    return this.fqid;
 }
 
 Machine.prototype.Processes = function() {

@@ -120,7 +120,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
   mini.append('g').selectAll('.laneText')
       .data(lanes)
       .enter().append('text')
-      .text(function(d) { return d.process.id + " " + d.id; })
+      .text(function(d) { return d.ID(); })
       .attr('x', -10)
       .attr('y', function(d) { return y2(d.lanenumber + .5); })
       .attr('dy', '0.5ex')
@@ -250,7 +250,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
 
       // upate the item rects
       rects = itemRects.selectAll('rect.thread')
-          .data(visItems, function (d) { return d.thread.id + d.id; })
+          .data(visItems, function (d) { return d.ID(); })
           .attr('x', function(d) { return x1(d.Start()); })
           .attr('width', function(d) { return x1(d.End()) - x1(d.Start()); })
       rects.enter().append('rect')
@@ -264,7 +264,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
       
       // update the event dots
       dots = eventDots.selectAll('circle.event')
-          .data(data.Events(), function(d) { return d.span.id + d.id; })
+          .data(data.Events(), function(d) { return d.ID(); })
           .attr('cx', function(d) { return x1(d.Timestamp()); })
           .attr('r', function(d) { return d.visible ? 5 : 2; });
       dots.enter().append('circle')
@@ -272,7 +272,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
           .attr('cy', function(d) { return y1(d.span.thread.lanenumber) + .5 * y1(1); })
           .attr('r', function(d) { return d.visible ? 5 : 2; })
           .attr('class', function(d) { return d.visible ? "event visible" : "event" })
-          .attr('id', function(d) { return d.id; })
+          .attr('id', function(d) { return d.ID(); })
           .call(DAGTooltip);
       dots.exit().remove();
       
