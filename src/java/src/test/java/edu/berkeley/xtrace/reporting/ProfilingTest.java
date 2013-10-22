@@ -7,7 +7,7 @@ import org.junit.Test;
 import edu.berkeley.xtrace.XTraceContext;
 import edu.berkeley.xtrace.reporting.Reporter;
 
-public class Profiling extends TestCase {
+public final class ProfilingTest extends TestCase {
   
   @Override
   public void setUp() {
@@ -26,7 +26,7 @@ public class Profiling extends TestCase {
       total += System.nanoTime() - start;
     }
     
-    System.out.println("LogEvent profiling: Average time: " + (total / numTests));
+    System.out.printf("LogEvent profiling: Average time: %.3f ms\n", (total / numTests) / 1000000.0);
   }
 
 }
