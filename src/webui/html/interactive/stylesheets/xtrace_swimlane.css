@@ -103,3 +103,11 @@ text, tspan, .tipsy {
 	-ms-user-select: none;
 	user-select: none;
 }
+
+.main .timeindicator {
+    opacity: 0;
+}
+
+.main:hover .timeindicator {
+    opacity: 1;
+}
