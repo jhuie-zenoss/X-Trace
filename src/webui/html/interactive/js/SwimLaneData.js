@@ -122,7 +122,7 @@ var Span = function(thread, id, reports) {
         for (var i = 1; i < this.events.length; i++) {
             var event = this.events[i];
             var eventHRT = Number(event.report["HRT"][0]);
-            event.timestamp = startTS + (eventHRT - startHRT) / 1000000000.0;
+            event.timestamp = startTS + (eventHRT - startHRT) / 1000000.0;
         }
     }
     this.events.sort(function(a, b) { return a.timestamp - b.timestamp; });
@@ -167,7 +167,7 @@ var Thread = function(process, id, reports) {
              * of the wait.  So we must manually reconstruct the begin event of the wait */
             
             // The duration of the wait event
-            var duration = Number(reports[i]["Duration"][0]) / 1000000000.0;
+            var duration = Number(reports[i]["Duration"][0]) / 1000000.0;
             
             // Add an event to the end of the prior span and modify the timestamp
             span.push(reports[i]);
