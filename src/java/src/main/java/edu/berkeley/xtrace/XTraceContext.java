@@ -80,26 +80,14 @@ public class XTraceContext {
 	
 	
 	/** Thread-local current operation context(s), used in logEvent. **/
-	private static ThreadLocal<Collection<XTraceMetadata>> contexts = new ThreadLocal<Collection<XTraceMetadata>>() {
+	private static ThreadLocal<XTraceMetadataCollection> contexts = new ThreadLocal<XTraceMetadataCollection>() {
 		@Override
-		protected Collection<XTraceMetadata> initialValue() {
+		protected XTraceMetadataCollection initialValue() {
 			return new XTraceMetadataCollection();
 		}
 	};
 
 	private static int defaultOpIdLength = 8;
-
-  /** Cached hostname of the current machine. **/
-  public static final String hostname;	
-	static {
-	  String inet_hostname;
-    try {
-      inet_hostname = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      inet_hostname = "unknown";
-    }
-    hostname = inet_hostname;
-	}
 
 	/**
 	 * Set the X-Trace context for the current thread, to link it causally to
@@ -231,8 +219,7 @@ public class XTraceContext {
 			event.addEdge(m);
 		}
 
-		event.put("Host", hostname);
-		event.put("Operation", "merge");
+		event.report.put("Operation", "merge");
 
 		XTraceMetadata newcontext = event.getNewMetadata();
 		setThreadContext(newcontext);
@@ -378,10 +365,10 @@ public class XTraceContext {
 			return null;
 		}
 
-		Collection<XTraceMetadata> oldContext = contexts.get();
+		XTraceMetadataCollection oldContext = contexts.get();
 		int opIdLength = defaultOpIdLength;
 		if (oldContext.size()!=0) {
-			opIdLength = oldContext.iterator().next().getOpIdLength();
+			opIdLength = oldContext.get(0).getOpIdLength();
 		}
 		
 		XTraceEvent event = new XTraceEvent(msgclass, opIdLength);
@@ -390,7 +377,6 @@ public class XTraceContext {
 			event.addEdge(m);
 		}
 
-		event.put("Host", hostname);
 		event.put("Agent", agent);
 		event.put("Label", label);
 
@@ -725,8 +711,7 @@ public class XTraceContext {
       event.addEdge(parent);
     }
 
-    event.put("Host", hostname);
-    event.put("Operation", "merge");
+    event.report.put("Operation", "merge");
 
     XTraceMetadata newcontext = event.getNewMetadata();
     setThreadContext(newcontext);

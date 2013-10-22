@@ -113,12 +113,16 @@ public final class TcpReporter extends Reporter
 	 * @param r the report to send
 	 */
 	@Override
-	public synchronized void sendReport(Report r) {
+	public void sendReport(Report r) {
 		try {
 			if (socket != null) {
 				byte[] bytes = r.toString().getBytes("UTF-8");
-				out.writeInt(bytes.length);
-				out.write(bytes);
+				synchronized(this) {
+				  if (socket != null) {
+    				out.writeInt(bytes.length);
+    				out.write(bytes);
+				  }
+				}
 			}
 		} catch (IOException e) {
 			LOG.warn("Couldn't send report", e);

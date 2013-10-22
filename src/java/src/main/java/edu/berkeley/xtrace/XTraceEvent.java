@@ -62,11 +62,26 @@ public class XTraceEvent {
 	};
 	private static volatile long threadId = 0;
 	
-	private Report report;
+	Report report;
 	private byte[] myOpId;
 	private boolean willReport;
 	private Class<?> msgclass;
   private XTraceMetadata newmd; 
+
+
+  /** Cached hostname of the current machine. **/
+  private static final String hostname;  
+  private static final String processId;
+  static {
+    String inet_hostname;
+    try {
+      inet_hostname = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      inet_hostname = "unknown";
+    }
+    hostname = inet_hostname;
+    processId = ManagementFactory.getRuntimeMXBean().getName();
+  }
 
 	/**
 	 * Initialize a new XTraceEvent.  This should be done for each
@@ -83,10 +98,11 @@ public class XTraceEvent {
 		XTraceEvent.random(myOpId);
 		willReport = true;
 		this.msgclass = msgclass;
-		this.put("Class", msgclass.getName());
-		this.put("ThreadID", String.valueOf(Thread.currentThread().getId()));
-		this.put("ThreadName", String.valueOf(Thread.currentThread().getName()));
-		this.put("ProcessID", ManagementFactory.getRuntimeMXBean().getName());	
+		report.put("Class", msgclass.getName());
+		report.put("ThreadID", Long.toString(Thread.currentThread().getId()));
+		this.put("ThreadName", Thread.currentThread().getName());
+		report.put("ProcessID", processId);	
+		report.put("Host", hostname);
 	}
 	
 	XTraceEvent(XTraceMetadata m) {
@@ -94,10 +110,11 @@ public class XTraceEvent {
 		myOpId = m.getOpId();
 		willReport = true;
 		this.msgclass = XTraceLogLevel.DEFAULT;
-		this.put("Class", msgclass.getName());
-		this.put("ThreadID", String.valueOf(Thread.currentThread().getId()));
-		this.put("ThreadName", String.valueOf(Thread.currentThread().getName()));
-		this.put("ProcessID", ManagementFactory.getRuntimeMXBean().getName());	
+		report.put("Class", msgclass.getName());
+		report.put("ThreadID", Long.toString(Thread.currentThread().getId()));
+    this.put("ThreadName", Thread.currentThread().getName());
+    report.put("ProcessID", processId);	
+    report.put("Host", hostname);
 	}
 	
 	/**
@@ -115,7 +132,7 @@ public class XTraceEvent {
 				if (options[i].getType()-OptionField.SEVERITY == 0) {
 					int severity = (int) options[i].getPayload()[0] & 0xFF;
 					willReport = severity < OptionSeverity.DEFAULT;
-					report.put("Severity", severity+"");
+					report.put("Severity", Integer.toString(severity));
 				}
 			}
 		}
