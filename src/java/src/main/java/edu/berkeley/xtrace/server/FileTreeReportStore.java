@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -176,10 +178,10 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		countTasks = conn
 				.prepareStatement("select count(taskid) as rowcount from tasks where taskid = ?");
 		insert = conn
-				.prepareStatement("insert into tasks (taskid, tags, title) values (?, ?, ?)");
+				.prepareStatement("insert into tasks (taskid, tags, title, numReports) values (?, ?, ?, ?)");
 		update = conn
 				.prepareStatement("update tasks set lastUpdated = current_timestamp, "
-						+ "numReports = numReports + 1 where taskId = ?");
+						+ "numReports = numReports + ? where taskId = ?");
 		updateTitle = conn
 				.prepareStatement("update tasks set title = ? where taskid = ?");
 		updateTags = conn
@@ -253,67 +255,48 @@ public final class FileTreeReportStore implements QueryableReportStore {
 					LOG.warn("I/O error while writing the report", e);
 				}
 
-				// Update index
-				try {
-					// Extract title
-					String title = null;
-					List<String> titleVals = r.get("Title");
-					if (titleVals != null && titleVals.size() > 0) {
-						// There should be only one title field, but if there
-						// are more, just
-						// arbitrarily take the first one.
-						title = titleVals.get(0);
-					}
-
-					// Extract tags
-					TreeSet<String> newTags = null;
-					List<String> list = r.get("Tag");
-					if (list != null) {
-						newTags = new TreeSet<String>(list);
-					}
-
-					// Find out whether to do an insert or an update
-					countTasks.setString(1, taskId);
-					ResultSet rs = countTasks.executeQuery();
-					rs.next();
-					if (rs.getInt("rowcount") == 0) {
-						if (title == null) {
-							title = taskId;
-						}
-						insert.setString(1, taskId);
-						insert.setString(2, joinWithCommas(newTags));
-						insert.setString(3, title);
-						insert.executeUpdate();
-					} else {
-						// Update title if necessary
-						if (title != null) {
-							updateTitle.setString(1, title);
-							updateTitle.setString(2, taskId);
-							updateTitle.executeUpdate();
-						}
-						// Update tags if necessary
-						if (newTags != null) {
-							getTags.setString(1, taskId);
-							ResultSet tagsRs = getTags.executeQuery();
-							tagsRs.next();
-							String oldTags = tagsRs.getString("tags");
-							tagsRs.close();
-							newTags.addAll(Arrays.asList(oldTags.split(",")));
-							updateTags.setString(1, joinWithCommas(newTags));
-							updateTags.setString(2, taskId);
-							updateTags.executeUpdate();
-						}
-						// Update report count and last-updated date
-						update.setString(1, taskId);
-						update.executeUpdate();
-					}
-					rs.close();
-					conn.commit();
-
-				} catch (SQLException e) {
-					LOG.warn("Unable to update metadata about task "
-							+ task.toString(), e);
+				// Add update for thread to process
+				String title = null;
+				List<String> titleVals = r.get("Title");
+				if (titleVals != null && titleVals.size() > 0) {
+					// There should be only one title field, but if there
+					// are more, just
+					// arbitrarily take the first one.
+					title = titleVals.get(0);
 				}
+
+				// Extract tags
+				TreeSet<String> newTags = null;
+				List<String> list = r.get("Tag");
+				if (list != null) {
+					newTags = new TreeSet<String>(list);
+				}
+				
+				synchronized(pendingupdates) {
+				  // Get an existing update or create a new one
+				  DatabaseUpdate update = pendingupdates.get(taskId);
+				  if (update==null)
+				    update = new DatabaseUpdate();
+				  
+				  // Add in the tags
+				  if (newTags!=null) {
+				    if (update.tags==null)
+				      update.tags = new HashSet<String>(newTags);
+				    else
+				      update.tags.addAll(newTags);
+				  }
+				  
+				  // Set the title
+				  if (title!=null)
+				    update.title = title;
+				  
+				  // Increment the new report count
+				  update.newreportcount++;
+				  
+				  // Put the update in the map
+				  pendingupdates.put(taskId, update);
+				}
+
 			} else {
 				LOG
 						.debug("Ignoring a report without an X-Trace taskID: "
@@ -321,6 +304,99 @@ public final class FileTreeReportStore implements QueryableReportStore {
 			}
 		}
 	}
+	
+	private class DatabaseUpdate {
+	  public String title = null;
+	  public HashSet<String> tags = null;
+	  public Integer newreportcount = 0;
+	}
+
+	private HashMap<String, DatabaseUpdate> pendingupdates = new HashMap<String, DatabaseUpdate>();
+  private class IncomingReportDatabaseUpdater extends Thread {
+    @Override
+    public void run() {
+      LOG.info("Database updater thread started");
+      
+      while (true) {
+        if (shouldOperate) {
+          String taskId = null;
+          DatabaseUpdate update = null;
+          synchronized(pendingupdates) {
+            if (pendingupdates.size() > 0) {
+              taskId = pendingupdates.keySet().iterator().next();
+              update = pendingupdates.remove(taskId);
+            }
+          }
+          if (taskId==null) {
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+            continue;
+          }
+          try {
+            if (!taskExists(taskId)) {
+              newTask(taskId, update);
+              conn.commit();
+              continue;
+            }
+            if (update.title!=null)
+              updateTitle(taskId, update.title);
+            if (update.tags!=null)
+              addTagsToExistingTask(taskId, update.tags);
+            if (update.newreportcount!=null)
+              updateExistingTaskReportCount(taskId, update.newreportcount);
+            conn.commit();
+          } catch (SQLException e) {
+            LOG.warn("Error processing database update for task " + taskId + ", dropping database update.  Report will still exist on disk", e);
+          }
+        }
+      }
+    }
+    
+    private boolean taskExists(String taskId) throws SQLException {
+      countTasks.setString(1, taskId);
+      ResultSet rs = countTasks.executeQuery();
+      rs.next();
+      boolean exists = rs.getInt("rowcount") != 0;
+      rs.close();
+      return exists;
+    }
+    
+    private void newTask(String taskId, DatabaseUpdate update) throws SQLException {
+      String title = update.title == null ? taskId : update.title;
+      insert.setString(1, taskId);
+      insert.setString(2, joinWithCommas(update.tags));
+      insert.setString(3, title);
+      insert.setInt(4, update.newreportcount);
+      insert.executeUpdate();
+    }
+    
+    private void updateTitle(String taskId, String title) throws SQLException {
+      updateTitle.setString(1, title);
+      updateTitle.setString(2, taskId);
+      updateTitle.executeUpdate();
+    }
+    
+    private void updateExistingTaskReportCount(String taskId, Integer reportCount) throws SQLException {
+      // Update report count and last-updated date
+      update.setInt(1, reportCount);
+      update.setString(2, taskId);
+      update.executeUpdate();
+    }
+    
+    private void addTagsToExistingTask(String taskId, HashSet<String> tags) throws SQLException {
+      getTags.setString(1, taskId);
+      ResultSet tagsRs = getTags.executeQuery();
+      tagsRs.next();
+      String oldTags = tagsRs.getString("tags");
+      tagsRs.close();
+      tags.addAll(Arrays.asList(oldTags.split(",")));
+      updateTags.setString(1, joinWithCommas(tags));
+      updateTags.setString(2, taskId);
+      updateTags.executeUpdate();
+    }
+  }
 
 	private String joinWithCommas(Collection<String> strings) {
 		if (strings == null)
@@ -336,6 +412,9 @@ public final class FileTreeReportStore implements QueryableReportStore {
 
 	public void run() {
 		LOG.info("FileTreeReportStore running with datadir " + dataDirName);
+		
+		// Start the database updater
+		new IncomingReportDatabaseUpdater().start();
 
 		while (true) {
 			if (shouldOperate) {
@@ -557,7 +636,10 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		Date lastUpdated = new Date(rs.getTimestamp("lastUpdated").getTime());
 		String title = rs.getString("title");
 		int numReports = rs.getInt("numReports");
-		List<String> tags = Arrays.asList(rs.getString("tags").split(","));
+		String tagstring = rs.getString("tags");
+		if (tagstring==null)
+		  tagstring = "";
+		List<String> tags = Arrays.asList(tagstring.split(","));
 		return new TaskRecord(taskId, firstSeen, lastUpdated, numReports,
 				title, tags);
 	}
