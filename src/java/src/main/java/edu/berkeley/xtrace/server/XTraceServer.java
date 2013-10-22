@@ -38,19 +38,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 
 import org.apache.log4j.Logger;
 import org.apache.velocity.VelocityContext;
@@ -111,7 +108,7 @@ public final class XTraceServer {
 
 	private static void setupReportSources() {
 
-		incomingReportQueue = new ArrayBlockingQueue<String>(1024, true);
+		incomingReportQueue = new LinkedBlockingQueue<String>();
 		sourcesExecutor = new ThreadPerTaskExecutor();
 
 		// Default input sources
@@ -155,7 +152,7 @@ public final class XTraceServer {
 	}
 
 	private static void setupReportStore() {
-		reportsToStorageQueue = new ArrayBlockingQueue<String>(1024);
+		reportsToStorageQueue = new LinkedBlockingQueue<String>();
 
 		String storeStr = "edu.berkeley.xtrace.server.FileTreeReportStore";
 		if (System.getProperty("xtrace.server.store") != null) {
