@@ -35,6 +35,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
   
   var x = d3.scale.linear().domain([rangemin, rangemax]).range([0, width]);
   var x1 = d3.scale.linear().range([0, width]);
+  var norm = d3.scale.linear().domain([rangemin - data.min, rangemax - data.min]).range([0, width]);
 
   var ext = d3.extent(lanes, function(thread) { return thread.lanenumber; });
   var y1 = d3.scale.linear().domain([ext[0], ext[1] + 1]).range([0, mainHeight]);
@@ -129,21 +130,21 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
 
   // draw the x axis
   var xDateAxis = d3.svg.axis()
-      .scale(x)
+      .scale(norm)
       .orient('bottom')
-      .ticks((x.domain()[1] - x.domain()[0]) / 20)
+      .ticks(10)
       .tickSize(6, 0, 0);
 
   var x1DateAxis = d3.svg.axis()
-      .scale(x1)
+      .scale(norm)
       .orient('bottom')
-      .ticks((x1.domain()[1] - x1.domain()[0]) / 20)
+      .ticks(10)
       .tickSize(6, 0, 0);
 
-  main.append('g')
+  var mainaxis = main.append('g')
       .attr('transform', 'translate(0,' + mainHeight + ')')
-      .attr('class', 'main axis date')
-      .call(x1DateAxis);
+      .attr('class', 'main axis date');
+  mainaxis.call(x1DateAxis);
 
   mini.append('g')
       .attr('transform', 'translate(0,' + miniHeight + ')')
@@ -243,6 +244,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
       mini.select('.brush').call(brush.extent([minExtent, maxExtent]));       
 
       x1.domain([minExtent, maxExtent]);
+      norm.domain([minExtent - data.min, maxExtent - data.min]);
 
 
       //x1Offset.range([0, x1(d3.time.day.ceil(now) - x1(d3.time.day.floor(now)))]);
@@ -294,6 +296,7 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
               else
                   return "edge internal";
           });
+      mainaxis.call(x1DateAxis);
   }
 
   function moveBrush () {
