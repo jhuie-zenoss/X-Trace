@@ -153,6 +153,19 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
   // draw the items
   var itemRects = main.append('g')
   .attr('clip-path', 'url(#clip)');
+  
+  // Draw the mouse marker
+  var marker = main.append('g').attr("class", "timeindicator").attr('clip-path', 'url(#clip)').append('line').attr('stroke-width', 1.6);
+  marker.attr('y1', 0).attr('y2', mainHeight).attr('stroke', '#AAA');
+  
+  var positionmarker = function(e) {
+    var mousex = d3.mouse(d3.select(this).select(".main").node())[0];
+    marker.attr('x1', mousex).attr('x2', mousex);
+  }
+  
+  main.on("mousemove", positionmarker);
+  
+  // Add the events and causality edges
   var causalityEdges = main.append('g')
   .attr('clip-path', 'url(#clip)');
   var eventDots = main.append('g')
@@ -228,17 +241,6 @@ function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
       zoom.scale(1);
   });
   zoom.call(main);
-  
-  // Draw the mouse marker
-  var marker = main.append('g').attr("class", "timeindicator").attr('clip-path', 'url(#clip)').append('line').attr('stroke-width', 1.6);
-  marker.attr('y1', 0).attr('y2', mainHeight).attr('stroke', '#AAA');
-  
-  var positionmarker = function(e) {
-    var mousex = d3.mouse(d3.select(this).select(".main").node())[0];
-    marker.attr('x1', mousex).attr('x2', mousex);
-  }
-  
-  main.on("mousemove", positionmarker);
 
   function display () {
 
