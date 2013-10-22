@@ -116,15 +116,6 @@ var Span = function(thread, id, reports) {
     this.waiting = false; // is this a span where a thread is waiting?
     for (var i = 0; i < reports.length; i++)
         this.events.push(new Event(this, reports[i]));
-    var startTS = this.events[0].timestamp;
-    if (this.events[0].report["HRT"]) {
-        var startHRT = Number(this.events[0].report["HRT"][0]);
-        for (var i = 1; i < this.events.length; i++) {
-            var event = this.events[i];
-            var eventHRT = Number(event.report["HRT"][0]);
-            event.timestamp = startTS + (eventHRT - startHRT) / 1000000.0;
-        }
-    }
     this.events.sort(function(a, b) { return a.timestamp - b.timestamp; });
 }
 
@@ -226,6 +217,17 @@ var Process = function(machine, id, reports) {
     this.machine = machine;
     this.id = id;
     this.fqid = this.machine.ID() + "_Process("+id+")";
+
+
+    var startTS = Number(reports[0]["Timestamp"][0]);
+    if (reports[0]["HRT"]) {
+        var startHRT = Number(reports[0]["HRT"][0]);
+        for (var i = 1; i < reports.length; i++) {
+            var report = reports[i];
+            var eventHRT = Number(report["HRT"][0]);
+            report["Timestamp"][0] = ""+(startTS + (eventHRT - startHRT) / 1000000.0);
+        }
+    }
     
     var reports_by_thread = group_reports_by_field(reports, "ThreadID");
     
