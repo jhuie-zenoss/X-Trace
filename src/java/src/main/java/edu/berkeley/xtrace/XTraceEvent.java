@@ -70,8 +70,8 @@ public class XTraceEvent {
 
 
   /** Cached hostname of the current machine. **/
-  private static final String hostname;  
-  private static final String processId;
+  public static final String hostname;  
+  public static final String processId;
   static {
     String inet_hostname;
     try {
