@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Random;
 
+import edu.berkeley.xtrace.config.XTraceLogLevel;
 import edu.berkeley.xtrace.reporting.Report;
 import edu.berkeley.xtrace.reporting.Reporter;
 

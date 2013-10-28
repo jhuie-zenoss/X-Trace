@@ -37,6 +37,8 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
+import edu.berkeley.xtrace.config.XTraceConfiguration;
+
 /**
  * A tracing context, containing the X-Trace metadata that is propagated along
  * a computation chain. This consists of three parts: a TaskID that is common
@@ -597,6 +599,10 @@ public final class XTraceMetadata {
 		}
 		byte[] buf = new byte[length];
 		in.readFully(buf);
+
+    if (!XTraceConfiguration.ENABLED)
+        return null;
+    
 		return createFromBytes(buf, 0, length);
 	}
 

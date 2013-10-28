@@ -37,6 +37,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 
+import edu.berkeley.xtrace.config.XTraceConfiguration;
+import edu.berkeley.xtrace.config.XTraceLogLevel;
+
 /**
  * High-level API for maintaining a per-thread X-Trace context (task and
  * operation ID) and reporting events.
@@ -99,6 +102,8 @@ public class XTraceContext {
      *            the new context
      */
     public static void setThreadContext(XTraceMetadata ctx) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
         clearThreadContext();
         joinContext(ctx);
     }
@@ -112,6 +117,8 @@ public class XTraceContext {
      *            the new context
      */
     public static void setThreadContext(Collection<XTraceMetadata> ctxs) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
         clearThreadContext();
         joinContext(ctxs);
     }
@@ -125,9 +132,13 @@ public class XTraceContext {
      *            a context to add
      */
     public static void joinContext(XTraceMetadata ctx) {
-        if (ctx == null || !ctx.isValid()) {
+        if (!XTraceConfiguration.ENABLED)
             return;
-        }
+        if (ctx == null)
+            return;
+        if (!ctx.isValid())
+            return;
+
         contexts.get().add(ctx);
         if (contexts.get().size() > MERGE_THRESHOLD)
             logMerge();
@@ -142,9 +153,11 @@ public class XTraceContext {
      *            prior context(s) to add
      */
     public static void joinContext(Collection<XTraceMetadata> ctxs) {
-        if (ctxs == null) {
+        if (!XTraceConfiguration.ENABLED)
             return;
-        }
+        if (ctxs == null || ctxs.isEmpty())
+            return;
+
         contexts.get().addAll(ctxs);
         if (contexts.get().size() > MERGE_THRESHOLD)
             logMerge();
@@ -159,9 +172,11 @@ public class XTraceContext {
      * @return a *copy* of the collection of this thread's current context
      */
     public static Collection<XTraceMetadata> getThreadContext() {
-        if (XTraceContext.isValid()) {
+        if (!XTraceConfiguration.ENABLED)
+            return null;
+        if (XTraceContext.isValid())
             return new ArrayList<XTraceMetadata>(contexts.get());
-        }
+
         return null;
     }
 
@@ -176,11 +191,12 @@ public class XTraceContext {
      * @return the provided collection if it was not null, otherwise a new
      *         collection
      */
-    public static Collection<XTraceMetadata> getThreadContext(
-            Collection<XTraceMetadata> ctx) {
-        if (!XTraceContext.isValid()) {
+    public static Collection<XTraceMetadata> getThreadContext(Collection<XTraceMetadata> ctx) {
+        if (!XTraceConfiguration.ENABLED)
             return ctx;
-        }
+        if (!XTraceContext.isValid())
+            return ctx;
+
         if (ctx == null) {
             ctx = new XTraceMetadataCollection();
         }
@@ -192,6 +208,8 @@ public class XTraceContext {
      * Clear current thread's X-Trace context.
      */
     public static void clearThreadContext() {
+        if (!XTraceConfiguration.ENABLED)
+            return;
         contexts.get().clear();
     }
 
@@ -205,9 +223,10 @@ public class XTraceContext {
      * the subsequent single XTraceMetadata is returned.
      */
     public static XTraceMetadata logMerge() {
-        if (!isValid()) {
+        if (!XTraceConfiguration.ENABLED)
             return null;
-        }
+        if (!isValid())
+            return null;
 
         Collection<XTraceMetadata> metadatas = contexts.get();
         if (metadatas.size() == 1) {
@@ -245,6 +264,8 @@ public class XTraceContext {
      *            description of the task
      */
     public static void logEvent(String agent, String label) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
         logEvent(XTraceLogLevel.DEFAULT, agent, label);
     }
 
@@ -260,9 +281,13 @@ public class XTraceContext {
      *            description of the task
      */
     public static void logEvent(Class<?> cls, String agent, String label) {
-        if (!isValid() || !XTraceLogLevel.isOn(cls)) {
+        if (!XTraceConfiguration.ENABLED)
             return;
-        }
+        if (!isValid())
+            return;
+        if (!XTraceLogLevel.isOn(cls))
+            return;
+        
         createEvent(cls, agent, label).sendReport();
     }
 
@@ -281,9 +306,11 @@ public class XTraceContext {
      *            description of the task
      */
     public static void logEvent(String agent, String label, Object... args) {
-        if (!isValid()) {
+        if (!XTraceConfiguration.ENABLED)
             return;
-        }
+        if (!isValid())
+            return;
+        
         // if (args.length % 2 != 0) {
         // throw new IllegalArgumentException(
         // "XTraceContext.logEvent requires an even number of arguments.");
@@ -318,9 +345,13 @@ public class XTraceContext {
      */
     public static void logEvent(Class<?> msgclass, String agent, String label,
             Object... args) {
-        if (!isValid() || !XTraceLogLevel.isOn(msgclass)) {
+        if (!XTraceConfiguration.ENABLED)
             return;
-        }
+        if (!isValid())
+            return;
+        if (!XTraceLogLevel.isOn(msgclass))
+            return;
+
         if (args.length % 2 != 0) {
             throw new IllegalArgumentException(
                     "XTraceContext.logEvent requires an even number of arguments.");
@@ -350,6 +381,9 @@ public class XTraceContext {
      *            description of the task
      */
     public static XTraceEvent createEvent(String agent, String label) {
+        if (!XTraceConfiguration.ENABLED)
+            return null;
+        
         return createEvent(XTraceLogLevel.DEFAULT, agent, label);
     }
 
@@ -371,9 +405,10 @@ public class XTraceContext {
      */
     public static XTraceEvent createEvent(Class<?> msgclass, String agent,
             String label) {
-        if (!isValid()) {
+        if (!XTraceConfiguration.ENABLED)
             return null;
-        }
+        if (!isValid())
+            return null;
 
         XTraceMetadataCollection oldContext = contexts.get();
         int opIdLength = defaultOpIdLength;
@@ -402,6 +437,9 @@ public class XTraceContext {
      * @return true if there is a current context
      */
     public static boolean isValid() {
+        if (!XTraceConfiguration.ENABLED)
+            return false;
+        
         Collection<XTraceMetadata> ctxs = contexts.get();
         return ctxs != null && !ctxs.isEmpty();
     }
@@ -487,6 +525,9 @@ public class XTraceContext {
      *            return value from #startProcess(String, String)
      */
     public static void endProcess(XTraceProcess process) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
+        
         endProcess(process, process.name + " end");
     }
 
@@ -507,6 +548,9 @@ public class XTraceContext {
      *            label for the end process X-Trace node
      */
     public static void endProcess(XTraceProcess process, String label) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
+      
         joinContext(process.startCtx);
         logEvent(process.msgclass, process.agent, label);
     }
@@ -529,6 +573,9 @@ public class XTraceContext {
      *            reason for failure
      */
     public static void failProcess(XTraceProcess process, Throwable t) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
+      
         // Write stack trace to a string buffer
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -540,6 +587,9 @@ public class XTraceContext {
     }
 
     public static void failProcess(XTraceProcess process, String reason) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
+        
         joinContext(process.startCtx);
         logEvent(process.msgclass, process.agent, process.name + " failed",
                 "Reason", reason);
@@ -550,6 +600,9 @@ public class XTraceContext {
      * event on the existing task.
      */
     public static void startTrace(String agent, String title, Object... tags) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
+        
         if (!isValid()) {
             TaskID taskId = new TaskID(8);
             setThreadContext(new XTraceMetadata(taskId, 0L));
@@ -564,8 +617,10 @@ public class XTraceContext {
         event.sendReport();
     }
 
-    public static void startTraceSeverity(String agent, String title,
-            int severity, Object... tags) {
+    public static void startTraceSeverity(String agent, String title, int severity, Object... tags) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
+      
         TaskID taskId = new TaskID(8);
         XTraceMetadata metadata = new XTraceMetadata(taskId, 0L);
         setThreadContext(metadata);
@@ -587,7 +642,12 @@ public class XTraceContext {
     }
 
     public static void readThreadContext(DataInput in) throws IOException {
-        setThreadContext(XTraceMetadata.read(in));
+        XTraceMetadata xmd = XTraceMetadata.read(in);
+
+        if (!XTraceConfiguration.ENABLED)
+            return;
+        
+        setThreadContext(xmd);
     }
 
     /**
@@ -598,8 +658,10 @@ public class XTraceContext {
      *            The context to replace the current one with.
      * @return
      */
-    public static Collection<XTraceMetadata> switchThreadContext(
-            XTraceMetadata newContext) {
+    public static Collection<XTraceMetadata> switchThreadContext(XTraceMetadata newContext) {
+        if (!XTraceConfiguration.ENABLED)
+            return null;
+      
         Collection<XTraceMetadata> oldContext = getThreadContext();
         setThreadContext(newContext);
         return oldContext;
@@ -613,8 +675,10 @@ public class XTraceContext {
      *            The context to replace the current one with.
      * @return
      */
-    public synchronized static Collection<XTraceMetadata> switchThreadContext(
-            Collection<XTraceMetadata> newContext) {
+    public synchronized static Collection<XTraceMetadata> switchThreadContext(Collection<XTraceMetadata> newContext) {
+        if (!XTraceConfiguration.ENABLED)
+            return null;
+        
         Collection<XTraceMetadata> oldContext = getThreadContext();
         setThreadContext(newContext);
         return oldContext;
@@ -629,6 +693,9 @@ public class XTraceContext {
      * @return true if the current thread context is equal to ctx
      */
     public static boolean is(XTraceMetadata ctx) {
+        if (!XTraceConfiguration.ENABLED)
+            return false;
+        
         Collection<XTraceMetadata> current = contexts.get();
         return ctx != null && current != null && current.size() == 1
                 && current.contains(ctx);
@@ -643,6 +710,9 @@ public class XTraceContext {
      * @return true if the current thread contexts are equal to ctx
      */
     public static boolean is(Collection<XTraceMetadata> ctxs) {
+        if (!XTraceConfiguration.ENABLED)
+            return false;
+            
         Collection<XTraceMetadata> current = contexts.get();
         if (ctxs == null || current == null || ctxs.size() == 0
                 || current.size() == 0) {
@@ -676,6 +746,9 @@ public class XTraceContext {
      * @param attachTo
      */
     public static void rememberObject(Object o) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
+      
         Collection<XTraceMetadata> context = getThreadContext();
         if (context == null)
             return;
@@ -703,6 +776,9 @@ public class XTraceContext {
      * @param attachTo
      */
     public static void joinObject(Object o) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
+      
         Collection<XTraceMetadata> context;
         synchronized (attachedContexts) {
             context = attachedContexts.remove(o);
@@ -726,11 +802,17 @@ public class XTraceContext {
      * @return
      */
     public static XTraceMetadata startChildProcess() {
+        if (!XTraceConfiguration.ENABLED)
+            return new XTraceMetadata();
+        
         XTraceContext.logMerge();
         return XTraceMetadata.random();
     }
 
     public static void joinParentProcess() {
+        if (!XTraceConfiguration.ENABLED)
+            return;
+        
         if (xtrace_parent_rejoin_context == null)
             return;
 
@@ -753,6 +835,9 @@ public class XTraceContext {
     }
 
     public static void joinChildProcess(XTraceMetadata m) {
+        if (!XTraceConfiguration.ENABLED)
+            return;
+        
         joinContext(m);
     }
 
@@ -762,24 +847,22 @@ public class XTraceContext {
      * and resume any trace according to the environment variable that was set.
      */
     static {
-        // Get a starting context if one was provided
-        String xtrace_start_context = System
-                .getenv(XTRACE_CONTEXT_ENV_VARIABLE);
-        if (xtrace_start_context != null && !xtrace_start_context.equals("")) {
-            XTraceContext.setThreadContext(XTraceMetadata
-                    .createFromString(xtrace_start_context));
-        }
-
-        // Save the ending context if one was provided
-        String xtrace_end_context = System
-                .getenv(XTRACE_SUBPROCESS_ENV_VARIABLE);
-        if (xtrace_end_context != null && !xtrace_end_context.equals("")) {
-            xtrace_parent_rejoin_context = XTraceMetadata
-                    .createFromString(xtrace_end_context);
+        if (XTraceConfiguration.ENABLED) {
+          // Get a starting context if one was provided
+          String xtrace_start_context = System
+                  .getenv(XTRACE_CONTEXT_ENV_VARIABLE);
+          if (xtrace_start_context != null && !xtrace_start_context.equals("")) {
+              XTraceContext.setThreadContext(XTraceMetadata
+                      .createFromString(xtrace_start_context));
+          }
+  
+          // Save the ending context if one was provided
+          String xtrace_end_context = System
+                  .getenv(XTRACE_SUBPROCESS_ENV_VARIABLE);
+          if (xtrace_end_context != null && !xtrace_end_context.equals("")) {
+              xtrace_parent_rejoin_context = XTraceMetadata
+                      .createFromString(xtrace_end_context);
+          }
         }
     }
-
-    static {
-    }
-
 }

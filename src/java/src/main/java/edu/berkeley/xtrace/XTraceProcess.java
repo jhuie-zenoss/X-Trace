@@ -2,6 +2,8 @@ package edu.berkeley.xtrace;
 
 import java.util.Collection;
 
+import edu.berkeley.xtrace.config.XTraceLogLevel;
+
 
 /**
  * An X-Trace process, returned from
