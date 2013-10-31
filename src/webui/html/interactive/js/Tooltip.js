@@ -2,12 +2,25 @@ jQuery.fn.outerHTML = function() {
     return jQuery('<div />').append(this.eq(0).clone()).html();
 };
 
+var timestampToTimeString = function(timestamp) {
+	timestamp = Math.floor(timestamp);
+	var date = new Date(timestamp);
+	var hours = date.getHours();
+	var minutes = date.getMinutes();
+	minutes = minutes < 10 ? '0'+minutes : minutes;
+	var seconds = date.getSeconds();
+	seconds = seconds < 10 ? '0'+seconds : seconds;
+	var milliseconds = date.getMilliseconds();
+	milliseconds = milliseconds < 10 ? '00'+milliseconds : milliseconds < 100 ? '0'+milliseconds : milliseconds;
+	return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
+}
+
 var DirectedAcyclicGraphTooltip = function(gravity) {
     
     var tooltip = Tooltip(gravity).title(function(d) {
         var report = d.report;
 
-        var reserved = ["Operation", "Agent", "Label", "Class", "Timestamp", "Host", "ProcessID", "ThreadID", "ThreadName", "X-Trace"];
+        var reserved = ["Source", "Operation", "Agent", "Label", "Class", "Timestamp", "HRT", "Cycles", "Host", "ProcessID", "ThreadID", "ThreadName", "X-Trace"];
         
         function appendRow(key, value, tooltip) {
             var keyrow = $("<div>").attr("class", "key").append(key);
@@ -23,8 +36,13 @@ var DirectedAcyclicGraphTooltip = function(gravity) {
         for (var i = 0; i < reserved.length; i++) {
             var key = reserved[i];
             if (report.hasOwnProperty(key)) {
-                appendRow(key, report[key].join(", "), tooltip);
                 seen[key] = true;
+                if (key=="Timestamp") {
+                	appendRow(key, timestampToTimeString(report[key][0]), tooltip);
+                } else {
+                    appendRow(key, report[key].join(", "), tooltip);
+                }
+                	
             }
         }
         
