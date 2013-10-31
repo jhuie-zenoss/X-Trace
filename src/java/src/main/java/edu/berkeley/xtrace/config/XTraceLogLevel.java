@@ -58,7 +58,7 @@ public class XTraceLogLevel {
 	 * @return false if the events logged against this class will be ignored; true otherwise
 	 */
 	public static boolean isOn(Class<?> cls) {
-	  return XTraceConfiguration.active.loglevels.enabled(cls);
+	  return XTraceConfiguration.ENABLED && XTraceConfiguration.active.loglevels.enabled(cls);
 	}
 
 }
