@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.regex.Matcher;
@@ -82,6 +83,9 @@ public final class FileTreeReportStore implements QueryableReportStore {
 			getByTitleApprox;
 	private boolean shouldOperate = false;
 	private boolean databaseInitialized = false;
+  private PreparedStatement tasksBetween;
+
+  private PreparedStatement timesByTask;
 
 	private static final Pattern XTRACE_LINE = Pattern.compile(
 			"^X-Trace:\\s+([0-9A-Fa-f]+)$", Pattern.MULTILINE);
@@ -188,12 +192,16 @@ public final class FileTreeReportStore implements QueryableReportStore {
 				.prepareStatement("update tasks set tags = ? where taskid = ?");
 		updatedSince = conn
 				.prepareStatement("select * from tasks where firstseen >= ? order by lastUpdated desc");
+		tasksBetween = conn
+		    .prepareStatement("select taskid from tasks where firstseen <= ? and lastUpdated >= ?");
 		numByTask = conn
 				.prepareStatement("select numReports from tasks where taskid = ?");
 		totalNumReports = conn
 				.prepareStatement("select sum(numReports) as totalreports from tasks");
 		totalNumTasks = conn
 				.prepareStatement("select count(distinct taskid) as numtasks from tasks");
+		timesByTask = conn
+		    .prepareStatement("select firstseen, lastUpdated from tasks where taskid = ?");
 		lastUpdatedByTask = conn
 				.prepareStatement("select lastUpdated from tasks where taskid = ?");
 		lastTasks = conn
@@ -508,6 +516,89 @@ public final class FileTreeReportStore implements QueryableReportStore {
 			LOG.warn("Internal SQL error", e);
 		}
 		return lst;
+	}
+	
+	@Override
+	public Collection<String> getAllOverlappingTasks(String taskId) {
+	  HashSet<String> taskids = new HashSet<String>();
+	  List<String> unseen = new ArrayList<String>();
+	  taskids.add(taskId);
+	  unseen.add(taskId);
+
+	  long lower = Long.MAX_VALUE;
+	  long upper = 0;
+
+	  while (!unseen.isEmpty()) {
+	    // take the next task ID to process
+	    String nextid = unseen.remove(0);
+
+	    try {
+  	    // Fetch the timestamps for this task
+  	    timesByTask.setString(1, nextid);
+  	    timesByTask.execute();
+  	    ResultSet rs = timesByTask.getResultSet();
+  	    if (!rs.next())
+  	      continue;
+  	    
+  	    // Update the search bounds if necessary
+        long firstSeen = rs.getTimestamp("firstseen").getTime();
+        long lastUpdated = rs.getTimestamp("lastUpdated").getTime();
+        lower = firstSeen < lower ? firstSeen : lower;
+        upper = lastUpdated > upper ? lastUpdated : upper;
+  
+        // Now search for all taskids between these bounds
+        tasksBetween.setString(1, new Timestamp(upper).toString());
+        tasksBetween.setString(2, new Timestamp(lower).toString());
+        tasksBetween.execute();
+        rs = tasksBetween.getResultSet();
+        while (rs.next()) {
+          String toadd = rs.getString("taskid");
+          if (!taskids.contains(toadd)) {
+            taskids.add(toadd);
+            unseen.add(toadd);
+          }
+        }
+	    } catch (SQLException e) {
+	      // ignore this taskid
+	      System.out.println("SQLException getting overlapping taskIDs:");
+	      e.printStackTrace();
+	    }
+	  }
+	  
+	  return taskids;
+	}
+	
+	@Override
+  public Collection<String> getOverlappingTasks(String taskId) {
+	  HashSet<String> overlaps = new HashSet<String>();
+	  overlaps.add(taskId);
+	  
+	  try {
+      // Fetch the timestamps for this task
+      timesByTask.setString(1, taskId.toString());
+      timesByTask.execute();
+      ResultSet rs = timesByTask.getResultSet();
+      if (rs.next()) {
+        // Update the search bounds if necessary
+        long firstSeen = rs.getTimestamp("firstseen").getTime();
+        long lastUpdated = rs.getTimestamp("lastUpdated").getTime();
+    
+        // Now search for all taskids between these bounds
+        tasksBetween.setString(1, new Timestamp(lastUpdated).toString());
+        tasksBetween.setString(2, new Timestamp(firstSeen).toString());
+        tasksBetween.execute();
+        rs = tasksBetween.getResultSet();
+        while (rs.next()) {
+          overlaps.add(rs.getString("taskid"));
+        }
+      }
+	  } catch (SQLException e) {
+      // ignore this taskid
+      System.out.println("SQLException");
+      e.printStackTrace();
+	  }
+	  
+	  return overlaps;
 	}
 
 	public int countByTaskId(TaskID taskId) {

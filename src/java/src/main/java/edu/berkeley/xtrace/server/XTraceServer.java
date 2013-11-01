@@ -34,6 +34,7 @@ import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
@@ -274,6 +275,8 @@ public final class XTraceServer {
 				"/reports/*");
 		context.addServlet(new ServletHolder(new GetJSONReportsServlet()),
 				"/interactive/reports/*");
+    context.addServlet(new ServletHolder(new GetOverlappingTasksServlet()),
+        "/interactive/overlapping/*");
 		context.addServlet(new ServletHolder(new GetLatestTaskServlet()),
 				"/latestTask");
 		context.addServlet(new ServletHolder(new TagServlet()), "/tag/*");
@@ -323,24 +326,24 @@ public final class XTraceServer {
 		}
 	}
 
-	private static class GetJSONReportsServlet extends HttpServlet {
-		protected void doGet(HttpServletRequest request,
-				HttpServletResponse response) throws ServletException,
-				IOException {
-			response.setContentType("text/json");
-			response.setStatus(HttpServletResponse.SC_OK);
-			String uri = request.getRequestURI();
-			int pathLen = request.getServletPath().length() + 1;
-			String taskIdString = uri.length() > pathLen ? uri.substring(pathLen)
-					: null;
-			String[] taskIds = taskIdString.split(",");
-			
-			try {
-	      Writer out = response.getWriter();
-	      out.write("[");
-	      boolean firstTaskDone = false;
-	      int count = 0;
-  			for (String taskId : taskIds) {
+  private static class GetJSONReportsServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request,
+        HttpServletResponse response) throws ServletException,
+        IOException {
+      response.setContentType("text/json");
+      response.setStatus(HttpServletResponse.SC_OK);
+      String uri = request.getRequestURI();
+      int pathLen = request.getServletPath().length() + 1;
+      String taskIdString = uri.length() > pathLen ? uri.substring(pathLen)
+          : null;
+      String[] taskIds = taskIdString.split(",");
+      
+      try {
+        Writer out = response.getWriter();
+        out.write("[");
+        boolean firstTaskDone = false;
+        int count = 0;
+        for (String taskId : taskIds) {
           Log.info("Writing task "+count+++": "+taskId);
           
           if (firstTaskDone) out.write("\n,");
@@ -360,13 +363,43 @@ public final class XTraceServer {
           
           out.append("]}");
           Log.info("... done");
-  			}
-  			out.write("]");			
-  		} catch (XTraceException e) {
+        }
+        out.write("]");     
+      } catch (XTraceException e) {
         throw new ServletException(e);          
       }
-		}
-	}
+    }
+  }
+
+  private static class GetOverlappingTasksServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request,
+        HttpServletResponse response) throws ServletException,
+        IOException {
+      response.setContentType("text/json");
+      response.setStatus(HttpServletResponse.SC_OK);
+      String uri = request.getRequestURI();
+      int pathLen = request.getServletPath().length() + 1;
+      String taskIdString = uri.length() > pathLen ? uri.substring(pathLen)
+          : null;
+      String[] taskIds = taskIdString.split(",");
+      
+      HashSet<String> overlapping = new HashSet<String>();
+      for (String taskId : taskIds) {
+        overlapping.addAll(reportstore.getAllOverlappingTasks(taskId));
+      }
+      
+      Writer out = response.getWriter();
+      out.write("[");
+      boolean first = true;
+      for (String taskId : overlapping) {
+        if (!first)
+          out.write(',');
+        out.write(taskId);
+        first = false;
+      }
+      out.write("]");     
+    }
+  }
 
 	private static class GetLatestTaskServlet extends HttpServlet {
 		protected void doGet(HttpServletRequest request,

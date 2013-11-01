@@ -27,6 +27,7 @@
 
 package edu.berkeley.xtrace.server;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -46,6 +47,21 @@ public interface QueryableReportStore extends ReportStore {
 	public List<TaskRecord> getTasksByTitle(String title, int offset, int limit);
 
 	public List<TaskRecord> getTasksByTitleSubstring(String title, int offset, int limit);
+
+	/**
+	 * Returns task ids that overlap during the specified task id, recursively on results
+	 * until no new overlaps are found
+	 * @param taskId
+	 * @return
+	 */
+  public Collection<String> getAllOverlappingTasks(String taskId);
+
+  /**
+   * Returns other task ids that overlap during the specified task id
+   * @param taskId
+   * @return
+   */
+  public Collection<String> getOverlappingTasks(String taskId);
 	
 	public int numTasks();
 	
