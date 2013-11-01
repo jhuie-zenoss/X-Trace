@@ -32,7 +32,9 @@ var SwimLane = function(data, gcdata) {
     		var gcreports = gcdata[process.id];
     		if (gcreports) {
     			process.gcevents = gcreports.map(function(report) { return new GCEvent(process, report); });
-    			process.gcevents = process.gcevents.filter(function(gcevent) { return gcevent.Start() <= maxTimestamp && gcevent.End() >= minTimestamp; });
+    			process.gcevents = process.gcevents.filter(function(gcevent) { 
+    				return gcevent.Start() <= maxTimestamp && gcevent.End() >= minTimestamp && gcevent.Duration() > 0; 
+				});
     		}
     	}
     }
@@ -429,6 +431,10 @@ GCEvent.prototype.Start = function() {
 
 GCEvent.prototype.End = function() {
 	return this.end;
+}
+
+GCEvent.prototype.Duration = function() {
+	return this.duration;
 }
 
 GCEvent.prototype.Name = function() {
