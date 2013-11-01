@@ -1,4 +1,4 @@
-var SwimLaneData = function(data) {
+var Task = function(data) {
     // Copy the params
     this.id = data.id;
     this.reports = data.reports;
@@ -32,7 +32,7 @@ var SwimLaneData = function(data) {
     this.max = maxTimestamp;
 }
 
-SwimLaneData.prototype.Machines = function() {
+Task.prototype.Machines = function() {
     var machines = this.machines;
     var keys = Object.keys(this.machines);
     var values = keys.map(function(k) { return machines[k]; });
@@ -40,26 +40,30 @@ SwimLaneData.prototype.Machines = function() {
     return values;
 }
 
-SwimLaneData.prototype.Processes = function() {
+Task.prototype.Processes = function() {
     return [].concat.apply([], this.Machines().map(function(machine) { return machine.Processes(); }));   
 }
 
-SwimLaneData.prototype.Threads = function() {
+Task.prototype.Threads = function() {
     var threads = [].concat.apply([], this.Machines().map(function(machine) { return machine.Threads(); }));
     console.log(threads.map(function(thread) { return thread.Start(); }));
     return threads;
 }
 
-SwimLaneData.prototype.Spans = function() {
+Task.prototype.Spans = function() {
     return [].concat.apply([], this.Machines().map(function(machine) { return machine.Spans(); }));   
 }
 
-SwimLaneData.prototype.Events = function() {
+Task.prototype.Events = function() {
     return [].concat.apply([], this.Spans().map(function(span) { return span.Events(); }));   
 }
 
-SwimLaneData.prototype.Edges = function() {
+Task.prototype.Edges = function() {
     return [].concat.apply([], this.Events().map(function(event) { return event.Edges(); }));
+}
+
+Task.prototype.ID = function() {
+	return "Task("+this.id+")";
 }
 
 var Event = function(span, report) {
@@ -70,7 +74,7 @@ var Event = function(span, report) {
     this.timestamp = parseFloat(this.report["Timestamp"][0]);
     this.visible = !(report["Operation"]);    
     
-    this.span.thread.process.machine.swimlane.reports_by_id[this.id] = this;
+    this.span.thread.process.machine.task.reports_by_id[this.id] = this;
 }
 
 Event.prototype.Edges = function() {
@@ -80,7 +84,7 @@ Event.prototype.Edges = function() {
         for (var i = 0; i < parents.length; i++) {
             var edge = {
                 id: this.id+parents[i],
-                parent: this.span.thread.process.machine.swimlane.reports_by_id[parents[i]],
+                parent: this.span.thread.process.machine.task.reports_by_id[parents[i]],
                 child: this
             }
             if (edge.parent && edge.child) 
@@ -270,10 +274,10 @@ Process.prototype.Start = function() {
     return Math.min.apply(this, this.Threads().map(function(thread) { return thread.Start(); }));
 }
 
-var Machine = function(swimlane, id, reports) {
-    this.swimlane = swimlane;
+var Machine = function(task, id, reports) {
+    this.task = task;
     this.id = id;
-    this.fqid = "Machine("+this.id+")";
+    this.fqid = this.task.ID() + "_Machine("+this.id+")";
     
     var reports_by_process = group_reports_by_field(reports, "ProcessID");
     

@@ -1,9 +1,9 @@
 // lightweight is an optional argument that will try to draw the graph as fast as possible
 function XTraceSwimLane(attachPoint, reports, /*optional*/ params) {
-    var swimlane = this;
+    var task = this;
     
-    var data = new SwimLaneData(reports);
-    window.swimlane = data;
+    var data = new Task(reports);
+    window.task = data;
     
     var lanes = data.Threads();
     var items = data.Spans();
