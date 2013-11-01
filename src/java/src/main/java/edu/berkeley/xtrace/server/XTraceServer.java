@@ -394,7 +394,9 @@ public final class XTraceServer {
       for (String taskId : overlapping) {
         if (!first)
           out.write(',');
+        out.write("\"");
         out.write(taskId);
+        out.write("\"");
         first = false;
       }
       out.write("]");     
