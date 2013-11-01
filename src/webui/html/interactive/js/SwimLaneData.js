@@ -1,3 +1,65 @@
+var SwimLane = function(data) {
+	this.data = data;
+
+    // Create the data structures
+    this.tasks = {};
+    for (var i = 0; i < data.length; i++) {
+    	this.tasks[data[i]["id"]] = new Task(data[i]);
+    }
+
+    // Determine the timestamp extents of the data
+    var minTimestamp = Infinity;
+    var maxTimestamp = -Infinity;
+    var events = this.Events();
+    for (var i = 0; i < events.length; i++) {
+        var timestamp = events[i].Timestamp();
+        if (timestamp < minTimestamp)
+            minTimestamp = timestamp;
+        if (timestamp > maxTimestamp)
+            maxTimestamp = timestamp;
+    }
+    
+    this.min = minTimestamp;
+    this.max = maxTimestamp;
+}
+
+SwimLane.prototype.Tasks = function() {
+    var tasks = this.tasks;
+    var keys = Object.keys(this.tasks);
+    var values = keys.map(function(k) { return tasks[k]; });
+    values.sort(function(a, b) { return a.Start() - b.Start(); });
+    return values;	
+}
+
+SwimLane.prototype.Machines = function() {
+    return [].concat.apply([], this.Tasks().map(function(task) { return task.Machines(); }));   
+}
+
+SwimLane.prototype.Processes = function() {
+    return [].concat.apply([], this.Tasks().map(function(task) { return task.Processes(); }));   
+}
+
+SwimLane.prototype.Threads = function() {
+    var threads = [].concat.apply([], this.Tasks().map(function(task) { return task.Threads(); }));
+    return threads;
+}
+
+SwimLane.prototype.Spans = function() {
+    return [].concat.apply([], this.Tasks().map(function(task) { return task.Spans(); }));   
+}
+
+SwimLane.prototype.Events = function() {
+    return [].concat.apply([], this.Tasks().map(function(task) { return task.Events(); }));   
+}
+
+SwimLane.prototype.Edges = function() {
+    return [].concat.apply([], this.Tasks().map(function(task) { return task.Edges(); }));
+}
+
+SwimLane.prototype.ID = function() {
+	return "Task("+this.id+")";
+}
+
 var Task = function(data) {
     // Copy the params
     this.id = data.id;
@@ -15,21 +77,6 @@ var Task = function(data) {
     var reports_by_machine = group_reports_by_field(data.reports, "Host");
     for (var machine_id in reports_by_machine)
         this.machines[machine_id] = new Machine(this, machine_id, reports_by_machine[machine_id]);
-
-    // Determine the timestamp extents of the data
-    var minTimestamp = Infinity;
-    var maxTimestamp = -Infinity;
-    var events = this.Events();
-    for (var i = 0; i < events.length; i++) {
-        var timestamp = events[i].Timestamp();
-        if (timestamp < minTimestamp)
-            minTimestamp = timestamp;
-        if (timestamp > maxTimestamp)
-            maxTimestamp = timestamp;
-    }
-    
-    this.min = minTimestamp;
-    this.max = maxTimestamp;
 }
 
 Task.prototype.Machines = function() {
@@ -64,6 +111,10 @@ Task.prototype.Edges = function() {
 
 Task.prototype.ID = function() {
 	return "Task("+this.id+")";
+}
+
+Task.prototype.Start = function() {
+    return Math.min.apply(this, this.Machines().map(function(process) { return process.Start(); }));
 }
 
 var Event = function(span, report) {

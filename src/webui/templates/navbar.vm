@@ -4,6 +4,8 @@
         <input class="get-selected" type="submit" value="Get Selected JSON" onclick="getSelected()" title="Get raw JSON for selected graphs"/>
         <input class="cluster-selected" type="submit" value="Cluster Selected" onclick="clusterSelected()" title="View clustering visualization for selected graphs"/>
         <input class="compare-selected" type="submit" value="Side-by-side Comparison" onclick="compareSelected()" title="Compare two graphs side-by-side using the graph visualization"/>
+        <input class="swimlane-selected" type="submit" value="Swimlane Selected" onclick="swimlaneSelected()" title="View a swimlane visualization of the selected task IDs"/>
+        <input class="selected-related" type="submit" value="Select Related" onclick="selectRelated()" title="Select all Task IDs whose timestamps overlap with the select task ID timestamps"/>
     </div>
     <div style="float: right; display: inline-block;">
         <a href="$request.requestURI?offset=$prevOffset&length=$length">[&lt;&lt; Previous $length]</a>
@@ -46,6 +48,33 @@ function compareSelected() {
     if (selected.length == 2) {
         window.open("/interactive/compare.html?id="+selected.join(), "_blank");
     }
+}
+
+function selectRelated() {
+    var overlapping_url = "interactive/overlapping/" + getSelectedIDs().join(",");
+    
+    var xhr = new XMLHttpRequest();
+    
+    xhr.open("GET", overlapping_url, true);
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState==4) {
+            if (xhr.status = 200) {
+    		console.log("selecting", xhr.responseText);
+                var json = JSON.parse(xhr.responseText);
+                selectCheckboxes(json);
+            }
+        }
+    };
+    
+    xhr.send(null);    
+}
+
+function swimlaneSelected() {
+    var selected = getSelectedIDs();
+	if (selected.length >= 1) {
+		window.open("/interactive/swimlane.html?id="+selected.join(), "_blank");
+	}
 }
 
 checkControlsEnabled();

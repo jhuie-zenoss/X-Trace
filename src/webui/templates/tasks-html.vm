@@ -46,6 +46,20 @@
         checkControlsEnabled();
     }
     
+    function selectCheckboxes(ids) {
+    	console.log("selecting", ids);
+        var checkboxes = document.getElementsByClassName("select-trace");
+        for (var i = 0; i < checkboxes.length; i++) {
+        	var checkboxval = checkboxes[i].value;
+        	for (var j = 0; j < ids.length; j++) {
+        		if (ids[j]==checkboxval) {
+        			checkboxes[i].checked = true;
+        		}
+        	}
+        }
+        checkControlsEnabled();
+    }
+    
     function checkControlsEnabled() {
         var numChecked = 0;
         var checkboxes = document.getElementsByClassName("select-trace");
