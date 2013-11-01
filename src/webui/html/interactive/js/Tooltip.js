@@ -46,9 +46,6 @@ var DirectedAcyclicGraphTooltip = function(gravity) {
             }
         }
         
-        // Do the label
-        appendRow("Label", hash_report(report), tooltip);
-        
         // Do the remainder
         for (var key in report) {
             if (!seen[key]) {
@@ -56,10 +53,47 @@ var DirectedAcyclicGraphTooltip = function(gravity) {
             }
         }
         
+        // Do the label
+        appendRow("(hash)", hash_report(report), tooltip);
+        
         return tooltip.outerHTML();
     });
     
     return tooltip;
+}
+
+// For XTrace Swimlane GC
+var GCInfoTooltip = function(gravity) {
+    
+    var tooltip = Tooltip(gravity).title(function(d) {
+        var report = d.report;
+
+        var keys = ["ProcessID", "ThreadName", "GcStart", "GcDuration", "GcName", "GcCause", "GcAction"];
+        
+        function appendRow(key, value, tooltip) {
+            var keyrow = $("<div>").attr("class", "key").append(key);
+            var valrow = $("<div>").attr("class", "value").append(value);
+            var clearrow = $("<div>").attr("class", "clear");
+            tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
+        }
+        
+        var tooltip = $("<div>").attr("class", "xtrace-tooltip");
+        
+        appendRow("", "<div style='padding-bottom:10px'><b>Garbage Collection Event</b></div>", tooltip);
+        appendRow("ProcessID", report["ProcessID"][0], tooltip);
+    	appendRow("Thread", "<div style='padding-bottom:10px'>" + report["ThreadID"][0] + " ("+report["ThreadName"][0] + ")</div>", tooltip);
+    	appendRow("Start", timestampToTimeString(report["GcStart"][0]), tooltip);
+    	appendRow("End", timestampToTimeString(Number(report["GcStart"][0]) + Number(report["GcDuration"][0])), tooltip);
+        appendRow("Duration", "<div style='padding-bottom:10px'>" + report["GcDuration"][0]+" ms</div>", tooltip);
+        appendRow("Name", report["GcName"][0], tooltip);
+        appendRow("Cause", report["GcCause"][0], tooltip);
+        appendRow("Action", report["GcAction"][0], tooltip);
+        
+        return tooltip.outerHTML();
+    });
+    
+    return tooltip;
+	
 }
 
 var CompareTooltip = function() {

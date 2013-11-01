@@ -22,8 +22,9 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
     var datalen = data.max - data.min;
     var rangemin = data.min - datalen / 10.0;
     var rangemax = data.max + datalen / 10.0;
-    
+
     var DAGTooltip = DirectedAcyclicGraphTooltip($.fn.tipsy.autoNS);
+    var GCTooltip = GCInfoTooltip($.fn.tipsy.autoNS);
 
     
   var margin = {top: 20, right: 15, bottom: 15, left: 120}
@@ -167,9 +168,9 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
   // Add the events and causality edges
   var causalityEdges = main.append('g')
   .attr('clip-path', 'url(#clip)');
-  var eventDots = main.append('g')
-  .attr('clip-path', 'url(#clip)');
   var gcEvents = main.append('g')
+  .attr('clip-path', 'url(#clip)');
+  var eventDots = main.append('g')
   .attr('clip-path', 'url(#clip)');
 
   mini.append('g').selectAll('miniItems')
@@ -242,6 +243,7 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
   zoom.call(main);
 
   function display () {
+	  DAGTooltip.hide();
 
       var rects, dots
         , minExtent = brush.extent()[0]
@@ -307,21 +309,8 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
               else
                   return "edge internal";
           });
-      
-      // update the gc event blocks
-      gc = gcEvents.selectAll('circle.gcevent')
-			      .data(data.GCEvents(), function(d) { return d.ID(); })
-			      .attr('cx', function(d) { return x1(d.Timestamp()); })
-			      .attr('r', function(d) { return d.visible ? 5 : 2; });
-			  dots.enter().append('circle')
-			      .attr('cx', function(d) { return x1(d.Timestamp()); })
-			      .attr('cy', function(d) { return y1(d.span.thread.lanenumber) + .5 * y1(1); })
-			      .attr('r', function(d) { return d.visible ? 5 : 2; })
-			      .attr('class', function(d) { return d.visible ? "event visible" : "event"; })
-			      .attr('id', function(d) { return d.ID(); })
-			      .call(DAGTooltip);
-			  dots.exit().remove();
 
+      // Update the GC blocks
       gc = gcEvents.selectAll('rect.gcevent')
           .data(data.GCEvents(), function (d) { return d.ID(); })
           .attr('x', function(d) { return x1(d.Start()); })
@@ -333,7 +322,8 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
           .attr('height', function(d) { return y1(d.process.Threads().length); })
           .attr('class', "gcevent")
           .attr("fill", "#AA0")
-          .attr("opacity", 0.2);
+          .attr("opacity", 0.2)
+          .call(GCTooltip);
       gc.exit().remove();
       
       
