@@ -1,17 +1,20 @@
 // lightweight is an optional argument that will try to draw the graph as fast as possible
-function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
+function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
     var swimlane = this;
     
     
-    var data = new SwimLane(tasksdata);
+    var data = new SwimLane(tasksdata, gcdata);
     window.task = data;
     
-    var lanes = data.Threads();
-    var items = data.Spans();
+    var threads = data.Threads();
+    var spans = data.Spans();
     var processes = data.Processes();
-    for (var i = 0; i < lanes.length; i++) {
-        lanes[i].lanenumber = i;
+    for (var i = 0; i < threads.length; i++) {
+        threads[i].lanenumber = i;
+        if (threads[i].process.lanenumber==null)
+        	threads[i].process.lanenumber = i;
     }
+
     for (var i = 0; i < processes.length; i++) {
         processes[i].color = d3.rgb(200 + Math.random() * 20, 200 + Math.random() * 20, 200 + Math.random() * 20);
     }
@@ -21,24 +24,19 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
     var rangemax = data.max + datalen / 10.0;
     
     var DAGTooltip = DirectedAcyclicGraphTooltip($.fn.tipsy.autoNS);
-    
-//    var data = randomData()
-//    , lanes = data.lanes
-//    , items = data.items
-//    , now = new Date();
 
     
   var margin = {top: 20, right: 15, bottom: 15, left: 120}
     , width = $(window).width() - margin.left - margin.right
     , height = $(window).height() - margin.top - margin.bottom
-    , miniHeight = lanes.length * 12 + 50
+    , miniHeight = threads.length * 12 + 50
     , mainHeight = height - miniHeight - 50;
   
   var x = d3.scale.linear().domain([rangemin, rangemax]).range([0, width]);
   var x1 = d3.scale.linear().range([0, width]);
   var norm = d3.scale.linear().domain([rangemin - data.min, rangemax - data.min]).range([0, width]);
 
-  var ext = d3.extent(lanes, function(thread) { return thread.lanenumber; });
+  var ext = d3.extent(threads, function(thread) { return thread.lanenumber; });
   var y1 = d3.scale.linear().domain([ext[0], ext[1] + 1]).range([0, mainHeight]);
   var y2 = d3.scale.linear().domain([ext[0], ext[1] + 1]).range([0, miniHeight]);
 
@@ -66,18 +64,18 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
       .attr('height', miniHeight)
       .attr('class', 'mini');
   
-  // draw the lanes for the main chart
+  // draw the threads for the main chart
   main.append('g').attr("class", "lane-background").selectAll('laneBackground')
-      .data(lanes)
+      .data(threads)
       .enter().append('rect')
       .attr('fill', function(d) { return d.process.color.brighter(0.3); })
       .attr('x', 0)
-      .attr('y', function(d) { return y1(d.lanenumber) })
+      .attr('y', function(d) { return y1(d.lanenumber); })
       .attr('width', width)
       .attr('height', function(d) { return y1(1); });
   
   main.append('g').selectAll('.laneLines')
-      .data(lanes)
+      .data(threads)
       .enter().append('line')
       .attr('x1', 0)
       .attr('y1', function(d) { return d3.round(y1(d.lanenumber)) + 0.5; })
@@ -86,7 +84,7 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
       .attr('stroke', '#999');
 
   var mainlabels = main.append('g').selectAll('.laneText')
-      .data(lanes)
+      .data(threads)
       .enter();
   
 //  mainlabels.append('text')
@@ -108,9 +106,9 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
       .attr('fill', function(d) { return d.process.color.darker(1); });
 
           
-  // draw the lanes for the mini chart
+  // draw the threads for the mini chart
   mini.append('g').selectAll('.laneLines')
-      .data(lanes)
+      .data(threads)
       .enter().append('line')
       .attr('x1', 0)
       .attr('y1', function(d) { return d3.round(y2(d.lanenumber)) + 0.5; })
@@ -119,7 +117,7 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
       .attr('stroke', 'lightgray');
 
   mini.append('g').selectAll('.laneText')
-      .data(lanes)
+      .data(threads)
       .enter().append('text')
       .text(function(d) { return d.ID(); })
       .attr('x', -10)
@@ -151,7 +149,7 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
       .attr('class', 'axis date')
       .call(xDateAxis);
 
-  // draw the items
+  // draw the spans
   var itemRects = main.append('g')
   .attr('clip-path', 'url(#clip)');
   
@@ -171,11 +169,11 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
   .attr('clip-path', 'url(#clip)');
   var eventDots = main.append('g')
   .attr('clip-path', 'url(#clip)');
-  var lockLines = main.append('g')
+  var gcEvents = main.append('g')
   .attr('clip-path', 'url(#clip)');
 
   mini.append('g').selectAll('miniItems')
-      .data(getPaths(items))
+      .data(getPaths(spans))
       .enter().append('path')
       .attr('class', function(d) { return 'miniItem'; })
       .attr('d', function(d) { return d.path; });
@@ -252,7 +250,7 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
       if (maxExtent - minExtent < 0.00001)
           maxExtent = minExtent+0.00001;
       
-      var visItems = items.filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent});
+      var visibleSpans = spans.filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent; });
 
       mini.select('.brush').call(brush.extent([minExtent, maxExtent]));       
 
@@ -265,9 +263,9 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
 
       // upate the item rects
       rects = itemRects.selectAll('rect.thread')
-          .data(visItems, function (d) { return d.ID(); })
+          .data(visibleSpans, function (d) { return d.ID(); })
           .attr('x', function(d) { return x1(d.Start()); })
-          .attr('width', function(d) { return x1(d.End()) - x1(d.Start()); })
+          .attr('width', function(d) { return x1(d.End()) - x1(d.Start()); });
       rects.enter().append('rect')
           .attr('x', function(d) { return x1(d.Start()); })
           .attr('y', function(d) { return y1(d.thread.lanenumber) + .1 * y1(1) + 0.5; })
@@ -309,6 +307,36 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
               else
                   return "edge internal";
           });
+      
+      // update the gc event blocks
+      gc = gcEvents.selectAll('circle.gcevent')
+			      .data(data.GCEvents(), function(d) { return d.ID(); })
+			      .attr('cx', function(d) { return x1(d.Timestamp()); })
+			      .attr('r', function(d) { return d.visible ? 5 : 2; });
+			  dots.enter().append('circle')
+			      .attr('cx', function(d) { return x1(d.Timestamp()); })
+			      .attr('cy', function(d) { return y1(d.span.thread.lanenumber) + .5 * y1(1); })
+			      .attr('r', function(d) { return d.visible ? 5 : 2; })
+			      .attr('class', function(d) { return d.visible ? "event visible" : "event"; })
+			      .attr('id', function(d) { return d.ID(); })
+			      .call(DAGTooltip);
+			  dots.exit().remove();
+
+      gc = gcEvents.selectAll('rect.gcevent')
+          .data(data.GCEvents(), function (d) { return d.ID(); })
+          .attr('x', function(d) { return x1(d.Start()); })
+          .attr('width', function(d) { return x1(d.End()) - x1(d.Start()); });
+      gc.enter().append('rect')
+          .attr('x', function(d) { return x1(d.Start()); })
+          .attr('y', function(d) { return y1(d.process.lanenumber); })
+          .attr('width', function(d) { return x1(d.End()) - x1(d.Start()); })
+          .attr('height', function(d) { return y1(d.process.Threads().length); })
+          .attr('class', "gcevent")
+          .attr("fill", "#AA0")
+          .attr("opacity", 0.2);
+      gc.exit().remove();
+      
+      
       mainaxis.call(x1DateAxis);
   }
 
@@ -326,10 +354,10 @@ function XTraceSwimLane(attachPoint, tasksdata, /*optional*/ params) {
   // generates a single path for each item class in the mini display
   // ugly - but draws mini 2x faster than append lines or line generator
   // is there a better way to do a bunch of lines as a single path with d3?
-  function getPaths(items) {
+  function getPaths(spans) {
       var paths = {}, d, offset = .5 * y2(1) + 0.5, result = [];
-      for (var i = 0; i < items.length; i++) {
-          d = items[i];
+      for (var i = 0; i < spans.length; i++) {
+          d = spans[i];
           if (!paths[d.class]) paths[d.class] = '';   
           paths[d.class] += ['M',x(d.Start()),(y2(d.thread.lanenumber) + offset),'H',x(d.End())].join(' ');
       }

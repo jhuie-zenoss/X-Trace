@@ -1,5 +1,6 @@
-var SwimLane = function(data) {
+var SwimLane = function(data, gcdata) {
 	this.data = data;
+	this.gcdata = gcdata;
 
     // Create the data structures
     this.tasks = {};
@@ -21,6 +22,20 @@ var SwimLane = function(data) {
     
     this.min = minTimestamp;
     this.max = maxTimestamp;
+    
+    // Now create the GC events, if possible.  Even though two tasks may technically share the same process,
+    // they will actually have separate process objects, so we create a GCEvent for each of them.
+    if (gcdata) {
+    	var processes = this.Processes();
+    	for (var i = 0; i < processes.length; i++) {
+    		var process = processes[i];
+    		var gcreports = gcdata[process.id];
+    		if (gcreports) {
+    			process.gcevents = gcreports.map(function(report) { return new GCEvent(process, report); });
+    			process.gcevents = process.gcevents.filter(function(gcevent) { return gcevent.Start() <= maxTimestamp && gcevent.End() >= minTimestamp; });
+    		}
+    	}
+    }
 }
 
 SwimLane.prototype.Tasks = function() {
@@ -54,6 +69,10 @@ SwimLane.prototype.Events = function() {
 
 SwimLane.prototype.Edges = function() {
     return [].concat.apply([], this.Tasks().map(function(task) { return task.Edges(); }));
+}
+
+SwimLane.prototype.GCEvents = function() {
+    return [].concat.apply([], this.Tasks().map(function(task) { return task.GCEvents(); }));
 }
 
 SwimLane.prototype.ID = function() {
@@ -107,6 +126,10 @@ Task.prototype.Events = function() {
 
 Task.prototype.Edges = function() {
     return [].concat.apply([], this.Events().map(function(event) { return event.Edges(); }));
+}
+
+Task.prototype.GCEvents = function() {
+    return [].concat.apply([], this.Machines().map(function(machine) { return machine.GCEvents(); }));
 }
 
 Task.prototype.ID = function() {
@@ -272,7 +295,7 @@ var Process = function(machine, id, reports) {
     this.machine = machine;
     this.id = id;
     this.fqid = this.machine.ID() + "_Process("+id+")";
-
+    this.gcevents = [];
 
     var startTS = Number(reports[0]["Timestamp"][0]);
     if (reports[0]["HRT"]) {
@@ -325,6 +348,10 @@ Process.prototype.Start = function() {
     return Math.min.apply(this, this.Threads().map(function(thread) { return thread.Start(); }));
 }
 
+Process.prototype.GCEvents = function() {
+	return this.gcevents;
+}
+
 var Machine = function(task, id, reports) {
     this.task = task;
     this.id = id;
@@ -365,6 +392,10 @@ Machine.prototype.Start = function() {
     return Math.min.apply(this, this.Processes().map(function(process) { return process.Start(); }));
 }
 
+Machine.prototype.GCEvents = function() {
+	return [].concat.apply([], this.Processes().map(function(process) { return process.GCEvents(); }));
+}
+
 function group_reports_by_field(reports, field) {
     var grouping = {};
     for (var i = 0; i < reports.length; i++) {
@@ -380,5 +411,31 @@ function group_reports_by_field(reports, field) {
     return grouping;
 }
 
+var GCEvent = function(process, report) {
+    this.report = report;
+    this.process = process;
+    this.id = report["X-Trace"][0].substr(18);
+    this.fqid = this.process.ID() + "_GC(" + this.id + ")";
+    
+    this.start = Number(this.report["GcStart"][0]);
+    this.duration = Number(this.report["GcDuration"][0]);
+    this.end = this.start + this.duration;
+    this.name = this.report["GcName"][0];
+}
 
+GCEvent.prototype.Start = function() {
+	return this.start;
+}
 
+GCEvent.prototype.End = function() {
+	return this.end;
+}
+
+GCEvent.prototype.Name = function() {
+    if (this.report["Name"] && this.report["Name"].length >= 1)
+        return this.report["Name"][0];
+}
+
+GCEvent.prototype.ID = function() {
+    return this.fqid;
+}

@@ -62,6 +62,9 @@ public interface QueryableReportStore extends ReportStore {
    * @return
    */
   public Collection<String> getOverlappingTasks(String taskId);
+  
+
+  public Collection<String> getTagsForTask(String taskId);
 	
 	public int numTasks();
 	

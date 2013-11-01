@@ -28,18 +28,33 @@
 window.onload = function() {    
     var params = getParameters();
     var id = params["id"];
-	var callback = function(data) {
-		console.log("Reports received, accessible as window.data", data);
-		window.data = data;
-		window.xtrace = new XTraceSwimLane(document.body, data, params);
+    var reportdata = null;
+    var gcdata = null;
+	var reportsCallback = function(reportsdata) {
+		console.log("Reports received, accessible as window.reportsdata", reportsdata);
+		window.reportsdata = reportsdata;
+		reportdata = reportsdata;
+		if (reportdata && gcdata)
+			window.viz = new XTraceSwimLane(document.body, reportdata, gcdata, params);
 	};
-	var errback = function(message, error) {
+	var reportsErrback = function(message, error) {
 		console.log("Error retrieving reports", error);
+	};
+	var gcDataCallback = function(data) {
+		console.log("GC data received, accessible as window.gcdata", data);
+		gcdata = data;
+		window.gcdata = data;
+		if (reportdata && gcdata)
+			window.viz = new XTraceSwimLane(document.body, reportdata, gcdata, params);
+	};
+	var gcDataErrback = function(error) {
+		console.log("Error retrieving gc data", error);
 	};
 	if (id==null) {
 	    document.body.appendChild(document.createTextNode("No Trace ID specified"));
     } else {
-        getReports(id, callback, errback);
+        getReports(id, reportsCallback, reportsErrback);
+        getGCReports(id, gcDataCallback, gcDataErrback);
     }
 }
 </script>

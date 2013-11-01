@@ -50,6 +50,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -277,6 +280,8 @@ public final class XTraceServer {
 				"/interactive/reports/*");
     context.addServlet(new ServletHolder(new GetOverlappingTasksServlet()),
         "/interactive/overlapping/*");
+    context.addServlet(new ServletHolder(new GetTagsForTaskServlet()),
+        "/interactive/tags/*");
 		context.addServlet(new ServletHolder(new GetLatestTaskServlet()),
 				"/latestTask");
 		context.addServlet(new ServletHolder(new TagServlet()), "/tag/*");
@@ -401,6 +406,31 @@ public final class XTraceServer {
       }
       out.write("]");     
     }
+  }
+  
+  private static class GetTagsForTaskServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request,
+        HttpServletResponse response) throws ServletException,
+        IOException {
+      response.setContentType("text/json");
+      response.setStatus(HttpServletResponse.SC_OK);
+      String uri = request.getRequestURI();
+      int pathLen = request.getServletPath().length() + 1;
+      String taskIdString = uri.length() > pathLen ? uri.substring(pathLen)
+          : "";
+      String[] taskIds = taskIdString.split(",");
+
+      JSONObject obj = new JSONObject();
+      for (String taskId : taskIds) {
+        Collection<String> tags = reportstore.getTagsForTask(taskId);
+        JSONArray arr = new JSONArray();
+        arr.addAll(tags);
+        obj.put(taskId, arr);
+      }
+      
+      Writer out = response.getWriter();
+      out.write(obj.toJSONString());
+    }    
   }
 
 	private static class GetLatestTaskServlet extends HttpServlet {

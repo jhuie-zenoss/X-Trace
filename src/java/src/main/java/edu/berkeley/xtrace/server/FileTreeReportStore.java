@@ -466,6 +466,20 @@ public final class FileTreeReportStore implements QueryableReportStore {
 
 		return lst;
 	}
+	
+	public Collection<String> getTagsForTask(String taskId) {
+	  try {
+      getTags.setString(1, taskId);
+      getTags.execute();
+      ResultSet rs = getTags.getResultSet();
+      if (rs.next())
+        return Arrays.asList(rs.getString("tags").split(","));
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+	  return new ArrayList<String>(0);
+	}
 
 	public List<TaskRecord> getLatestTasks(int offset, int limit) {
 		int numToFetch = offset + limit;

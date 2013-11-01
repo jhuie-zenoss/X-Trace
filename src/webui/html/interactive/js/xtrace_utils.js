@@ -99,6 +99,86 @@ var getAllReports = function(ids, callback, errback) {
     xhr.send(null);    
 }
 
+function getRelated(ids, callback, errback) {
+    var overlapping_url = "overlapping/" + ids;
+    
+    var xhr = new XMLHttpRequest();
+    
+    xhr.open("GET", overlapping_url, true);
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState==4) {
+            if (xhr.status = 200) {
+                var json = JSON.parse(xhr.responseText);
+                callback(json);
+            } else {
+            	errback(xhr);
+            }
+        }
+    };
+    
+    xhr.send(null);    
+}
+
+function getTags(ids, callback, errback) {
+    var tags_url = "tags/" + ids;
+    
+    var xhr = new XMLHttpRequest();
+    
+    xhr.open("GET", tags_url, true);
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState==4) {
+            if (xhr.status = 200) {
+                var json = JSON.parse(xhr.responseText);
+                callback(json);
+            } else {
+            	errback(xhr);
+            }
+        }
+    };
+    
+    xhr.send(null);    
+}
+
+function getGCReports(ids, callback, errback) {
+	var gcReportsReceivedCallback = function(data) {
+		var GCReportsByProcess = {}
+		for (var i = 0; i < data.length; i++) {
+			var reports = data[i].reports;
+			for (var j = 0; j < reports.length; j++) {
+				var report = reports[j];
+				if (report["Operation"] && report["Operation"][0]=="GC") {
+					var processID = report["ProcessID"][0];
+					if (!GCReportsByProcess[processID])
+						GCReportsByProcess[processID] = [report];
+					else
+						GCReportsByProcess[processID].push(report);
+				}
+			}
+		}
+		callback(GCReportsByProcess);
+	};
+	var tagsReceivedCallback = function(tagdata) {
+		var GCTasks = [];
+		for (var taskid in tagdata) {
+			var tags = tagdata[taskid];
+			if (tags.indexOf("GC")!=-1) {
+				GCTasks.push(taskid);
+			}
+		}
+		if (GCTasks.length > 0) {
+			getAllReports(GCTasks.join(","), gcReportsReceivedCallback, errback);
+		} else {
+			callback({});
+		}
+	};
+	var relatedIDsReceivedCallback = function(ids) {
+		getTags(ids.join(','), tagsReceivedCallback, errback);
+	};
+	getRelated(ids, relatedIDsReceivedCallback, errback);
+}
+
 var sanitizeReports = function(reports) {
     var i = 0;
     while (i < reports.length) {
