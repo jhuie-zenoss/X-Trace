@@ -109,8 +109,12 @@ function getRelated(ids, callback, errback) {
     xhr.onreadystatechange = function() {
         if (xhr.readyState==4) {
             if (xhr.status = 200) {
-                var json = JSON.parse(xhr.responseText);
-                callback(json);
+            	try {
+	                var json = JSON.parse(xhr.responseText);
+	                callback(json);
+            	} catch (e) {
+            		errback(e);
+            	}
             } else {
             	errback(xhr);
             }
@@ -130,8 +134,12 @@ function getTags(ids, callback, errback) {
     xhr.onreadystatechange = function() {
         if (xhr.readyState==4) {
             if (xhr.status = 200) {
-                var json = JSON.parse(xhr.responseText);
-                callback(json);
+            	try {
+	                var json = JSON.parse(xhr.responseText);
+	                callback(json);
+            	} catch (e) {
+            		errback(e);
+            	}
             } else {
             	errback(xhr);
             }
@@ -168,12 +176,13 @@ function getGCReports(ids, callback, errback) {
 			}
 		}
 		if (GCTasks.length > 0) {
-			getAllReports(GCTasks.join(","), gcReportsReceivedCallback, errback);
+			getReports(GCTasks.join(","), gcReportsReceivedCallback, errback);
 		} else {
 			callback({});
 		}
 	};
 	var relatedIDsReceivedCallback = function(ids) {
+		console.log("Searching for GC data in ids: " + ids.join(','));
 		getTags(ids.join(','), tagsReceivedCallback, errback);
 	};
 	getRelated(ids, relatedIDsReceivedCallback, errback);

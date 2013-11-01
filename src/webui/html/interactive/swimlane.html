@@ -49,6 +49,9 @@ window.onload = function() {
 	};
 	var gcDataErrback = function(error) {
 		console.log("Error retrieving gc data", error);
+		gcdata = {};
+		if (reportdata)
+			window.viz = new XTraceSwimLane(document.body, reportdata, gcdata, params);
 	};
 	if (id==null) {
 	    document.body.appendChild(document.createTextNode("No Trace ID specified"));
