@@ -385,7 +385,7 @@ public final class XTraceServer {
       
       HashSet<String> overlapping = new HashSet<String>();
       for (String taskId : taskIds) {
-        overlapping.addAll(reportstore.getAllOverlappingTasks(taskId));
+        overlapping.addAll(reportstore.getOverlappingTasks(taskId));
       }
       
       Writer out = response.getWriter();
