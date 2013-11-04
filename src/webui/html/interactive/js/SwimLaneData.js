@@ -298,15 +298,25 @@ var Process = function(machine, id, reports) {
     this.id = id;
     this.fqid = this.machine.ID() + "_Process("+id+")";
     this.gcevents = [];
-
-    var startTS = Number(reports[0]["Timestamp"][0]);
+    
+    // We want high resolution timestamps, so perform some averaging
     if (reports[0]["HRT"]) {
-        var startHRT = Number(reports[0]["HRT"][0]);
-        for (var i = 1; i < reports.length; i++) {
-            var report = reports[i];
-            var eventHRT = Number(report["HRT"][0]);
-            report["Timestamp"][0] = ""+(startTS + (eventHRT - startHRT) / 1000000.0);
-        }
+	    var totalTS = 0.0;
+	    var totalHRT = 0.0;
+	    var count = 0.0;
+	    for (var i = 0; i < reports.length; i++) {
+	    	totalTS += Number(reports[i]["Timestamp"][0]);
+	    	totalHRT += Number(reports[i]["HRT"][0]);
+	    	count += 1.0;
+	    }
+	    
+	    var avgHRT = totalHRT / count;
+	    var avgTS = totalTS / count;
+	    for (var i = 0; i < reports.length; i++) {
+	    	var reportHRT = Number(reports[i]["HRT"][0]);
+	    	var reportTS = avgTS + (reportHRT - avgHRT) / 1000000.0;
+	    	reports[i]["Timestamp"][0] = ""+reportTS;
+	    }
     }
     
     var reports_by_thread = group_reports_by_field(reports, "ThreadID");
@@ -419,8 +429,8 @@ var GCEvent = function(process, report) {
     this.id = report["X-Trace"][0].substr(18);
     this.fqid = this.process.ID() + "_GC(" + this.id + ")";
     
-    this.start = Number(this.report["GcStart"][0]);
-    this.duration = Number(this.report["GcDuration"][0]);
+    this.start = Number(this.report["GcStart"][0])+1;
+    this.duration = Number(this.report["GcDuration"][0])-1;
     this.end = this.start + this.duration;
     this.name = this.report["GcName"][0];
 }
