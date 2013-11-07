@@ -203,6 +203,19 @@ public class XTraceContext {
         ctx.addAll(contexts.get());
         return ctx;
     }
+    
+    /**
+     * Returns the TaskID of the currently executing task.
+     * @return
+     */
+    public static TaskID getTaskID() {
+      if (!XTraceConfiguration.ENABLED)
+        return null;
+      if (XTraceContext.isValid())
+        return contexts.get().get(0).getTaskId();
+      
+      return null;
+    }
 
     /**
      * Clear current thread's X-Trace context.
