@@ -33,7 +33,7 @@ var SwimLane = function(data, gcdata) {
     		if (gcreports) {
     			process.gcevents = gcreports.map(function(report) { return new GCEvent(process, report); });
     			process.gcevents = process.gcevents.filter(function(gcevent) { 
-    				return gcevent.Start() <= maxTimestamp && gcevent.End() >= minTimestamp && gcevent.Duration() > 0; 
+    				return gcevent.start <= maxTimestamp && gcevent.end >= minTimestamp && gcevent.duration > 0; 
 				});
     		}
     	}
@@ -75,6 +75,10 @@ SwimLane.prototype.Edges = function() {
 
 SwimLane.prototype.GCEvents = function() {
     return [].concat.apply([], this.Tasks().map(function(task) { return task.GCEvents(); }));
+}
+
+SwimLane.prototype.HDDEvents = function() {
+	return this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 4)=="file"; });
 }
 
 SwimLane.prototype.ID = function() {
@@ -148,7 +152,14 @@ var Event = function(span, report) {
     this.id = report["X-Trace"][0].substr(18);
     this.fqid = this.span.ID() + "_Event(" + this.id + ")";
     this.timestamp = parseFloat(this.report["Timestamp"][0]);
-    this.visible = !(report["Operation"]);    
+    this.type = "event";
+    if (this.report["Operation"])
+    	this.type = "operation " + this.report["Operation"][0];
+    if (this.report["Duration"]) {
+        this.duration = Number(this.report["Duration"][0]) / 1000000.0;
+    	this.start = this.timestamp - this.duration;
+    	this.end = this.timestamp;
+    }
     
     this.span.thread.process.machine.task.reports_by_id[this.id] = this;
 }
@@ -169,7 +180,6 @@ Event.prototype.Edges = function() {
     }
     return this.edges;    
 }
-
 
 Event.prototype.Timestamp = function() {
     return this.timestamp;
@@ -194,8 +204,13 @@ var Span = function(thread, id, reports) {
     this.fqid = this.thread.ID() + "_Span(" + this.id + ")";
     this.events = [];
     this.waiting = false; // is this a span where a thread is waiting?
-    for (var i = 0; i < reports.length; i++)
-        this.events.push(new Event(this, reports[i]));
+    for (var i = 0; i < reports.length; i++) {
+    	if (reports[i]["Operation"] && reports[i]["Operation"][0].substring(0, 4)=="file") {
+            this.events.push(new Event(this, reports[i]));
+    	} else {
+            this.events.push(new Event(this, reports[i]));
+    	}
+    }
     this.events.sort(function(a, b) { return a.timestamp - b.timestamp; });
 }
 
@@ -433,23 +448,6 @@ var GCEvent = function(process, report) {
     this.duration = Number(this.report["GcDuration"][0])-1;
     this.end = this.start + this.duration;
     this.name = this.report["GcName"][0];
-}
-
-GCEvent.prototype.Start = function() {
-	return this.start;
-}
-
-GCEvent.prototype.End = function() {
-	return this.end;
-}
-
-GCEvent.prototype.Duration = function() {
-	return this.duration;
-}
-
-GCEvent.prototype.Name = function() {
-    if (this.report["Name"] && this.report["Name"].length >= 1)
-        return this.report["Name"][0];
 }
 
 GCEvent.prototype.ID = function() {
