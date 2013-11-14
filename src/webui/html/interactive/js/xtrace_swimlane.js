@@ -5,9 +5,9 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 
 	var data = new SwimLane(tasksdata, gcdata);
 	window.task = data;
-	
+
 	console.log("HDD events:", data.HDDEvents());
-	
+
 	var threads = data.Threads();
 	var spans = data.Spans();
 	var processes = data.Processes();
@@ -27,6 +27,7 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 
 	var DAGTooltip = DirectedAcyclicGraphTooltip($.fn.tipsy.autoNS);
 	var GCTooltip = GCInfoTooltip($.fn.tipsy.autoNS);
+	var HDDTooltip = HDDInfoTooltip($.fn.tipsy.autoNS);
 
 
 	var margin = {top: 20, right: 15, bottom: 15, left: 120}
@@ -324,8 +325,6 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 		.attr('width', function(d) { return x1(d.end) - x1(d.start); })
 		.attr('height', function(d) { return y1(d.process.Threads().length); })
 		.attr('class', "gcevent")
-		.attr("fill", "#AA0")
-		.attr("opacity", 0.2)
 		.call(GCTooltip);
 		gc.exit().remove();
 
@@ -336,12 +335,11 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 		.attr('width', function(d) { return x1(d.end) - x1(d.start); });
 		hdd.enter().append('rect')
 		.attr('x', function(d) { return x1(d.start); })
-		.attr('y', function(d) { return y1(d.span.thread.lanenumber); })
+		.attr('y', function(d) { return y1(d.span.thread.lanenumber + 0.25); })
 		.attr('width', function(d) { return x1(d.end) - x1(d.start); })
-		.attr('height', function(d) { return y1(1); })
-		.attr('class', "hddevent")
-		.attr("fill", "#A0A")
-		.attr("opacity", 0.7);
+		.attr('height', function(d) { return y1(0.5); })
+		.attr('class', function(d) { return "hddevent " + d.type; })
+		.call(HDDTooltip);
 		hdd.exit().remove();
 
 
