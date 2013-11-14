@@ -1,4 +1,4 @@
-var SwimLane = function(data, gcdata) {
+var Workload = function(data, gcdata) {
 	this.data = data;
 	this.gcdata = gcdata;
 
@@ -40,7 +40,7 @@ var SwimLane = function(data, gcdata) {
 	}
 }
 
-SwimLane.prototype.Tasks = function() {
+Workload.prototype.Tasks = function() {
 	var tasks = this.tasks;
 	var keys = Object.keys(this.tasks);
 	var values = keys.map(function(k) { return tasks[k]; });
@@ -48,40 +48,40 @@ SwimLane.prototype.Tasks = function() {
 	return values;	
 }
 
-SwimLane.prototype.Machines = function() {
+Workload.prototype.Machines = function() {
 	return [].concat.apply([], this.Tasks().map(function(task) { return task.Machines(); }));   
 }
 
-SwimLane.prototype.Processes = function() {
+Workload.prototype.Processes = function() {
 	return [].concat.apply([], this.Tasks().map(function(task) { return task.Processes(); }));   
 }
 
-SwimLane.prototype.Threads = function() {
+Workload.prototype.Threads = function() {
 	var threads = [].concat.apply([], this.Tasks().map(function(task) { return task.Threads(); }));
 	return threads;
 }
 
-SwimLane.prototype.Spans = function() {
+Workload.prototype.Spans = function() {
 	return [].concat.apply([], this.Tasks().map(function(task) { return task.Spans(); }));   
 }
 
-SwimLane.prototype.Events = function() {
+Workload.prototype.Events = function() {
 	return [].concat.apply([], this.Tasks().map(function(task) { return task.Events(); }));   
 }
 
-SwimLane.prototype.Edges = function() {
+Workload.prototype.Edges = function() {
 	return [].concat.apply([], this.Tasks().map(function(task) { return task.Edges(); }));
 }
 
-SwimLane.prototype.GCEvents = function() {
+Workload.prototype.GCEvents = function() {
 	return [].concat.apply([], this.Tasks().map(function(task) { return task.GCEvents(); }));
 }
 
-SwimLane.prototype.HDDEvents = function() {
+Workload.prototype.HDDEvents = function() {
 	return this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 4)=="file"; });
 }
 
-SwimLane.prototype.ID = function() {
+Workload.prototype.ID = function() {
 	return "Task("+this.id+")";
 }
 
@@ -117,9 +117,7 @@ Task.prototype.Processes = function() {
 }
 
 Task.prototype.Threads = function() {
-	var threads = [].concat.apply([], this.Machines().map(function(machine) { return machine.Threads(); }));
-	console.log(threads.map(function(thread) { return thread.Start(); }));
-	return threads;
+	return [].concat.apply([], this.Machines().map(function(machine) { return machine.Threads(); }));
 }
 
 Task.prototype.Spans = function() {
@@ -212,11 +210,13 @@ var Span = function(thread, id, reports) {
 		}
 	}
 	this.events.sort(function(a, b) { return a.timestamp - b.timestamp; });
-}
+	this.start = this.events[0].Timestamp();
+	this.end = this.events[this.events.length-1].Timestamp();
+};
 
 Span.prototype.ID = function() {
 	return this.fqid;
-}
+};
 
 Span.prototype.Name = function() {
 	for (var i = 0; i < this.events.length; i++) {
@@ -224,19 +224,19 @@ Span.prototype.Name = function() {
 		if (eventname)
 			return eventname;
 	}
-}
+};
 
 Span.prototype.Events = function() {
 	return this.events;
-}
+};
 
 Span.prototype.Start = function() {
-	return this.events[0].Timestamp();
-}
+	return this.start;
+};
 
 Span.prototype.End = function() {
-	return this.events[this.events.length-1].Timestamp();
-}
+	return this.end;
+};
 
 var Thread = function(process, id, reports) {
 	reports.sort(function(a, b) { return parseFloat(a["Timestamp"][0]) - parseFloat(b["Timestamp"][0]); })
@@ -267,6 +267,10 @@ var Thread = function(process, id, reports) {
 			Wait.events[0].timestamp = Wait.events[0].timestamp - duration;
 			preWaitEndEvent.timestamp = Wait.events[0].timestamp; // modify the timestamp of the end event of the prior span
 			this.spans.push(Wait);
+			
+			// Fix start/end ts (a hack, whatever)
+			preWait.end = preWaitEndEvent.timestamp;
+			Wait.start = Wait.events[0].timestamp;
 
 			// Create the start of the next span;
 			span = [reports[i]];
