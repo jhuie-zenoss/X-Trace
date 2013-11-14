@@ -2,74 +2,100 @@
 	cursor: move;
 }
 
-.mini text {
-	font: 9px sans-serif;
+.main .lane-lines line {
+	stroke: #999;
 }
 
-.month text {
-	text-anchor: start;
-}
-
-.todayLine {
-	stroke: blue;
-	stroke-width: 1.5;
-}
-
-.axis line,.axis path {
-	stroke: black;
-}
-
-.miniItem {
-	stroke-width: 6;
-}
-
-.laneText {
+.main .lane-labels text {
 	font-weight: bold;
 }
 
-rect.thread {
+.main .spans rect {
 	stroke: gray;
 	stroke-width: 1.1px;
 }
 
-rect.thread.waiting {
+.main .spans rect.waiting {
 	opacity: 0.7;
 	stroke: none;
 }
 
-circle.event {
+.main .events circle {
 	fill: black;
 }
 
-line.edge {
+.main .edges line {
 	stroke-width: 2px;
 	opacity: 0.5;
 }
 
-line.edge.internal {
+.main .edges line.internal {
 	stroke: blue;
 	opacity: 0.2;
 }
 
-line.edge.interthread {
+.main .edges line.interthread {
 	stroke: blue;
 	opacity: 0.3;
 }
 
-line.edge.interprocess {
+.main .edges line.interprocess {
 	stroke: red;
 }
 
-.miniItem {
-	stroke: green;
-	fill: lightgreen;
+.main .timeindicator {
+	opacity: 0;
 }
 
-.brush .extent {
+.main .timeindicator line {
+	stroke-width: 1.6px;
+	stroke: #AAA;
+}
+
+.main:hover .timeindicator {
+	opacity: 1;
+}
+
+.main .hdd rect {
+	fill: #A0A;
+	opacity: 0.7;
+}
+
+.main .hdd rect.fileflush,
+.main .hdd rect.fileclose {
+	stroke-width: 2px;
+	stroke: black;
+}
+
+.main .gc rect {
+	fill: #AA0;
+	opacity: 0.2;
+}
+
+.mini .lane-labels text {
+	font: 9px sans-serif;
+}
+
+.mini .spans path {
+	stroke: green;
+	fill: lightgreen;
+	stroke-width: 6;
+}
+
+.mini .brush .extent {
 	stroke: gray;
 	fill: blue;
 	fill-opacity: .165;
 	stroke-width: 1.1px;
+}
+
+.mini .lane-lines line {
+	stroke: lightgray;
+}
+
+.axis line,
+.axis path {
+	stroke: black;
 }
 
 .xtrace-tooltip {
@@ -101,28 +127,4 @@ text,tspan,.tipsy {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-}
-
-.main .timeindicator {
-	opacity: 0;
-}
-
-.main:hover .timeindicator {
-	opacity: 1;
-}
-
-rect.hddevent {
-	fill: #A0A;
-	opacity: 0.7;
-}
-
-rect.hddevent.fileflush,
-rect.hddevent.fileclose {
-	stroke-width: 2px;
-	stroke: black;
-}
-
-rect.gcevent {
-	fill: #AA0;
-	opacity: 0.2;
 }
