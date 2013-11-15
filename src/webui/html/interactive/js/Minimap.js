@@ -53,8 +53,8 @@ function Minimap() {
             draw.call(svg.select('.contents').node(), data);
             
             // Zoom the minimap to the extent of the contents
-            var bbox = svg.select('.contents').node().getBBox();
-            bbox.x -= 50; bbox.y -= 50; bbox.width += 100; bbox.height += 100;
+            var curbbox = svg.select('.contents').node().getBBox();
+            var bbox = { x: curbbox.x - 50, y: curbbox.y - 50, width: curbbox.width + 100, height: curbbox.height + 100 };
             svg.select(".minimap").attr("viewBox", bbox.x + " " + bbox.y + " " + bbox.width + " " + bbox.height);
             contents.select(".viewfinder").attr("x", bbox.x).attr("y", bbox.y).attr("width", bbox.width).attr("height", bbox.height);
         });
