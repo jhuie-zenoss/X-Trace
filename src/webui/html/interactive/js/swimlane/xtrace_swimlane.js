@@ -42,7 +42,7 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	function refresh() {
 		// Determine the new extent to draw
 		var minExtent = brush.extent()[0];
-		var maxExtent = Math.max(brush.extent()[1], brush.extent()[0]+0.00001);
+		var maxExtent = Math.max(brush.extent()[1], brush.extent()[0]+10);
 		brush.extent([minExtent, maxExtent]);
 
 		// Refresh the viz components
