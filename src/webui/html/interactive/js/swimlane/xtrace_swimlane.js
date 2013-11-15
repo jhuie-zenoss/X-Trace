@@ -21,7 +21,7 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	var margin = {top: 20, right: 15, bottom: 15, left: 120};
 	var width = $(window).width() - margin.left - margin.right;
 	var height = $(window).height() - margin.top - margin.bottom;
-	var miniHeight = threads.length * 12 + 50;
+	var miniHeight = Math.min(threads.length * 12 + 50, 150);
 	var mainHeight = height - miniHeight - 50;
 
 	// Create the root SVG element and set its width and height
