@@ -69,7 +69,7 @@ function SwimLane() {
 			// Draw the lane labels
 			var lanelabels = main.select(".lane-labels").selectAll("text").data(threads);
 			lanelabels.enter().append("text").attr('text-anchor', 'end').attr('fill', function(d) { return d.process.color.darker(1); }).text(function(d) { return d.Name(); });
-			lanelabels.attr('x', -5).attr('y', function(d) { return sy(d.lanenumber + .5)+10; }).attr('dy', '0.5ex');
+			lanelabels.attr('x', -5).attr('y', function(d) { return sy(d.lanenumber+0.5); }).attr("dominant-baseline", "middle");
 			lanelabels.exit().remove();
 			
 			// Draw the time axis
