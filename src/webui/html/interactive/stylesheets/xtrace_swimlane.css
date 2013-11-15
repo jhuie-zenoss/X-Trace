@@ -7,7 +7,7 @@
 }
 
 .main .lane-labels text {
-	font-weight: bold;
+	font: 9px sans-serif;
 }
 
 .main .spans rect {
