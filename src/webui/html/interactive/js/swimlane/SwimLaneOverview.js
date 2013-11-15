@@ -56,7 +56,7 @@ function SwimLaneOverview() {
 
 			// Add and remove lane text
 			var lanetext = mini.select(".lane-labels").selectAll("text").data(threads);
-			lanetext.enter().append("text").text(function(d) { return d.ID(); }).attr('dy', '0.5ex').attr('text-anchor', 'end');
+			lanetext.enter().append("text").text(function(d) { return d.ShortName(); }).attr('dy', '0.5ex').attr('text-anchor', 'end');
 			lanetext.attr('x', -10).attr('y', function(d) { return sy(d.lanenumber + .5); });
 			lanetext.exit().remove();
 
