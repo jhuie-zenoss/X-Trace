@@ -256,11 +256,11 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
     
     
     // Add a play button
-    console.log("appending play button");
-    var playbutton = rootSVG.append("svg").attr("x", "10").attr("y", "5").append("text").attr("text-anchor", "left").append("tspan").attr("x", 0).attr("dy", "1em").text("Click To Play").on("click",
-            function(d) {
-        animate();
-    });
+//    console.log("appending play button");
+//    var playbutton = rootSVG.append("svg").attr("x", "10").attr("y", "5").append("text").attr("text-anchor", "left").append("tspan").attr("x", 0).attr("dy", "1em").text("Click To Play").on("click",
+//            function(d) {
+//        animate();
+//    });
     
     var animate = function() {
         var startTime = new Date().getTime();
