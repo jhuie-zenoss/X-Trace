@@ -15,13 +15,17 @@ var timestampToTimeString = function(timestamp) {
 	return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
 };
 
+var trimSignature = function(longsignature) {
+	
+}
+
 /* Default tooltip for events */
 var makeEventTooltip = function(gravity) {
 
 	var tooltip = Tooltip(gravity).title(function(d) {
 		var report = d.report;
 
-		var reserved = ["Operation", "Label", "Timestamp", "HRT", "Cycles", "X-Trace"];
+		var reserved = ["Timestamp", "HRT", "Cycles", "X-Trace"];
 
 		function appendRow(key, value, tooltip) {
 			var keyrow = $("<div>").attr("class", "key").append(key);
@@ -31,10 +35,23 @@ var makeEventTooltip = function(gravity) {
 		}
 
 		var tooltip = $("<div>").attr("class", "xtrace-tooltip event");
-		var seen = {"Source": true, "Edge": true, "version": true, "Agent": true, "Class": true, "Host": true, "ProcessID": true, "ThreadID": true, "ThreadName": true};
+		var seen = {
+			"Operation": true, 	"Source": true, 	"Label": true, 		"Edge": true, 
+			"version": true, 	"Agent": true, 		"Class": true, 		"Host": true, 
+			"ProcessID": true, 	"ThreadID": true, 	"ThreadName": true,	"Signature": true
+		};
 
 		if (report["Source"])
 			appendRow("", "<div style='padding-bottom:10px'><b>"+report["Source"][0]+"</b></div>", tooltip);
+		else
+			appendRow("", "<div style='padding-bottom:10px'><b>"+report["Class"][0]+"</b></div>", tooltip);
+			
+		
+		if (report["Label"])
+			appendRow("", "<div style='margin-top:-10px; padding-bottom: 10px'>"+report["Label"][0]+"</div>", tooltip);
+		
+		if (report["Operation"])
+			appendRow("", "<div style='margin-top:-10px; padding-bottom: 10px'><i>operation: "+report["Operation"][0]+"</i></div>", tooltip);
 		
 		// Do the reserved first
 		for (var i = 0; i < reserved.length; i++) {

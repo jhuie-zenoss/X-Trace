@@ -21,10 +21,11 @@ function SwimLane() {
 	var axis = d3.svg.axis().orient("bottom").ticks(10).tickSize(6, 0, 0);
 
 	// Tooltips
-	var ThreadTooltip = makeThreadTooltip($.fn.tipsy.autoEW);
-	var EventTooltip = makeEventTooltip($.fn.tipsy.autoNS);
-	var GCTooltip = makeGCTooltip($.fn.tipsy.autoNS);
-	var HDDTooltip = makeHDDTooltip($.fn.tipsy.autoNS);
+	var ttGravity = $.fn.tipsy.autoBounds(Math.min($(window).width(), $(window).height()) / 3, "s");
+	var ThreadTooltip = makeThreadTooltip($.fn.tipsy.autoWE);
+	var EventTooltip = makeEventTooltip(ttGravity);
+	var GCTooltip = makeGCTooltip(ttGravity);
+	var HDDTooltip = makeHDDTooltip(ttGravity);
 
 	/* Main rendering function */
 	function swimlane(selection) {
@@ -141,6 +142,7 @@ function SwimLane() {
 			var main = d3.select(this).select(".main");
 
 			// Hide open tooltips
+			ThreadTooltip.hide();
 			EventTooltip.hide();
 			GCTooltip.hide();
 			HDDTooltip.hide();
