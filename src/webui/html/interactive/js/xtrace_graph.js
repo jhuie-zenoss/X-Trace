@@ -37,8 +37,8 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
     
     // A function that resets the viewport by zooming all the way out
     var resetViewport = function() {
-      var bbox = graphSVG.node().getBBox();
-      bbox.width += 50; bbox.height += 50;
+      var curbbox = graphSVG.node().getBBox();
+      var bbox = { x: curbbox.x, y: curbbox.y, width: curbbox.width+50, height: curbbox.height+50};
       scale = Math.min(attachPoint.offsetWidth/bbox.width, attachPoint.offsetHeight/bbox.height);
       w = attachPoint.offsetWidth/scale;
       h = attachPoint.offsetHeight/scale;
