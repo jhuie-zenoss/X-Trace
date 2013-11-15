@@ -21,7 +21,7 @@ var makeEventTooltip = function(gravity) {
 	var tooltip = Tooltip(gravity).title(function(d) {
 		var report = d.report;
 
-		var reserved = ["Source", "Operation", "Agent", "Label", "Class", "Timestamp", "HRT", "Cycles", "Host", "ProcessID", "ThreadID", "ThreadName", "X-Trace"];
+		var reserved = ["Operation", "Label", "Timestamp", "HRT", "Cycles", "X-Trace"];
 
 		function appendRow(key, value, tooltip) {
 			var keyrow = $("<div>").attr("class", "key").append(key);
@@ -30,9 +30,12 @@ var makeEventTooltip = function(gravity) {
 			tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
 		}
 
-		var tooltip = $("<div>").attr("class", "xtrace-tooltip");
-		var seen = {"Edge": true, "version": true};
+		var tooltip = $("<div>").attr("class", "xtrace-tooltip event");
+		var seen = {"Source": true, "Edge": true, "version": true, "Agent": true, "Class": true, "Host": true, "ProcessID": true, "ThreadID": true, "ThreadName": true};
 
+		if (report["Source"])
+			appendRow("", "<div style='padding-bottom:10px'><b>"+report["Source"][0]+"</b></div>", tooltip);
+		
 		// Do the reserved first
 		for (var i = 0; i < reserved.length; i++) {
 			var key = reserved[i];
@@ -40,6 +43,13 @@ var makeEventTooltip = function(gravity) {
 				seen[key] = true;
 				if (key=="Timestamp") {
 					appendRow(key, timestampToTimeString(report[key][0]), tooltip);
+				} else if (key=="HRT") {
+					appendRow(key, Number(report[key][0]).toLocaleString(), tooltip);
+				} else if (key=="Cycles") {
+					appendRow(key, Number(report[key][0]).toLocaleString(), tooltip);
+				} else if (key=="X-Trace") {
+					var xtrace = report[key][0].split("").reverse().join("").match(/.{1,4}/g).join(" ").split("").reverse().join(""); // fucking javascript
+					appendRow(key, xtrace, tooltip);
 				} else {
 					appendRow(key, report[key].join(", "), tooltip);
 				}
@@ -76,7 +86,7 @@ var makeGCTooltip = function(gravity) {
 			tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
 		}
 
-		var tooltip = $("<div>").attr("class", "xtrace-tooltip");
+		var tooltip = $("<div>").attr("class", "xtrace-tooltip gc");
 
 		appendRow("", "<div style='padding-bottom:10px'><b>Garbage Collection Event</b></div>", tooltip);
 		appendRow("ProcessID", report["ProcessID"][0], tooltip);
@@ -108,7 +118,7 @@ var makeHDDTooltip = function(gravity) {
 			tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
 		}
 
-		var tooltip = $("<div>").attr("class", "xtrace-tooltip");
+		var tooltip = $("<div>").attr("class", "xtrace-tooltip hdd");
 
 		appendRow("", "<div style='padding-bottom:10px'><b>HDD Event:  " + report["Operation"][0] + "</b></div>", tooltip);
 		if (report["Bytes"])
@@ -122,6 +132,55 @@ var makeHDDTooltip = function(gravity) {
 
 		appendRow("Start", timestampToTimeString(d.start), tooltip);
 		appendRow("End", timestampToTimeString(d.end), tooltip);
+
+		return tooltip.outerHTML();
+	});
+
+	return tooltip;
+
+};
+
+//For XTrace threads
+var makeThreadTooltip = function(gravity) {
+
+	var tooltip = Tooltip(gravity).title(function(thread) {
+		var events = thread.Events();
+
+		// gets the value for this key from any one report
+		var getOne = function(key) {
+			for (var i = 0; i < events.length; i++) {
+				if (events[i].report[key])
+					return events[i].report[key][0];
+			}
+		};
+
+		// gets all values for this key from all reports
+		var getAll = function(key) {
+			var names = {};
+			events.forEach(function(event) {
+				if (event.report[key])
+					names[event.report[key][0]] = true;
+			});
+			return Object.keys(names);
+		};
+
+
+		function appendRow(key, value, tooltip) {
+			var keyrow = $("<div>").attr("class", "key").append(key);
+			var valrow = $("<div>").attr("class", "value").append(value);
+			var clearrow = $("<div>").attr("class", "clear");
+			tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
+		}
+
+		var tooltip = $("<div>").attr("class", "xtrace-tooltip thread");
+
+		appendRow("ThreadID", getOne("ThreadID"), tooltip);
+		appendRow("ProcessID", getOne("ProcessID"), tooltip);
+		appendRow("Host", "<div style='padding-bottom:10px'>"+getOne("Host")+"</div>", tooltip);
+
+
+		appendRow("", "<b>Thread Names:</b>", tooltip);
+		getAll("ThreadName").forEach(function(name) { appendRow("", name, tooltip); });
 
 		return tooltip.outerHTML();
 	});

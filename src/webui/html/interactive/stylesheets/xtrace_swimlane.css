@@ -61,8 +61,7 @@
 	opacity: 0.7;
 }
 
-.main .hdd rect.fileflush,
-.main .hdd rect.fileclose {
+.main .hdd rect.fileflush,.main .hdd rect.fileclose {
 	stroke-width: 2px;
 	stroke: black;
 }
@@ -93,19 +92,19 @@
 	stroke: lightgray;
 }
 
-.axis line,
-.axis path {
+.axis line,.axis path {
 	stroke: black;
 }
 
 .xtrace-tooltip {
 	text-align: left;
+	font: 14px Arial;
 }
 
 .xtrace-tooltip .key {
 	display: inline-block;
 	float: left;
-	width: 90px;
+	width: 120px;
 	font-weight: bold;
 }
 
@@ -113,7 +112,7 @@
 	display: inline-block;
 	float: left;
 	word-wrap: break-word;
-	max-width: 410px;
+	max-width: 750px;
 }
 
 .xtrace-tooltip .clear {
@@ -127,4 +126,8 @@ text,tspan,.tipsy {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+}
+
+.tipsy-inner {
+	background: rgba(30, 30, 30, 0.9) !important;
 }
