@@ -1,3 +1,13 @@
+
+// Problems with resizing and jquery and chrome and this stuff is so dumb.
+window.width = function() {
+	return document.body.clientWidth;
+};
+
+window.height = function() {
+	return document.body.clientHeight;
+};
+
 // http://stackoverflow.com/questions/523266/how-can-i-get-a-specific-parameter-from-location-search
 var getParameter = function(name) {
     name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");

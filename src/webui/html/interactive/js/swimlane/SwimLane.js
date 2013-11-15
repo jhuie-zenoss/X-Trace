@@ -6,22 +6,18 @@ function SwimLane() {
 	var width = 500;
 	var height = 100;
 
-	/* Scales for scaling the data */
-	var sx = d3.scale.linear();
-	var sy = d3.scale.linear();
-	var saxis = d3.scale.linear();
-
 	/* event callbacks */
 	var callbacks = {
-			"refresh": function(){}
+		"refresh": function(){}
 	};
 
-	var brush = d3.svg.brush(); // this should be overridden by a passed-in brush
-
-	var axis = d3.svg.axis().orient("bottom").ticks(10).tickSize(6, 0, 0);
+	// For internal use
+	var sx = d3.scale.linear(); // scale between global / zoomed
+	var brush = d3.svg.brush(); // specifies the active draw area
+	var axis = d3.svg.axis().orient("bottom").ticks(10).tickSize(6, 0, 0); // time axis at bottom of viz
 
 	// Tooltips
-	var ttGravity = $.fn.tipsy.autoBounds(Math.min($(window).width(), $(window).height()) / 3, "s");
+	var ttGravity = $.fn.tipsy.autoBounds(Math.min(window.width(), window.height()) / 3, "s");
 	var ThreadTooltip = makeThreadTooltip($.fn.tipsy.autoWE);
 	var EventTooltip = makeEventTooltip(ttGravity);
 	var GCTooltip = makeGCTooltip(ttGravity);
@@ -32,7 +28,9 @@ function SwimLane() {
 		selection.each(function(data) {   
 			var threads = data.Threads();
 
-			sy = d3.scale.linear().domain([0, threads.length+1]).range([0, height]);
+			// For spacing out the threads
+			sx.range([0, width]);
+			var sy = d3.scale.linear().domain([0, threads.length+1]).range([0, height]);
 
 			// Create the clip def
 			var defs = d3.select(this).selectAll(".clipdef").data([data]);
@@ -75,8 +73,8 @@ function SwimLane() {
 			lanelabels.attr('x', -5).attr('y', function(d) { return sy(d.lanenumber+0.5); }).attr("dominant-baseline", "middle");
 			lanelabels.exit().remove();
 
-			// Draw the time axis
-			main.select(".axis").attr("transform", "translate(0,"+height+")").call(axis.scale(saxis));
+			// Place the time axis
+			main.select(".axis").attr("transform", "translate(0,"+height+")");
 
 			// Update the clip paths of the visualization elements
 			main.select(".spans").attr("clip-path", "url(#clip)");
@@ -133,6 +131,13 @@ function SwimLane() {
 			});
 			zoom.call(main);
 
+			// Remove any of the actual viz.  Done here because y co-ords only update on a redraw, so optimization to put here rather than
+			// update y co-ords unnecessarily on each refresh
+			main.select(".spans").selectAll("rect").remove();
+			main.select(".events").selectAll("circle").remove();
+			main.select(".edges").selectAll("line").remove();
+			main.select(".gc").selectAll("rect").remove();
+			main.select(".hdd").selectAll("rect").remove();
 		});
 
 	};
@@ -140,6 +145,10 @@ function SwimLane() {
 	swimlane.refresh = function(selection) {
 		selection.each(function(data) {
 			var main = d3.select(this).select(".main");
+
+			// Update the x scale from the brush, create a y scale
+			sx.domain(brush.extent());
+			var sy = d3.scale.linear().domain([0, data.Threads().length+1]).range([0, height]);
 
 			// Hide open tooltips
 			ThreadTooltip.hide();
@@ -215,7 +224,8 @@ function SwimLane() {
 			hdd.exit().remove();
 
 			// Update the axis
-			main.select(".axis").call(axis.scale(saxis));
+			var norm = d3.scale.linear().range([0, width]).domain([brush.extent()[0] - data.min, brush.extent()[1] - data.min]);
+			main.select(".axis").call(axis.scale(norm));
 		});
 	};
 
@@ -231,8 +241,6 @@ function SwimLane() {
 	swimlane.y = function(_) { if (!arguments.length) return y; y = _; return swimlane; };
 	swimlane.width = function(_) { if (!arguments.length) return width; width = _; return swimlane; };
 	swimlane.height = function(_) { if (!arguments.length) return height; height = _; return swimlane; };
-	swimlane.sx = function(_) { if (!arguments.length) return sx; sx = _; return swimlane; };
-	swimlane.saxis = function(_) { if (!arguments.length) return saxis; saxis = _; return swimlane; };
 
 
 	return swimlane;    
