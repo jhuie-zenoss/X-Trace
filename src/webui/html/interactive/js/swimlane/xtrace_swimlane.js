@@ -1,9 +1,13 @@
 //lightweight is an optional argument that will try to draw the graph as fast as possible
 function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {	
+	// Parameters
+	var margin = { top: 20, right: 15, bottom: 15, left: 120 };		// Margins around the visualization
+	var overlap = 0.1;												// Extra space inside the viz
+	
 	// Create the data representation
 	var data = new Workload(tasksdata, gcdata);
-
-	// Assign a lane number to the threads
+	
+	// Preprocess: assign a lane number to the threads
 	var threads = data.Threads();
 	for (var i = 0; i < threads.length; i++) {
 		threads[i].lanenumber = i;
@@ -11,57 +15,71 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 			threads[i].process.lanenumber = i;
 	}
 
-	// Generate colours for each process
+	// Preprocess: assign colours to each process
 	var processes = data.Processes();
-	for (var i = 0; i < processes.length; i++) {
+	for (var i = 0; i < processes.length; i++)
 		processes[i].color = d3.rgb(200 + Math.random() * 20, 200 + Math.random() * 20, 200 + Math.random() * 20);
-	}
 
-	// Specify the margins, width and height of each component
-	var margin = {top: 20, right: 15, bottom: 15, left: 120};
-	var width = $(window).width() - margin.left - margin.right;
-	var height = $(window).height() - margin.top - margin.bottom;
-	var miniHeight = Math.min(threads.length * 12 + 50, 150);
-	var mainHeight = height - miniHeight - 50;
+	// Preprocess: determine extent of the data
+	var datalen = data.max - data.min;
+	var rangemin = data.min - datalen * overlap;
+	var rangemax = data.max + datalen * overlap;
+	var initialmin = data.min - datalen * overlap * 0.5;
+	var initialmax = data.max + datalen * overlap * 0.5;
 
 	// Create the root SVG element and set its width and height
 	var chart = d3.select(attachPoint).append('svg:svg').attr('class', 'chart');
-	chart.attr('width', width + margin.right + margin.left)
-	chart.attr('height', height + margin.top + margin.bottom)
 	
-	// Create the scales
-	var datalen = data.max - data.min;
-	var rangemin = data.min - datalen / 10.0;
-	var rangemax = data.max + datalen / 10.0;
-	var x1 = d3.scale.linear().range([0, width]);
-	var norm = d3.scale.linear().domain([rangemin - data.min, rangemax - data.min]).range([0, width]);
-	var x = d3.scale.linear().domain([rangemin, rangemax]).range([0, width]);
-
 	// Set up the brush controls
-	var initialExtent = [data.min - x.invert(5) + x.invert(0), data.max + x.invert(5) - x.invert(0)];
-	var brush = d3.svg.brush().x(x).on("brush", refresh).extent(initialExtent);
+	var brush_scale = d3.scale.linear().domain([rangemin, rangemax]);
+	var brush = d3.svg.brush().x(brush_scale).on("brush", refresh).extent([initialmin, initialmax]);
+
+	// Create the visualization components
+	var overview = SwimLaneOverview().brush(brush).on("refresh", refresh);
+	var swimlane = SwimLane().brush(brush).on("refresh", refresh);
 	
-	// This function is used whenever we zoom/unzoom, to refresh what's displayed
+	/* Refreshes what's displayed after zooming in/out or panning around */
 	function refresh() {
+		// Determine the new extent to draw
 		var minExtent = brush.extent()[0];
-		var maxExtent = brush.extent()[1];
+		var maxExtent = Math.max(brush.extent()[1], brush.extent()[0]+0.00001);
+		brush.extent([minExtent, maxExtent]);
 
-		if (maxExtent - minExtent < 0.00001)
-			maxExtent = minExtent+0.00001;
-
-		x1.domain([minExtent, maxExtent]);
-		norm.domain([minExtent - data.min, maxExtent - data.min]);
-
-		d3.select(".chart").datum(data).call(overview.refresh);
-		d3.select(".chart").datum(data).call(swimlane.refresh);
+		// Refresh the viz components
+		chart.datum(data).call(swimlane.refresh);
+		chart.datum(data).call(overview.refresh);
 	}
 	
-	var overview = SwimLaneOverview().on("refresh", refresh).brush(brush).width(width).height(miniHeight).x(margin.left).y(mainHeight+60);
-	var swimlane = SwimLane().on("refresh", refresh).brush(brush).width(width).height(mainHeight).x(margin.left).y(margin.top).sx(x1).saxis(norm);
+	/* Redraws the whole viz, for example when the parameters change or screen is resized */
+	function draw() {
+		// Determine the new widths and heights
+		var width = window.width() - margin.left - margin.right;
+		var height = window.height() - margin.top - margin.bottom;
+		var miniHeight = Math.min(threads.length * 12 + 50, 150);
+		var mainHeight = height - miniHeight - 50;
+		
+		// Resize the chart
+		chart.attr('width', width + margin.right + margin.left);
+		chart.attr('height', height + margin.top + margin.bottom);
 
-	d3.select(".chart").datum(data).call(swimlane);
-	d3.select(".chart").datum(data).call(overview);
+		// Update the scale of the brush
+		brush_scale.range([0, width]);
+		brush.extent(brush.extent());
+		
+		// Update the vizes
+		overview.width(width).height(miniHeight).x(margin.left).y(mainHeight+60);
+		swimlane.width(width).height(mainHeight).x(margin.left).y(margin.top);
+		
+		// Update the placement of the viz
+		chart.datum(data).call(swimlane);
+		chart.datum(data).call(overview);
+		
+		// Refresh the contents
+		refresh();
+	}
 	
-	refresh();
-
+	// Attach a handler to the window to redraw on resize
+	$(window).resize(draw);
+	
+	draw(); // Finally, draw it
 }
