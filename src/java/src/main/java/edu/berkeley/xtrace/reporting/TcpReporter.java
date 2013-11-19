@@ -78,7 +78,7 @@ public final class TcpReporter extends Reporter
 			out = new DataOutputStream(socket.getOutputStream());
 			
 		} catch (Exception se) {
-			LOG.warn("Failed to create X-Trace TCP socket", se);
+			LOG.warn("Failed to create X-Trace TCP socket: " + se.getMessage());
 			socket = null;
 		}
 	}
