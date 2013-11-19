@@ -30,8 +30,8 @@ var getParameters = function() {
             params[splits[0]] = splits[1];
         }
     });
-    return params
-}
+    return params;
+};
 
 var getReports = function(ids_str, callback, errback) {
     // Batches report requests
@@ -336,7 +336,7 @@ var filter_merge_reports = function(reports) {
 var filter_agent_reports = function(reports, agent) {
     var filter = function(report) {
         return report["Agent"] && report["Agent"][0]==agent;
-    }
+    };
     
     return filter_reports(reports, filter);
 }
@@ -399,3 +399,39 @@ var yarnchild_kernelgraph_for_trace = function(trace) {
     return kernelgraph_for_trace(trace);
 }
 
+var report_id = function(report) {
+	return report["X-Trace"][0].substr(18);
+}
+
+var critical_path = function(reports, finalreport) {
+	if (finalreport==null)
+		finalreport = reports[reports.length-1];
+	
+	var reportmap = {};
+	for (var i = 0; i < reports.length; i++) {
+		reportmap[report_id(reports[i])] = reports[i];
+	}
+	console.log(reportmap);
+	
+	var cpath = [];
+	var next = finalreport;
+	while (next && next["Edge"]) {
+		cpath.push(next);
+		var parents = next["Edge"];
+		next = reportmap[parents[0]];
+		for (var i = 1; next==null && i < parents.length; i++) {
+			next = reportmap[parents[i]];
+		}
+		for (var i = 1; i < parents.length; i++) {
+			var candidate = reportmap[parents[i]];
+			if (reportmap[parents[i]] && Number(candidate["Timestamp"][0]) > Number(next["Timestamp"][0]))
+				next = candidate;
+		}
+	}
+	
+	for (var i = 0; i < cpath.length; i++) {
+		cpath[i].criticalpath = ["true"];
+	}
+	
+	return cpath;
+}
