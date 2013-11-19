@@ -58,7 +58,7 @@ public final class XTraceMetadata {
 	
 	private final TaskID taskid;
 	private byte[] opId;
-	private OptionField[] options;
+	OptionField[] options;
 	private int numOptions; 
 	
 	/**
@@ -92,8 +92,8 @@ public final class XTraceMetadata {
 			taskid = TaskID.createFromBytes(INVALID_ID, 0, INVALID_ID.length);
 			opId = new byte[] {0x00, 0x00, 0x00, 0x00};
 		}
-		options = null;
-		numOptions = 0;
+    this.options = null;
+    this.numOptions = 0;
 	}
 
 	/**
@@ -113,8 +113,8 @@ public final class XTraceMetadata {
 			this.opId = new byte[] {0x00, 0x00, 0x00, 0x00};
 			//LOG.warn("The supplied TaskID was null");
 		}
-		options = null;
-		numOptions = 0;
+    this.options = null;
+    this.numOptions = 0;
 	}
 	
 	/**
@@ -134,8 +134,8 @@ public final class XTraceMetadata {
 			this.opId = new byte[] {0x00, 0x00, 0x00, 0x00};
 			//LOG.warn("The supplied TaskID was null");
 		}
-		options = null;
-		numOptions = 0;
+    this.options = null;
+    this.numOptions = 0;
 	}
 	
 	/**
@@ -153,10 +153,24 @@ public final class XTraceMetadata {
 		
 		// Options
 		this.numOptions = xtr.numOptions;
-		this.options = new OptionField[xtr.numOptions];
-		for (int i = 0; i < xtr.numOptions; i++) {
-			this.options[i] = xtr.options[i];
-		}
+		this.options = xtr.options;
+	}
+
+
+  /**
+   * Creates an X-Trace metadata object from an array of bytes.  Shorthand for
+   * createFromBytes(bytes, 0, bytes.length)
+   * 
+   * @param bytes
+   *            the byte array to use
+   * @return a new <code>XtrMetadata</code> object based on the given byte
+   *         array
+   * @throws XTraceException
+   *             if the given bytes are invalid (do not follow the X-Trace
+   *             specification
+   */
+	public static XTraceMetadata createFromBytes(final byte[] bytes) {
+	  return createFromBytes(bytes, 0, bytes.length);
 	}
 
 	/**
@@ -199,7 +213,7 @@ public final class XTraceMetadata {
 		
 		// Task ID length
 		int taskIdLength = 0;
-		switch (bytes[0] & 0x03) {
+		switch (bytes[offset] & 0x03) {
 		case 0x00:
 			taskIdLength = 4;
 			break;
@@ -218,7 +232,7 @@ public final class XTraceMetadata {
 		
 		// OpId length
 		int opIdLength;
-		if ((bytes[0] & 0x08) != 0) {
+		if ((bytes[offset] & 0x08) != 0) {
 			opIdLength = 8;
 		} else {
 			opIdLength = 4;
@@ -231,14 +245,14 @@ public final class XTraceMetadata {
 		}
 		
 		// Create the TaskID and opId fields
-		TaskID taskid = TaskID.createFromBytes(bytes, 1, taskIdLength);
+		TaskID taskid = TaskID.createFromBytes(bytes, offset+1, taskIdLength);
 		byte[] opIdBytes = new byte[opIdLength];
-		System.arraycopy(bytes, 1+taskIdLength, opIdBytes, 0, opIdLength);
+		System.arraycopy(bytes, offset+1+taskIdLength, opIdBytes, 0, opIdLength);
 		
 		XTraceMetadata md = new XTraceMetadata(taskid, opIdBytes);
 		
 		// If no options, we're done
-		if ( (bytes[0] & 0x04) == 0 ) {
+		if ( (bytes[offset] & 0x04) == 0 ) {
 			return md;
 		}
 		
@@ -247,12 +261,12 @@ public final class XTraceMetadata {
 			//LOG.warn("Options present in flags byte, but no total option length given");
 			return new XTraceMetadata();
 		}
-		int totOptLen = bytes[1 + taskIdLength + opIdLength];
+		int totOptLen = bytes[offset + 1 + taskIdLength + opIdLength] & 0xFF; // convert to unsigned
 		int optPtr = offset + 1 + taskIdLength + opIdLength + 1;
-		
+
 		while (totOptLen >= 2) {
 			byte type = bytes[optPtr++];
-			byte len = bytes[optPtr++];
+			int len = bytes[optPtr++] & 0xFF; // convert to unsigned
 			if (len > totOptLen) {
 				//LOG.warn("Invalid option length");
 				break;
@@ -443,6 +457,15 @@ public final class XTraceMetadata {
 			System.arraycopy(tmp, 0, options, 0, tmp.length);
 		}
 		options[numOptions++] = option;
+	}
+	
+	/**
+	 * For reusing options when propagating metadata
+	 * @param options
+	 */
+	void setOptions(OptionField[] options) {
+	  this.options = options;
+	  this.numOptions = options==null ? 0 : options.length;
 	}
 
 	/**
