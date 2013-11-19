@@ -142,8 +142,13 @@ public class XTraceEvent {
     
     if (newmd==null) {
       newmd = new XTraceMetadata(xtr.getTaskId(), myOpId);
-      report.put("X-Trace", newmd.toString(), false);  // report excluding the options from the string repr
+      report.put("X-Trace", newmd.toString());  // report excluding the options from the string repr
       newmd.setOptions(xtr.options);
+      if (newmd.options!=null) {
+        report.put("NumOptions", Long.toString(newmd.options.length));
+        for (int i = 0; i < newmd.options.length; i++)
+          report.put("Option", newmd.options[i].toString());
+      }
     }
     
 	}
@@ -178,11 +183,6 @@ public class XTraceEvent {
 	private void setTimestamp() {
 		report.put("Timestamp", Long.toString(System.currentTimeMillis()));
 		report.put("HRT", Long.toString(System.nanoTime()));
-		if (newmd.options!=null) {
-  		report.put("NumOptions", Long.toString(newmd.options.length));
-  		for (int i = 0; i < newmd.options.length; i++)
-  		  report.put("Option", newmd.options[i].toString());
-		}
 	}
 	
 	/**
