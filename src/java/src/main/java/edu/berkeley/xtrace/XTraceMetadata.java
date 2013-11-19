@@ -55,6 +55,7 @@ public final class XTraceMetadata {
 
 	private static final byte[] INVALID_ID = { 0x00, 0x00, 0x00, 0x00 };
 	private static final byte MetadataVersion = 1;
+	public static final int MAX_LENGTH = 2 + 8 + 8 + 1 + 255;
 	
 	private final TaskID taskid;
 	private byte[] opId;
@@ -448,13 +449,21 @@ public final class XTraceMetadata {
 		// We could do a dynamically resizable array here where the size
 		// doubles each time it fills up, leading to a constant
 		// time amortized insertion.  However, that is probably overkill
-		
+	  
 		if (numOptions == 0) {
-			options = new OptionField[1];
-		} else if (numOptions == options.length) {
-			OptionField[] tmp = options;
-			options = new OptionField[options.length + 1];
-			System.arraycopy(tmp, 0, options, 0, tmp.length);
+			options = new OptionField[] { option };
+		} else {
+		  for (OptionField o : options) {
+		    if (o.equals(option)) {
+		      return;
+		    }
+		  }
+		  
+		  if (numOptions == options.length) {
+  			OptionField[] tmp = options;
+  			options = new OptionField[options.length + 1];
+  			System.arraycopy(tmp, 0, options, 0, tmp.length);
+  		}
 		}
 		options[numOptions++] = option;
 	}
