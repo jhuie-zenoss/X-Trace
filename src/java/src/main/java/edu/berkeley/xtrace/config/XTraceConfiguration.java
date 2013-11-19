@@ -12,7 +12,7 @@ import edu.berkeley.xtrace.config.XTraceConfigurationParser.InvalidConfiguration
  * xtrace.xml should be an XML file.
  * Example:
  * <Configuration>
- *  <Enabled>true</Enabled>
+ *  <XTrace>true</XTrace>
  *  <Filters>
  *    <Default>Enabled</Default>
  *    <Enabled>org.apache.hadoop.ipc.RPC</Enabled>

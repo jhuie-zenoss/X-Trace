@@ -216,6 +216,31 @@ public class XTraceContext {
       
       return null;
     }
+    
+    /**
+     * Returns all OptionFields of the current XTraceMetadata
+     * @return an array of the current options, or null if no options
+     */
+    public static OptionField[] getOptions() {
+      if (!XTraceConfiguration.ENABLED || !XTraceContext.isValid())
+        return null;
+      
+      return contexts.get().get(0).getOptions();
+    }
+    
+    /**
+     * Adds the provided option to the current XTraceMetadata
+     * @return true if successful, false if there is no current valid XTraceMetadata
+     */
+    public static boolean addOption(OptionField o) {
+      if (!XTraceConfiguration.ENABLED || !XTraceContext.isValid())
+        return false;
+      
+      for(XTraceMetadata xmd : contexts.get())
+        xmd.addOption(o);
+      
+      return true;
+    }
 
     /**
      * Clear current thread's X-Trace context.
