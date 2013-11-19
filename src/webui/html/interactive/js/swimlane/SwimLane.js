@@ -182,6 +182,7 @@ function SwimLane() {
 			.attr('cy', function(d) { return sy(d.span.thread.lanenumber) + .5 * sy(1); })
 			.attr('r', function(d) { return d.type=="event" ? 5 : 2; })
 			.attr('id', function(d) { return d.ID(); })
+			.attr("display", function(d) { return d.report.criticalpath ? "block" : "none"; })
 			.call(EventTooltip);
 			events.attr('cx', function(d) { return sx(d.Timestamp()); });
 			events.exit().remove();
@@ -198,7 +199,8 @@ function SwimLane() {
 					return "interthread";
 				else
 					return "internal";
-			});
+			})
+			.attr("display", function(d) { return d.parent.report.criticalpath && d.child.report.criticalpath ? "block" : "none"; });
 			edges.attr('x1', function(d) { return sx(d.parent.Timestamp()); })
 			.attr('x2', function(d) { return sx(d.child.Timestamp()); });
 			edges.exit().remove();

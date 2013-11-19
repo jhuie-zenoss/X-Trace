@@ -61,7 +61,7 @@ var makeEventTooltip = function(gravity) {
 				if (key=="Timestamp") {
 					appendRow(key, timestampToTimeString(report[key][0]), tooltip);
 				} else if (key=="HRT") {
-					appendRow(key, Number(report[key][0]).toLocaleString(), tooltip);
+					appendRow(key, Number(report[key][0]).toLocaleString()+" ns", tooltip);
 				} else if (key=="Cycles") {
 					appendRow(key, Number(report[key][0]).toLocaleString(), tooltip);
 				} else if (key=="X-Trace") {
