@@ -44,7 +44,7 @@ function SwimLaneOverview() {
 			var rangemax = data.max + datalen / 10.0;
 			var norm = d3.scale.linear().domain([rangemin - data.min, rangemax - data.min]).range([0, width]);
 			var sx = d3.scale.linear().domain([rangemin, rangemax]).range([0, width]);
-			var sy = d3.scale.linear().domain([0, threads.length+1]).range([0, height]);
+			var sy = d3.scale.linear().domain([0, threads.length]).range([0, height]);
 
 			// Add and remove new and old lanes
 			var lanes = mini.select(".lane-lines").selectAll("line").data(threads);

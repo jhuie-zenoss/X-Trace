@@ -30,7 +30,7 @@ function SwimLane() {
 
 			// For spacing out the threads
 			sx.range([0, width]);
-			var sy = d3.scale.linear().domain([0, threads.length+1]).range([0, height]);
+			var sy = d3.scale.linear().domain([0, threads.length]).range([0, height]);
 
 			// Create the clip def
 			var defs = d3.select(this).selectAll(".clipdef").data([data]);
@@ -148,7 +148,7 @@ function SwimLane() {
 
 			// Update the x scale from the brush, create a y scale
 			sx.domain(brush.extent());
-			var sy = d3.scale.linear().domain([0, data.Threads().length+1]).range([0, height]);
+			var sy = d3.scale.linear().domain([0, data.Threads().length]).range([0, height]);
 
 			// Hide open tooltips
 			ThreadTooltip.hide();
@@ -182,7 +182,6 @@ function SwimLane() {
 			.attr('cy', function(d) { return sy(d.span.thread.lanenumber) + .5 * sy(1); })
 			.attr('r', function(d) { return d.type=="event" ? 5 : 2; })
 			.attr('id', function(d) { return d.ID(); })
-			.attr("display", function(d) { return d.report.criticalpath ? "block" : "none"; })
 			.call(EventTooltip);
 			events.attr('cx', function(d) { return sx(d.Timestamp()); });
 			events.exit().remove();
@@ -199,8 +198,7 @@ function SwimLane() {
 					return "interthread";
 				else
 					return "internal";
-			})
-			.attr("display", function(d) { return d.parent.report.criticalpath && d.child.report.criticalpath ? "block" : "none"; });
+			});
 			edges.attr('x1', function(d) { return sx(d.parent.Timestamp()); })
 			.attr('x2', function(d) { return sx(d.child.Timestamp()); });
 			edges.exit().remove();
