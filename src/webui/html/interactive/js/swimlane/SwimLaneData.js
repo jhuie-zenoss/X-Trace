@@ -38,8 +38,6 @@ var Workload = function(data, gcdata) {
 			}
 		}
 	}
-	
-	critical_path(data[0].reports, data[0].reports[data[0].reports.length-2]);
 };
 
 Workload.prototype.Tasks = function() {

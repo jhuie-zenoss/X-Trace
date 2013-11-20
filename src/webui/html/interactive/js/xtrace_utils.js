@@ -107,7 +107,7 @@ var getAllReports = function(ids, callback, errback) {
     };
     
     xhr.send(null);    
-}
+};
 
 function getRelated(ids, callback, errback) {
     var overlapping_url = "overlapping/" + ids;
@@ -132,7 +132,7 @@ function getRelated(ids, callback, errback) {
     };
     
     xhr.send(null);    
-}
+};
 
 function getTags(ids, callback, errback) {
     var tags_url = "tags/" + ids;
