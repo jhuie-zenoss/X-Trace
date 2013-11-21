@@ -27,6 +27,7 @@ function SwimLaneOverview() {
 			newmini.append("g").attr("class", "lane-labels");
 			newmini.append("g").attr("class", "spans");
 			newmini.append("g").attr("class", "axis");
+			newmini.append("rect").attr("class", "hitarea");
 			newmini.append("g").attr("class", "brush").attr('clip-path', 'url(#clip)');
 			mini.exit().remove();
 
@@ -80,7 +81,7 @@ function SwimLaneOverview() {
 			mini.select(".brush rect.background").remove();
 
 			// If there is no hitarea, now we create it
-			newmini.append("rect").attr("class", "hitarea")
+			mini.select(".hitarea").attr('width', width).attr('height', height)
 			.attr('pointer-events', 'painted')
 			.attr('visibility', 'hidden')
 			.on('mouseup', function() {
@@ -90,8 +91,7 @@ function SwimLaneOverview() {
 				var end = point + halfExtent;
 				brush.extent([start,end]);
 				callbacks["refresh"].call(this);
-			});
-			mini.select("hitarea").attr('width', width).attr('height', height);
+			});;
 		});
 
 	};
