@@ -32,19 +32,21 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	
 	// Set up the brush controls
 	var brush_scale = d3.scale.linear().domain([rangemin, rangemax]);
-	var brush = d3.svg.brush().x(brush_scale).on("brush", refresh).extent([initialmin, initialmax]);
+	var brush = d3.svg.brush().x(brush_scale).on("brush", onbrush).extent([initialmin, initialmax]);
 
 	// Create the visualization components
 	var overview = SwimLaneOverview().brush(brush).on("refresh", refresh);
 	var swimlane = SwimLane().brush(brush).on("refresh", refresh);
 	
+	/* When the viewing area is scaled with the brush */
+	function onbrush() {
+		if (d3.event.mode=="resize")
+			brush.extent([brush.extent()[0], Math.max(brush.extent()[1], brush.extent()[0]+5)]);
+		refresh();
+	}
+	
 	/* Refreshes what's displayed after zooming in/out or panning around */
 	function refresh() {
-		// Determine the new extent to draw
-		var minExtent = brush.extent()[0];
-		var maxExtent = Math.max(brush.extent()[1], brush.extent()[0]+10);
-		brush.extent([minExtent, maxExtent]);
-
 		// Refresh the viz components
 		chart.datum(data).call(swimlane.refresh);
 		chart.datum(data).call(overview.refresh);
