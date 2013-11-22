@@ -282,6 +282,8 @@ public final class XTraceServer {
         "/interactive/overlapping/*");
     context.addServlet(new ServletHolder(new GetTagsForTaskServlet()),
         "/interactive/tags/*");
+    context.addServlet(new ServletHolder(new GetTasksForTags()),
+        "/interactive/taggedwith/*");
 		context.addServlet(new ServletHolder(new GetLatestTaskServlet()),
 				"/latestTask");
 		context.addServlet(new ServletHolder(new TagServlet()), "/tag/*");
@@ -426,6 +428,34 @@ public final class XTraceServer {
         JSONArray arr = new JSONArray();
         arr.addAll(tags);
         obj.put(taskId, arr);
+      }
+      
+      Writer out = response.getWriter();
+      out.write(obj.toJSONString());
+    }    
+  }
+  
+  private static class GetTasksForTags extends HttpServlet {
+    protected void doGet(HttpServletRequest request,
+        HttpServletResponse response) throws ServletException,
+        IOException {
+      response.setContentType("text/json");
+      response.setStatus(HttpServletResponse.SC_OK);
+      String uri = request.getRequestURI();
+      int pathLen = request.getServletPath().length() + 1;
+      String tagsString = uri.length() > pathLen ? uri.substring(pathLen)
+          : "";
+      String[] tags = tagsString.split(",");
+
+      JSONObject obj = new JSONObject();
+      Collection<String> taskIds = new HashSet<String>();
+      for (String tag : tags) {
+        JSONArray arr = new JSONArray();
+        Collection<TaskRecord> taskInfos = reportstore.getTasksByTag(tag, 0, Integer.MAX_VALUE);
+        for (TaskRecord t : taskInfos) {
+          arr.add(t.getTaskId().toString());
+        }
+        obj.put(tag, arr);
       }
       
       Writer out = response.getWriter();
