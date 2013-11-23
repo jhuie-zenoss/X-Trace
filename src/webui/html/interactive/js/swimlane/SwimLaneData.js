@@ -1,11 +1,14 @@
+var workloadIDseed = 0;
+
 var Workload = function(data, gcdata) {
 	this.data = data;
 	this.gcdata = gcdata;
+	this.id = workloadIDseed++;
 
 	// Create the data structures
 	this.tasks = {};
 	for (var i = 0; i < data.length; i++) {
-		this.tasks[data[i]["id"]] = new Task(data[i]);
+		this.tasks[data[i]["id"]] = new XTask(data[i]);
 	}
 
 	// Determine the timestamp extents of the data
@@ -82,10 +85,10 @@ Workload.prototype.HDDEvents = function() {
 };
 
 Workload.prototype.ID = function() {
-	return "Task("+this.id+")";
+	return ""+this.id;
 };
 
-var Task = function(data) {
+var XTask = function(data) {
 	// Copy the params
 	this.id = data.id;
 	this.reports = data.reports;
@@ -101,10 +104,10 @@ var Task = function(data) {
 	this.machines = {};
 	var reports_by_machine = group_reports_by_field(data.reports, "Host");
 	for (var machine_id in reports_by_machine)
-		this.machines[machine_id] = new Machine(this, machine_id, reports_by_machine[machine_id]);
+		this.machines[machine_id] = new XMachine(this, machine_id, reports_by_machine[machine_id]);
 }
 
-Task.prototype.Machines = function() {
+XTask.prototype.Machines = function() {
 	var machines = this.machines;
 	var keys = Object.keys(this.machines);
 	var values = keys.map(function(k) { return machines[k]; });
@@ -112,39 +115,39 @@ Task.prototype.Machines = function() {
 	return values;
 };
 
-Task.prototype.Processes = function() {
+XTask.prototype.Processes = function() {
 	return [].concat.apply([], this.Machines().map(function(machine) { return machine.Processes(); }));   
 };
 
-Task.prototype.Threads = function() {
+XTask.prototype.Threads = function() {
 	return [].concat.apply([], this.Machines().map(function(machine) { return machine.Threads(); }));
 };
 
-Task.prototype.Spans = function() {
+XTask.prototype.Spans = function() {
 	return [].concat.apply([], this.Machines().map(function(machine) { return machine.Spans(); }));   
 };
 
-Task.prototype.Events = function() {
+XTask.prototype.Events = function() {
 	return [].concat.apply([], this.Spans().map(function(span) { return span.Events(); }));   
 };
 
-Task.prototype.Edges = function() {
+XTask.prototype.Edges = function() {
 	return [].concat.apply([], this.Events().map(function(event) { return event.Edges(); }));
 };
 
-Task.prototype.GCEvents = function() {
+XTask.prototype.GCEvents = function() {
 	return [].concat.apply([], this.Machines().map(function(machine) { return machine.GCEvents(); }));
 };
 
-Task.prototype.ID = function() {
+XTask.prototype.ID = function() {
 	return "Task("+this.id+")";
 };
 
-Task.prototype.Start = function() {
+XTask.prototype.Start = function() {
 	return Math.min.apply(this, this.Machines().map(function(process) { return process.Start(); }));
 };
 
-var Event = function(span, report) {
+var XEvent = function(span, report) {
 	this.report = report;
 	this.span = span;
 	this.id = report["X-Trace"][0].substr(18);
@@ -162,7 +165,7 @@ var Event = function(span, report) {
 	this.span.thread.process.machine.task.reports_by_id[this.id] = this;
 };
 
-Event.prototype.Edges = function() {
+XEvent.prototype.Edges = function() {
 	if (this.edges==null) {
 		this.edges = [];
 		var parents = this.report["Edge"];
@@ -179,15 +182,15 @@ Event.prototype.Edges = function() {
 	return this.edges;    
 };
 
-Event.prototype.Timestamp = function() {
+XEvent.prototype.Timestamp = function() {
 	return this.timestamp;
 };
 
-Event.prototype.ID = function() {
+XEvent.prototype.ID = function() {
 	return this.fqid;
 };
 
-var Span = function(thread, id, reports) {
+var XSpan = function(thread, id, reports) {
 	this.thread = thread;
 	this.id = id;
 	this.fqid = this.thread.ID() + "_Span(" + this.id + ")";
@@ -195,9 +198,9 @@ var Span = function(thread, id, reports) {
 	this.waiting = false; // is this a span where a thread is waiting?
 	for (var i = 0; i < reports.length; i++) {
 		if (reports[i]["Operation"] && reports[i]["Operation"][0].substring(0, 4)=="file") {
-			this.events.push(new Event(this, reports[i]));
+			this.events.push(new XEvent(this, reports[i]));
 		} else {
-			this.events.push(new Event(this, reports[i]));
+			this.events.push(new XEvent(this, reports[i]));
 		}
 	}
 	this.events.sort(function(a, b) { return a.timestamp - b.timestamp; });
@@ -205,23 +208,23 @@ var Span = function(thread, id, reports) {
 	this.end = this.events[this.events.length-1].Timestamp();
 };
 
-Span.prototype.ID = function() {
+XSpan.prototype.ID = function() {
 	return this.fqid;
 };
 
-Span.prototype.Events = function() {
+XSpan.prototype.Events = function() {
 	return this.events;
 };
 
-Span.prototype.Start = function() {
+XSpan.prototype.Start = function() {
 	return this.start;
 };
 
-Span.prototype.End = function() {
+XSpan.prototype.End = function() {
 	return this.end;
 };
 
-var Thread = function(process, id, reports) {
+var XThread = function(process, id, reports) {
 	reports.sort(function(a, b) { return parseFloat(a["Timestamp"][0]) - parseFloat(b["Timestamp"][0]); })
 	this.process = process;
 	this.id = id;
@@ -240,12 +243,12 @@ var Thread = function(process, id, reports) {
 
 			// Add an event to the end of the prior span and modify the timestamp
 			span.push(reports[i]);
-			var preWait = new Span(this, this.spans.length, span);
+			var preWait = new XSpan(this, this.spans.length, span);
 			var preWaitEndEvent = preWait.events[preWait.events.length-1];
 			this.spans.push(preWait);
 
 			// Create a span just for the event
-			var Wait = new Span(this, this.spans.length, [reports[i], reports[i]]);
+			var Wait = new XSpan(this, this.spans.length, [reports[i], reports[i]]);
 			Wait.waiting = true;
 			Wait.events[0].timestamp = Wait.events[0].timestamp - duration;
 			preWaitEndEvent.timestamp = Wait.events[0].timestamp; // modify the timestamp of the end event of the prior span
@@ -259,22 +262,22 @@ var Thread = function(process, id, reports) {
 			span = [reports[i]];
 		} else if (reports[i]["Operation"] && reports[i]["Operation"][0]=="unset") {
 			span.push(reports[i]);
-			this.spans.push(new Span(this, this.spans.length, span));
+			this.spans.push(new XSpan(this, this.spans.length, span));
 			span = [];
 		} else {
 			span.push(reports[i]);            
 		}
 	}
 	if (span.length > 0)
-		this.spans.push(new Span(this, this.spans.length, span));
+		this.spans.push(new XSpan(this, this.spans.length, span));
 	this.spans.sort(function(a, b) { return a.Start() - b.Start(); });
 };
 
-Thread.prototype.ID = function() {
+XThread.prototype.ID = function() {
 	return this.fqid;
 };
 
-Thread.prototype.ShortName = function() {
+XThread.prototype.ShortName = function() {
 	var defaultName = "Thread-"+this.id;
 	var names = {};
 	names[defaultName] = true;
@@ -295,19 +298,19 @@ Thread.prototype.ShortName = function() {
 	return "Thread-"+this.id;
 };
 
-Thread.prototype.Spans = function() {
+XThread.prototype.Spans = function() {
 	return this.spans;
 };
 
-Thread.prototype.Events = function() {
+XThread.prototype.Events = function() {
 	return [].concat.apply([], this.Spans().map(function(span) { return span.Events(); }));
 };
 
-Thread.prototype.Start = function() {
+XThread.prototype.Start = function() {
 	return Math.min.apply(this, this.Spans().map(function(span) { return span.Start(); }));
 };
 
-var Process = function(machine, id, reports) {
+var XProcess = function(machine, id, reports) {
 	this.machine = machine;
 	this.id = id;
 	this.fqid = this.machine.ID() + "_Process("+id+")";
@@ -337,14 +340,14 @@ var Process = function(machine, id, reports) {
 
 	this.threads = {};
 	for (var thread_id in reports_by_thread)
-		this.threads[thread_id] = new Thread(this, thread_id, reports_by_thread[thread_id]);
+		this.threads[thread_id] = new XThread(this, thread_id, reports_by_thread[thread_id]);
 };
 
-Process.prototype.ID = function() {
+XProcess.prototype.ID = function() {
 	return this.fqid;
 };
 
-Process.prototype.Threads = function() {
+XProcess.prototype.Threads = function() {
 	var threads = this.threads;
 	var keys = Object.keys(this.threads);
 	var values = keys.map(function(k) { return threads[k]; });
@@ -352,23 +355,23 @@ Process.prototype.Threads = function() {
 	return values;
 };
 
-Process.prototype.Spans = function() {
+XProcess.prototype.Spans = function() {
 	return [].concat.apply([], this.Threads().map(function(thread) { return thread.Spans(); }));
 };
 
-Process.prototype.Events = function() {
+XProcess.prototype.Events = function() {
 	return [].concat.apply([], this.Threads().map(function(thread) { return thread.Events(); }));
 };
 
-Process.prototype.Start = function() {
+XProcess.prototype.Start = function() {
 	return Math.min.apply(this, this.Threads().map(function(thread) { return thread.Start(); }));
 };
 
-Process.prototype.GCEvents = function() {
+XProcess.prototype.GCEvents = function() {
 	return this.gcevents;
 };
 
-var Machine = function(task, id, reports) {
+var XMachine = function(task, id, reports) {
 	this.task = task;
 	this.id = id;
 	this.fqid = this.task.ID() + "_Machine("+this.id+")";
@@ -377,14 +380,14 @@ var Machine = function(task, id, reports) {
 
 	this.processes = {};
 	for (var process_id in reports_by_process)
-		this.processes[process_id] = new Process(this, process_id, reports_by_process[process_id]);
+		this.processes[process_id] = new XProcess(this, process_id, reports_by_process[process_id]);
 };
 
-Machine.prototype.ID = function() {
+XMachine.prototype.ID = function() {
 	return this.fqid;
 };
 
-Machine.prototype.Processes = function() {
+XMachine.prototype.Processes = function() {
 	var processes = this.processes;
 	var keys = Object.keys(this.processes);
 	var values = keys.map(function(k) { return processes[k]; });
@@ -392,23 +395,23 @@ Machine.prototype.Processes = function() {
 	return values;
 };
 
-Machine.prototype.Threads = function() {
+XMachine.prototype.Threads = function() {
 	return [].concat.apply([], this.Processes().map(function(process) { return process.Threads(); }));
 };
 
-Machine.prototype.Spans = function() {
+XMachine.prototype.Spans = function() {
 	return [].concat.apply([], this.Processes().map(function(process) { return process.Spans(); }));    
 };
 
-Machine.prototype.Events = function() {
+XMachine.prototype.Events = function() {
 	return [].concat.apply([], this.Processes().map(function(process) { return process.Events(); }));    
 };
 
-Machine.prototype.Start = function() {
+XMachine.prototype.Start = function() {
 	return Math.min.apply(this, this.Processes().map(function(process) { return process.Start(); }));
 };
 
-Machine.prototype.GCEvents = function() {
+XMachine.prototype.GCEvents = function() {
 	return [].concat.apply([], this.Processes().map(function(process) { return process.GCEvents(); }));
 };
 

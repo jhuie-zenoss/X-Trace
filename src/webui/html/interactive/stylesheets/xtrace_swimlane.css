@@ -2,10 +2,6 @@
 	cursor: move;
 }
 
-.main .lane-lines line {
-	stroke: #999;
-}
-
 .main .lane-labels text {
 	font: 9px sans-serif;
 }
