@@ -17,6 +17,9 @@ function SwimLaneOverview() {
 	// The brush.  Ought to be overridden for useful behavior
 	var brush = d3.svg.brush();
 
+	// Determines vertical lane placements
+	var lanegenerator = lane_per_thread_scale();
+
 	/* Main rendering function */
 	function overview(selection) {
 		selection.each(function(data) {   
@@ -45,29 +48,29 @@ function SwimLaneOverview() {
 			var rangemax = data.max + datalen / 10.0;
 			var norm = d3.scale.linear().domain([rangemin - data.min, rangemax - data.min]).range([0, width]);
 			var sx = d3.scale.linear().domain([rangemin, rangemax]).range([0, width]);
-			var sy = d3.scale.linear().domain([0, threads.length]).range([0, height]);
+			var sy = lanegenerator(data, height);
 
 			// Add and remove new and old lanes
 			var lanes = mini.select(".lane-lines").selectAll("line").data(threads);
 			lanes.enter().append("line");
 			lanes.attr('x1', 0).attr('x2', width)
-			.attr('y1', function(d) { return d3.round(sy(d.lanenumber)) + 0.5; })
-			.attr('y2', function(d) { return d3.round(sy(d.lanenumber)) + 0.5; });
+			.attr('y1', function(d) { return d3.round(sy(d)) + 0.5; })
+			.attr('y2', function(d) { return d3.round(sy(d)) + 0.5; });
 			lanes.exit().remove();
 
 			// Add and remove lane text
 			var lanetext = mini.select(".lane-labels").selectAll("text").data(threads);
 			lanetext.enter().append("text").text(function(d) { return d.ShortName(); }).attr('dy', '0.5ex').attr('text-anchor', 'end');
-			lanetext.attr('x', -10).attr('y', function(d) { return sy(d.lanenumber + .5); });
+			lanetext.attr('x', -10).attr('y', function(d) { return sy(d) + sy.laneHeight() * 0.5; });
 			lanetext.exit().remove();
 
 			// Add and remove the spans
 			var spans = mini.select(".spans").selectAll("path").data(threads);
 			spans.enter().append('path');
 			spans.attr('d', function(thread) { 
-				var path = [], offset = .5 * sy(1) + 0.5;
+				var path = [], offset = .5 * sy.laneHeight() + 0.5;
 				thread.Spans().forEach(function(span) { 
-					path = path.concat(['M',sx(span.Start()),(sy(thread.lanenumber) + offset),'H',sx(span.End())]); 
+					path = path.concat(['M',sx(span.Start()),(sy(thread) + offset),'H',sx(span.End())]); 
 				});
 				return path.join(" ");
 			});
@@ -114,6 +117,7 @@ function SwimLaneOverview() {
 	overview.y = function(_) { if (!arguments.length) return y; y = _; return overview; };
 	overview.width = function(_) { if (!arguments.length) return width; width = _; return overview; };
 	overview.height = function(_) { if (!arguments.length) return height; height = _; return overview; };
+	overview.lanegenerator = function(_) { if (!arguments.length) return lanegenerator; lanegenerator = _; return overview; };
 
 
 	return overview;    
