@@ -29,6 +29,10 @@ public class XTraceLogLevel {
   Collection<Class<?>> enabled = new HashSet<Class<?>>();
   Collection<Class<?>> disabled = new HashSet<Class<?>>();
   
+  public XTraceLogLevel() {
+    enabled.add(ALWAYS); // make sure ALWAYS is always enabled...
+  }
+  
   /**
    * Set the specified class to 'off'.
    * Events logged against this class will be ignored.
