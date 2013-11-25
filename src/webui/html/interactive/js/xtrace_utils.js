@@ -202,16 +202,19 @@ var sanitizeReports = function(reports) {
     var i = 0;
     while (i < reports.length) {
         var report = reports[i];
-        if (!report.hasOwnProperty("X-Trace") || !report.hasOwnProperty("Edge")
-                || !report["X-Trace"].length==1 || !report["Edge"].hasOwnProperty("length")) {
-            reports.splice(i, 1);
-            console.warn("Got a bad report:", report);
+        if (!report.hasOwnProperty("Edge") || report["Edge"].length==0) {
+        	console.warn("Warning: report has no edges", report);
+        	report["Edge"] = [];
+        	i++;
+        } else if (!report.hasOwnProperty("X-Trace") || report["XTrace"].length!=1) {
+        	reports.splice(i, 1);
+            console.error("Warning: excluding report with no/bad id:", report);
         } else {
             i++;
         }
     }
     return reports;    
-}
+};
 
 var createGraphFromReports = function(reports, params) {
     console.log("Creating graph from reports");
