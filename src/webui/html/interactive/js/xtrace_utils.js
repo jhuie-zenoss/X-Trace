@@ -206,7 +206,7 @@ var sanitizeReports = function(reports) {
         	console.warn("Warning: report has no edges", report);
         	report["Edge"] = [];
         	i++;
-        } else if (!report.hasOwnProperty("X-Trace") || report["XTrace"].length!=1) {
+        } else if (!report.hasOwnProperty("X-Trace") || report["X-Trace"].length!=1) {
         	reports.splice(i, 1);
             console.error("Warning: excluding report with no/bad id:", report);
         } else {
