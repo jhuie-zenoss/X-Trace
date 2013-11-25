@@ -845,7 +845,9 @@ public class XTraceContext {
         if (!XTraceConfiguration.ENABLED)
             return new XTraceMetadata();
         
-        XTraceContext.logMerge();
+        XTraceMetadata current = XTraceContext.logMerge();
+        if (!XTraceConfiguration.active.causality)
+          return current;
         return XTraceMetadata.random();
     }
 

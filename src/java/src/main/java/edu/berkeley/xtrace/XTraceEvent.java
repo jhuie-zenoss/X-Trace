@@ -138,17 +138,19 @@ public class XTraceEvent {
 //				}
 //			}
 //		}
-		
-    report.put("Edge", xtr.getOpIdString());
+
+    if (XTraceConfiguration.active.causality)
+      report.put("Edge", xtr.getOpIdString());
     
     if (newmd==null) {
-      // If no causality, then we don't create new metadata
-      if (XTraceConfiguration.active.causality)
-        newmd = new XTraceMetadata(xtr.getTaskId(), myOpId);
-      else
-        newmd = xtr;
+      newmd = new XTraceMetadata(xtr.getTaskId(), myOpId);
       report.put("X-Trace", newmd.toString());  // report excluding the options from the string repr
-      newmd.setOptions(xtr.options);
+      // If no causality, then we revert to previous metadata
+      if (!XTraceConfiguration.active.causality) {
+        newmd = xtr;
+      } else {
+        newmd.setOptions(xtr.options);
+      }
       if (newmd.options!=null) {
         for (int i = 0; i < newmd.options.length; i++)
           report.put("Option", newmd.options[i].toString());
