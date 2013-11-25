@@ -21,7 +21,7 @@ public class ConfigurationTest extends TestCase {
   
   private void assertDefaults(XTraceLogLevel loglevels) {
     assertTrue(loglevels.defaultEnabled);
-    assertEquals(0, loglevels.enabled.size());
+    assertEquals(1, loglevels.enabled.size());
     assertEquals(0, loglevels.disabled.size());
     assertTrue(loglevels.enabled(XTraceContext.class));
   }
@@ -75,7 +75,7 @@ public class ConfigurationTest extends TestCase {
     XTraceConfiguration disabled = XTraceConfiguration.load(new File("src/test/conf/test-filters-disabled.xml"));
     assertTrue(disabled.isEnabled());
     assertFalse(disabled.loglevels.defaultEnabled);
-    assertEquals(0, disabled.loglevels.enabled.size());
+    assertEquals(1, disabled.loglevels.enabled.size());
     assertEquals(0, disabled.loglevels.disabled.size());
     assertFalse(disabled.loglevels.enabled(XTraceContext.class));    
     assertNotActive(disabled);
@@ -86,7 +86,7 @@ public class ConfigurationTest extends TestCase {
     XTraceConfiguration enabled = XTraceConfiguration.load(new File("src/test/conf/test-filters-class-enabled.xml"));
     assertTrue(enabled.isEnabled());
     assertTrue(enabled.loglevels.defaultEnabled);
-    assertEquals(1, enabled.loglevels.enabled.size());
+    assertEquals(2, enabled.loglevels.enabled.size());
     assertEquals(0, enabled.loglevels.disabled.size());
     assertTrue(enabled.loglevels.enabled(XTraceContext.class));    
     assertNotActive(enabled);
@@ -106,7 +106,7 @@ public class ConfigurationTest extends TestCase {
     XTraceConfiguration disabled = XTraceConfiguration.load(new File("src/test/conf/test-filters-class-disabled.xml"));
     assertTrue(disabled.isEnabled());
     assertTrue(disabled.loglevels.defaultEnabled);
-    assertEquals(0, disabled.loglevels.enabled.size());
+    assertEquals(1, disabled.loglevels.enabled.size());
     assertEquals(1, disabled.loglevels.disabled.size());
     assertFalse(disabled.loglevels.enabled(XTraceContext.class));    
     assertNotActive(disabled);
@@ -125,7 +125,7 @@ public class ConfigurationTest extends TestCase {
     XTraceConfiguration multi = XTraceConfiguration.load(new File("src/test/conf/test-filters-class-multi.xml"));
     assertTrue(multi.isEnabled());
     assertTrue(multi.loglevels.defaultEnabled);
-    assertEquals(4, multi.loglevels.enabled.size());
+    assertEquals(5, multi.loglevels.enabled.size());
     assertTrue(multi.loglevels.enabled(XTraceContext.class));
     assertTrue(multi.loglevels.enabled(XTraceMetadata.class));
     assertTrue(multi.loglevels.enabled(XTraceMetadataCollection.class));
@@ -143,7 +143,7 @@ public class ConfigurationTest extends TestCase {
     XTraceConfiguration disabled = XTraceConfiguration.load(new File("src/test/conf/test-filters-disabled-classes.xml"));
     assertTrue(disabled.isEnabled());
     assertFalse(disabled.loglevels.defaultEnabled);    
-    assertEquals(1, disabled.loglevels.enabled.size());
+    assertEquals(2, disabled.loglevels.enabled.size());
     assertEquals(1, disabled.loglevels.disabled.size());
     assertFalse(disabled.loglevels.enabled(XTraceContext.class));
     assertFalse(disabled.loglevels.enabled(XTraceEvent.class));
@@ -156,7 +156,7 @@ public class ConfigurationTest extends TestCase {
     XTraceConfiguration enabled = XTraceConfiguration.load(new File("src/test/conf/test-filters-enabled-classes.xml"));
     assertTrue(enabled.isEnabled());
     assertTrue(enabled.loglevels.defaultEnabled);    
-    assertEquals(1, enabled.loglevels.enabled.size());
+    assertEquals(2, enabled.loglevels.enabled.size());
     assertEquals(1, enabled.loglevels.disabled.size());
     assertFalse(enabled.loglevels.enabled(XTraceContext.class));
     assertTrue(enabled.loglevels.enabled(XTraceEvent.class));
@@ -169,7 +169,7 @@ public class ConfigurationTest extends TestCase {
     XTraceConfiguration conf = XTraceConfiguration.load(new File("src/test/conf/test-full.xml"));
     assertFalse(conf.isEnabled());
     assertFalse(conf.loglevels.defaultEnabled);    
-    assertEquals(4, conf.loglevels.enabled.size());
+    assertEquals(5, conf.loglevels.enabled.size());
     assertTrue(conf.loglevels.enabled(XTraceContext.class));
     assertTrue(conf.loglevels.enabled(XTraceMetadata.class));
     assertTrue(conf.loglevels.enabled(XTraceMetadataCollection.class));
