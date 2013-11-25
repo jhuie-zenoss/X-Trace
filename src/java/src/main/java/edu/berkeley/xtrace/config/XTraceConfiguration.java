@@ -12,12 +12,14 @@ import edu.berkeley.xtrace.config.XTraceConfigurationParser.InvalidConfiguration
  * xtrace.xml should be an XML file.
  * Example:
  * <Configuration>
- *  <XTrace>true</XTrace>
+ *  <XTrace>Enabled</XTrace>
+ *  <Causality>Disabled</Causality>
  *  <Filters>
  *    <Default>Enabled</Default>
  *    <Enabled>org.apache.hadoop.ipc.RPC</Enabled>
  *    <Disabled>org.apache.hadoop.net.NetUtils</Disabled>
  *  </Filters>
+ *  
  * </Configuration>
  * @author jon
  *
@@ -73,6 +75,9 @@ public class XTraceConfiguration {
   
   /** Contains information about the log levels that are on or off */
   public XTraceLogLevel loglevels = new XTraceLogLevel();
+  
+  /** Turns on or off causality.  Causality off is more efficient.  Default on. */
+  public boolean causality = true;
   
   /**
    * Parses the X-Trace configuration in the specified file, and returns an XTraceConfiguration
