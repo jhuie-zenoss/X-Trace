@@ -66,7 +66,7 @@ public class XTraceEvent {
 	Report report;
 	private byte[] myOpId;
 	private boolean willReport;
-	private Class<?> msgclass;
+	Class<?> msgclass;
   private XTraceMetadata newmd; 
 
 
@@ -126,17 +126,17 @@ public class XTraceEvent {
 		if (xtr == null || !xtr.isValid()) {
 			return;
 		}
-		// check for a severity level option field
-		OptionField[] options = xtr.getOptions();
-		if (options != null) {
-			for (int i=0; i <xtr.getNumOptions(); i++) {
-				if (options[i].getType()-OptionField.SEVERITY == 0) {
-					int severity = (int) options[i].getPayload()[0] & 0xFF;
-					willReport = severity < OptionSeverity.DEFAULT;
-					report.put("Severity", Integer.toString(severity));
-				}
-			}
-		}
+//		// check for a severity level option field
+//		OptionField[] options = xtr.getOptions();
+//		if (options != null) {
+//			for (int i=0; i <xtr.getNumOptions(); i++) {
+//				if (options[i].getType()-OptionField.SEVERITY == 0) {
+//					int severity = (int) options[i].getPayload()[0] & 0xFF;
+//					willReport = severity < OptionSeverity.DEFAULT;
+//					report.put("Severity", Integer.toString(severity));
+//				}
+//			}
+//		}
 
     report.put("Edge", xtr.getOpIdString());
     

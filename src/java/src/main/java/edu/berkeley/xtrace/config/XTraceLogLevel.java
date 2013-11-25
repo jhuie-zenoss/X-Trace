@@ -20,6 +20,11 @@ public class XTraceLogLevel {
   /** The default class against which X-Trace events will be logged */
   public static final Class<?> DEFAULT = XTraceContext.class;
   
+  /** A special class which is always reported.  Start trace events and merge events are logged to this class.
+   * Clients can log to this class too. */
+  public static final class Always {};
+  public static final Class<?> ALWAYS = Always.class;
+  
   boolean defaultEnabled = true;
   Collection<Class<?>> enabled = new HashSet<Class<?>>();
   Collection<Class<?>> disabled = new HashSet<Class<?>>();
@@ -30,7 +35,7 @@ public class XTraceLogLevel {
    * @param cls
    */
 	public void off(Class<?> cls) {
-	  if (cls!=null) {
+	  if (cls!=null && cls!=ALWAYS) {
       enabled.remove(cls);
       disabled.add(cls);
 	  }
