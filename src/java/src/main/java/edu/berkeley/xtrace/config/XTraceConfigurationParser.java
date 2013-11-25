@@ -21,6 +21,7 @@ public class XTraceConfigurationParser {
     
     private static final String TAG_CONFIGURATION = "Configuration";
     private static final String TAG_XTRACE = "XTrace";
+    private static final String TAG_CAUSALITY = "Causality";
     private static final String TAG_FILTERS = "Filters";
 
     private int depth = 0;
@@ -48,6 +49,7 @@ public class XTraceConfigurationParser {
         // Handle the tags that are allowed at this level
         if        (TAG_FILTERS.equals(qName)) subHandler = new XTraceFiltersHandler(configuration.loglevels);
         else if   (TAG_XTRACE.equals(qName));
+        else if   (TAG_CAUSALITY.equals(qName));
         else      throw new SAXException("Unexpected start of tag.  Found " + qName);
         
       } else if (depth > 1) {
@@ -79,6 +81,7 @@ public class XTraceConfigurationParser {
         // Handle the tags that are allowed at this level
         if        (TAG_FILTERS.equals(qName));
         else if   (TAG_XTRACE.equals(qName)) configuration.setEnabled(!VALUE_DISABLED.equals(currentChars));
+        else if   (TAG_CAUSALITY.equals(qName)) configuration.causality = !VALUE_DISABLED.equals(currentChars);
         else      throw new SAXException("Unexpected end of tag.  Found " + qName);
         
       } else if (depth > 1) {        
