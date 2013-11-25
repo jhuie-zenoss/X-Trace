@@ -99,6 +99,7 @@ public class XTraceEvent {
 		XTraceEvent.random(myOpId);
 		willReport = true;
 		this.msgclass = msgclass;
+		report.put("Class", msgclass.getName());
 		report.put("ThreadID", Long.toString(Thread.currentThread().getId()));
 		this.put("ThreadName", Thread.currentThread().getName());
 		report.put("ProcessID", processId);	
@@ -110,6 +111,7 @@ public class XTraceEvent {
 		myOpId = m.getOpId();
 		willReport = true;
 		this.msgclass = XTraceLogLevel.DEFAULT;
+		report.put("Class", msgclass.getName());
 		report.put("ThreadID", Long.toString(Thread.currentThread().getId()));
     this.put("ThreadName", Thread.currentThread().getName());
     report.put("ProcessID", processId);	
