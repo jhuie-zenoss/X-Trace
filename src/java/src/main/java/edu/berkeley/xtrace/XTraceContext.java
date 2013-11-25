@@ -655,24 +655,23 @@ public class XTraceContext {
             event.put("Tag", tag.toString());
         }
         event.sendReport();
-  
     }
 
-    public static void startTraceSeverity(String agent, String title, int severity, Object... tags) {
-        if (!XTraceConfiguration.ENABLED)
-            return;
-      
-        TaskID taskId = new TaskID(8);
-        XTraceMetadata metadata = new XTraceMetadata(taskId, 0L);
-        setThreadContext(metadata);
-        metadata.setSeverity(severity);
-        XTraceEvent event = createEvent(agent, "Start Trace: " + title);
-        event.put("Title", title);
-        for (Object tag : tags) {
-            event.put("Tag", tag.toString());
-        }
-        event.sendReport();
-    }
+//    public static void startTraceSeverity(String agent, String title, int severity, Object... tags) {
+//        if (!XTraceConfiguration.ENABLED)
+//            return;
+//      
+//        TaskID taskId = new TaskID(8);
+//        XTraceMetadata metadata = new XTraceMetadata(taskId, 0L);
+//        setThreadContext(metadata);
+//        metadata.setSeverity(severity);
+//        XTraceEvent event = createEvent(agent, "Start Trace: " + title);
+//        event.put("Title", title);
+//        for (Object tag : tags) {
+//            event.put("Tag", tag.toString());
+//        }
+//        event.sendReport();
+//    }
 
     public static int getDefaultOpIdLength() {
         return defaultOpIdLength;
