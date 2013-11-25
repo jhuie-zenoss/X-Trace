@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Random;
 
+import edu.berkeley.xtrace.config.XTraceConfiguration;
 import edu.berkeley.xtrace.config.XTraceLogLevel;
 import edu.berkeley.xtrace.reporting.Report;
 import edu.berkeley.xtrace.reporting.Reporter;
@@ -137,11 +138,15 @@ public class XTraceEvent {
 //				}
 //			}
 //		}
-
+		
     report.put("Edge", xtr.getOpIdString());
     
     if (newmd==null) {
-      newmd = new XTraceMetadata(xtr.getTaskId(), myOpId);
+      // If no causality, then we don't create new metadata
+      if (XTraceConfiguration.active.causality)
+        newmd = new XTraceMetadata(xtr.getTaskId(), myOpId);
+      else
+        newmd = xtr;
       report.put("X-Trace", newmd.toString());  // report excluding the options from the string repr
       newmd.setOptions(xtr.options);
       if (newmd.options!=null) {
