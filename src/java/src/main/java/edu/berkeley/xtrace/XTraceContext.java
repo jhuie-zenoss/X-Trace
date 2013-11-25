@@ -279,6 +279,7 @@ public class XTraceContext {
         }
 
         XTraceEvent event = new XTraceEvent(opIdLength);
+        event.msgclass = XTraceLogLevel.ALWAYS;// not elegant, but ensures will always report merge operatoins
 
         for (XTraceMetadata m : metadatas) {
             event.addEdge(m);
@@ -605,35 +606,46 @@ public class XTraceContext {
         if (!XTraceConfiguration.ENABLED)
             return;
         
+        XTraceContext.startTrace(XTraceLogLevel.DEFAULT, agent, title, tags);
+    }
+    
+    public static void startTrace(Class<?> cls, String agent, String title, Object... tags) {
+        if (!XTraceConfiguration.ENABLED)
+          return;
+        
+        boolean created = false;
         if (!isValid()) {
             TaskID taskId = new TaskID(8);
             setThreadContext(new XTraceMetadata(taskId, 0L));
+            created = true;
         }
-        XTraceEvent event = createEvent(agent, "Start Trace: " + title);
-        if (!isValid()) {
-            event.put("Title", title);
+        XTraceEvent event = createEvent(cls, agent, title);
+        if (created) {
+            event.put("Operation", "starttrace");
+            event.msgclass = XTraceLogLevel.ALWAYS; // not the most elegant way, but this ensures always report start events
         }
         for (Object tag : tags) {
             event.put("Tag", tag.toString());
         }
         event.sendReport();
+  
     }
 
-    public static void startTraceSeverity(String agent, String title, int severity, Object... tags) {
-        if (!XTraceConfiguration.ENABLED)
-            return;
-      
-        TaskID taskId = new TaskID(8);
-        XTraceMetadata metadata = new XTraceMetadata(taskId, 0L);
-        setThreadContext(metadata);
-        metadata.setSeverity(severity);
-        XTraceEvent event = createEvent(agent, "Start Trace: " + title);
-        event.put("Title", title);
-        for (Object tag : tags) {
-            event.put("Tag", tag.toString());
-        }
-        event.sendReport();
-    }
+//    public static void startTraceSeverity(String agent, String title, int severity, Object... tags) {
+//        if (!XTraceConfiguration.ENABLED)
+//            return;
+//      
+//        TaskID taskId = new TaskID(8);
+//        XTraceMetadata metadata = new XTraceMetadata(taskId, 0L);
+//        setThreadContext(metadata);
+//        metadata.setSeverity(severity);
+//        XTraceEvent event = createEvent(agent, "Start Trace: " + title);
+//        event.put("Title", title);
+//        for (Object tag : tags) {
+//            event.put("Tag", tag.toString());
+//        }
+//        event.sendReport();
+//    }
 
     public static int getDefaultOpIdLength() {
         return defaultOpIdLength;
