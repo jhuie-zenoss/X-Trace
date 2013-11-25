@@ -641,14 +641,14 @@ public class XTraceContext {
         if (!XTraceConfiguration.ENABLED)
           return;
         
-        boolean created = false;
+        Class<?> msgclass = XTraceLogLevel.DEFAULT;
         if (!isValid()) {
             TaskID taskId = new TaskID(8);
             setThreadContext(new XTraceMetadata(taskId, 0L));
-            created = true;
+            msgclass = XTraceLogLevel.ALWAYS; // always log a proper start event
         }
-        XTraceEvent event = createEvent(XTraceLogLevel.ALWAYS, agent, title);
-        if (created) {
+        XTraceEvent event = createEvent(msgclass, agent, title);
+        if (msgclass==XTraceLogLevel.ALWAYS) {
             event.put("Operation", "starttrace");
         }
         for (Object tag : tags) {
