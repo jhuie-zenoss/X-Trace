@@ -166,7 +166,7 @@ function getGCReports(ids, callback, errback) {
 			var reports = data[i].reports;
 			for (var j = 0; j < reports.length; j++) {
 				var report = reports[j];
-				if (report["Operation"] && report["Operation"][0]=="GC") {
+				if (report["Operation"] && report["Operation"][0]=="GarbageCollection" || report["Operation"][0]=="GC") {
 					var processID = report["ProcessID"][0];
 					if (!GCReportsByProcess[processID])
 						GCReportsByProcess[processID] = [report];
@@ -181,7 +181,7 @@ function getGCReports(ids, callback, errback) {
 		var GCTasks = [];
 		for (var taskid in tagdata) {
 			var tags = tagdata[taskid];
-			if (tags.indexOf("GC")!=-1) {
+			if (tags.indexOf("GarbageCollection")!=-1 || tags.indexOf("GC")!=-1) {
 				GCTasks.push(taskid);
 			}
 		}
@@ -192,7 +192,7 @@ function getGCReports(ids, callback, errback) {
 		}
 	};
 	var relatedIDsReceivedCallback = function(ids) {
-		console.log("Searching for GC data in ids: " + ids.join(','));
+		console.log("Searching for GarbageCollection data in ids: " + ids.join(','));
 		getTags(ids.join(','), tagsReceivedCallback, errback);
 	};
 	getRelated(ids, relatedIDsReceivedCallback, errback);
