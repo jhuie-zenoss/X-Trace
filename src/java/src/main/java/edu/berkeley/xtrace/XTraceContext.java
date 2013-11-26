@@ -294,43 +294,6 @@ public class XTraceContext {
 
     /**
      * Creates a new task context, adds an edge from the current thread's
-     * context, sets the new context, and reports it to the X-Trace server.
-     * 
-     * @param agent
-     *            name of current agent
-     * @param label
-     *            description of the task
-     */
-    public static void logEvent(String agent, String label) {
-        if (!XTraceConfiguration.ENABLED)
-            return;
-        logEvent(XTraceLogLevel.DEFAULT, agent, label);
-    }
-
-    /**
-     * Creates a new task context, adds an edge from the current thread's
-     * context, sets the new context, and reports it to the X-Trace server.
-     * 
-     * @param msgclass
-     *            optional class that can be turned on/off
-     * @param agent
-     *            name of current agent
-     * @param label
-     *            description of the task
-     */
-    public static void logEvent(Class<?> cls, String agent, String label) {
-        if (!XTraceConfiguration.ENABLED)
-            return;
-        if (!isValid())
-            return;
-        if (!XTraceLogLevel.isOn(cls))
-            return;
-        
-        createEvent(cls, agent, label).sendReport();
-    }
-
-    /**
-     * Creates a new task context, adds an edge from the current thread's
      * context, sets the new context, and reports it to the X-Trace server. This
      * version of this function allows extra event fields to be specified as
      * variable arguments after the agent and label. For example, to add a field
