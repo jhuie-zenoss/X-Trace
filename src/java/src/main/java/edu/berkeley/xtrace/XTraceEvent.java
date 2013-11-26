@@ -143,8 +143,7 @@ public class XTraceEvent {
       report.put("Edge", xtr.getOpIdString());
     
     if (newmd==null) {
-      newmd = new XTraceMetadata(xtr.getTaskId(), myOpId);
-      report.put("X-Trace", newmd.toString());  // report excluding the options from the string repr
+      this.setTaskID(xtr.getTaskId());
       // If no causality, then we revert to previous metadata
       if (!XTraceConfiguration.active.causality) {
         newmd = xtr;
@@ -157,6 +156,13 @@ public class XTraceEvent {
       }
     }
     
+	}
+	
+	public void setTaskID(TaskID taskId) {
+	  if (newmd==null) {
+      newmd = new XTraceMetadata(taskId, myOpId);
+      report.put("X-Trace", newmd.toString());  // report excluding the options from the string repr	    
+	  }
 	}
 	
 	public void addEdges(Collection<XTraceMetadata> xtrs) {
