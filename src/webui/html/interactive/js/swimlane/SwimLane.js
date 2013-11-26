@@ -15,7 +15,7 @@ function SwimLane() {
 	var sx = d3.scale.linear(); // scale between global / zoomed
 	var brush = d3.svg.brush(); // specifies the active draw area
 	var axis = d3.svg.axis().orient("bottom").ticks(10).tickSize(6, 0, 0); // time axis at bottom of viz
-	var lanegenerator = lane_per_thread_scale();
+	var layout = PerThreadLayout();
 
 	// Tooltips
 	var ttGravity = $.fn.tipsy.autoBounds(Math.min(window.width(), window.height()) / 3, "s");
@@ -31,7 +31,7 @@ function SwimLane() {
 
 			// For spacing out the threads
 			sx.range([0, width]);
-			var sy = lanegenerator(data, height);
+			var sy = layout(data, height);
 
 			// Create the clip def
 			var defs = d3.select(this).selectAll(".clipdef").data([data]);
@@ -55,17 +55,17 @@ function SwimLane() {
 			main.exit().remove();
 
 			// Draw the thread backgrounds
-			var lanes = main.select(".lane-background").selectAll("rect").data(threads);
-			lanes.enter().append('rect').attr('fill', function(d) { return d.process.color.brighter(0.3); });
-			lanes.attr('x', 0).attr('y', function(d) { return sy(d) + 0.5; }).attr('width', width).attr('height', sy.laneHeight() - 0.5);
+			var lanes = main.select(".lane-background").selectAll("rect").data(sy.lanes());
+			lanes.enter().append('rect')/*.attr('fill', function(d) { return d.process.color.brighter(0.3); })*/;
+			lanes.attr('x', 0).attr('y', function(d) { d + 0.5; }).attr('width', width).attr('height', sy.laneHeight() - 0.5);
 			lanes.exit().remove();
 
-			// Draw the lane labels
-			var lanelabels = main.select(".lane-labels").selectAll("text").data(threads);
-			lanelabels.enter().append("text").attr('text-anchor', 'end').attr('fill', function(d) { return d.process.color.darker(1); })
-			.text(function(d) { return d.ShortName(); }).call(ThreadTooltip);
-			lanelabels.attr('x', -5).attr('y', function(d) { return sy(d) + sy.laneHeight() * 0.5; }).attr("dominant-baseline", "middle");
-			lanelabels.exit().remove();
+//			// Draw the lane labels
+//			var lanelabels = main.select(".lane-labels").selectAll("text").data(threads);
+//			lanelabels.enter().append("text").attr('text-anchor', 'end').attr('fill', function(d) { return d.process.color.darker(1); })
+//			.text(function(d) { return d.ShortName(); }).call(ThreadTooltip);
+//			lanelabels.attr('x', -5).attr('y', function(d) { return sy(d) + sy.laneHeight() * 0.5; }).attr("dominant-baseline", "middle");
+//			lanelabels.exit().remove();
 
 			// Place the time axis
 			main.select(".axis").attr("transform", "translate(0,"+height+")");
@@ -142,7 +142,7 @@ function SwimLane() {
 
 			// Update the x scale from the brush, create a y scale
 			sx.domain(brush.extent());
-			var sy = lanegenerator(data, height);
+			var sy = layout(data, height);
 
 			// Hide open tooltips
 			ThreadTooltip.hide();
@@ -235,7 +235,7 @@ function SwimLane() {
 	swimlane.y = function(_) { if (!arguments.length) return y; y = _; return swimlane; };
 	swimlane.width = function(_) { if (!arguments.length) return width; width = _; return swimlane; };
 	swimlane.height = function(_) { if (!arguments.length) return height; height = _; return swimlane; };
-	swimlane.lanegenerator = function(_) { if (!arguments.length) return lanegenerator; lanegenerator = _; return swimlane; };
+	swimlane.layout = function(_) { if (!arguments.length) return layout; layout = _; return swimlane; };
 
 	return swimlane;    
 }

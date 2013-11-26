@@ -18,7 +18,7 @@ function SwimLaneOverview() {
 	var brush = d3.svg.brush();
 
 	// Determines vertical lane placements
-	var lanegenerator = lane_per_thread_scale();
+	var layout = PerThreadLayout();
 
 	/* Main rendering function */
 	function overview(selection) {
@@ -48,7 +48,7 @@ function SwimLaneOverview() {
 			var rangemax = data.max + datalen / 10.0;
 			var norm = d3.scale.linear().domain([rangemin - data.min, rangemax - data.min]).range([0, width]);
 			var sx = d3.scale.linear().domain([rangemin, rangemax]).range([0, width]);
-			var sy = lanegenerator(data, height);
+			var sy = layout(data, height);
 
 			// Add and remove new and old lanes
 			var lanes = mini.select(".lane-lines").selectAll("line").data(threads);
@@ -117,7 +117,7 @@ function SwimLaneOverview() {
 	overview.y = function(_) { if (!arguments.length) return y; y = _; return overview; };
 	overview.width = function(_) { if (!arguments.length) return width; width = _; return overview; };
 	overview.height = function(_) { if (!arguments.length) return height; height = _; return overview; };
-	overview.lanegenerator = function(_) { if (!arguments.length) return lanegenerator; lanegenerator = _; return overview; };
+	overview.layout = function(_) { if (!arguments.length) return layout; layout = _; return overview; };
 
 
 	return overview;    

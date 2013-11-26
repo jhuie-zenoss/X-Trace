@@ -27,12 +27,13 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	var brush = d3.svg.brush().x(brush_scale).on("brush", onbrush).extent([initialmin, initialmax]);
 	
 	// Set up the lane generator that determines how elements are placed on screen
-	var overview_lanegenerator = lane_per_thread_scale().spacing(0);
-	var main_lanegenerator = lane_per_thread_scale().spacing(10);
+	var overview_layout = PerThreadLayout().spacing(0);
+	var main_layout = PerThreadLayout().spacing(10);
+//	var main_layout = ReusableLaneLayout().spacing(10);
 
 	// Create the visualization components
-	var overview = SwimLaneOverview().brush(brush).on("refresh", refresh).lanegenerator(overview_lanegenerator);
-	var swimlane = SwimLane().brush(brush).on("refresh", refresh).lanegenerator(main_lanegenerator);
+	var overview = SwimLaneOverview().brush(brush).on("refresh", refresh).layout(overview_layout);
+	var swimlane = SwimLane().brush(brush).on("refresh", refresh).layout(main_layout);
 	
 	/* When the viewing area is scaled with the brush */
 	function onbrush() {
@@ -80,56 +81,4 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	$(window).resize(draw);
 	
 	draw(); // Finally, draw it
-}
-
-/* Define a few scales for the vertical placement of events and such */
-function lane_per_thread_scale() {
-	var spacing = 10;
-	
-	var scale = function(data, height) {
-		var cache = {};
-		
-		var processes = data.Processes();
-		var numprocs = processes.length;
-		
-		var processspacing = Math.min(spacing, height / (numprocs - 1)); 
-		var threadheight = (height - (numprocs - 1) * processspacing) / data.Threads().length;
-		
-		var offset = 0;
-		for (var i = 0; i < processes.length; i++) {
-			cache[processes[i].ID()] = offset;
-			var threads = processes[i].Threads();
-			for (var j = 0; j < threads.length; j++) {
-				cache[threads[j].ID()] = offset;
-				offset += threadheight;
-			}
-			offset += processspacing;
-		}
-		
-		function offsetOf(obj) {
-			if (cache.hasOwnProperty(obj.ID()))
-				return cache[obj.ID()];
-			var offset = 0;
-			
-			if (obj instanceof XEvent)
-				offset = offsetOf(obj.span);
-			else if (obj instanceof XSpan)
-				offset = offsetOf(obj.thread);
-			else if (obj instanceof XMachine)
-				offset = offsetOf(obj.Processes()[0]);
-			else if (obj instanceof GCEvent)
-				offset = offsetOf(obj.process);
-			
-			cache[obj.ID()] = offset;
-			return offset;
-		}
-		
-		offsetOf.laneHeight = function() { return threadheight; };
-		
-		return offsetOf;
-		
-	};
-	
-	scale.spacing = function(_) { if (!arguments.length) return spacing; spacing = _; return scale; };
-	return scale;
 }
