@@ -7,11 +7,6 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	// Create the data representation
 	var workload = new Workload(tasksdata, gcdata);
 
-	// Preprocess: assign colours to each process
-	var processes = workload.Processes();
-	for (var i = 0; i < processes.length; i++)
-		processes[i].color = d3.rgb(200 + Math.random() * 20, 200 + Math.random() * 20, 200 + Math.random() * 20);
-
 	// Preprocess: determine extent of the data
 	var datalen = workload.max - workload.min;
 	var rangemin = workload.min - datalen * overlap;

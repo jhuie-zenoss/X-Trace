@@ -9,6 +9,8 @@
 .main .spans rect {
 	stroke: gray;
 	stroke-width: 1.1px;
+	fill-opacity: 0.4;
+	fill: white;
 }
 
 .main .spans rect.waiting {

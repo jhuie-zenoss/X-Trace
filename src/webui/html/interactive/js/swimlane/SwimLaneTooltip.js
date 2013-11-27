@@ -160,8 +160,8 @@ var makeHDDTooltip = function(gravity) {
 //For XTrace threads
 var makeThreadTooltip = function(gravity) {
 
-	var tooltip = Tooltip(gravity).title(function(thread) {
-		var events = thread.Events();
+	var tooltip = Tooltip(gravity).title(function(data) {
+		var events = data.thread.Events();
 
 		// gets the value for this key from any one report
 		var getOne = function(key) {

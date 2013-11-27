@@ -19,7 +19,6 @@ function SwimLane() {
 
 	// Tooltips
 	var ttGravity = $.fn.tipsy.autoBounds(Math.min(window.width(), window.height()) / 3, "s");
-	var ThreadTooltip = makeThreadTooltip($.fn.tipsy.autoWE);
 	var EventTooltip = makeEventTooltip(ttGravity);
 	var GCTooltip = makeGCTooltip(ttGravity);
 	var HDDTooltip = makeHDDTooltip(ttGravity);
@@ -55,17 +54,18 @@ function SwimLane() {
 			main.exit().remove();
 
 			// Draw the thread backgrounds
+			console.log("lanes are: " + sy.lanes());
 			var lanes = main.select(".lane-background").selectAll("rect").data(sy.lanes());
-			lanes.enter().append('rect')/*.attr('fill', function(d) { return d.process.color.brighter(0.3); })*/;
-			lanes.attr('x', 0).attr('y', function(d) { d + 0.5; }).attr('width', width).attr('height', sy.laneHeight() - 0.5);
+			lanes.enter().append('rect').attr('fill', function(d) { return d.color; });
+			lanes.attr('x', 0).attr('y', function(d) { return d.offset + 0.5; }).attr('width', width).attr('height', sy.laneHeight() - 0.5);
 			lanes.exit().remove();
 
-//			// Draw the lane labels
-//			var lanelabels = main.select(".lane-labels").selectAll("text").data(threads);
-//			lanelabels.enter().append("text").attr('text-anchor', 'end').attr('fill', function(d) { return d.process.color.darker(1); })
-//			.text(function(d) { return d.ShortName(); }).call(ThreadTooltip);
-//			lanelabels.attr('x', -5).attr('y', function(d) { return sy(d) + sy.laneHeight() * 0.5; }).attr("dominant-baseline", "middle");
-//			lanelabels.exit().remove();
+			// Draw the lane labels
+			var lanelabels = main.select(".lane-labels").selectAll("text").data(sy.lanes());
+			lanelabels.enter().append("text").attr('text-anchor', 'end').attr('fill', function(d) { return d.color.darker(1); })
+			.text(function(d) { return d.title; }).call(layout.tooltip());
+			lanelabels.attr('x', -5).attr('y', function(d) { return d.offset + sy.laneHeight() * 0.5; }).attr("dominant-baseline", "middle");
+			lanelabels.exit().remove();
 
 			// Place the time axis
 			main.select(".axis").attr("transform", "translate(0,"+height+")");
@@ -145,10 +145,7 @@ function SwimLane() {
 			var sy = layout(data, height);
 
 			// Hide open tooltips
-			ThreadTooltip.hide();
-			EventTooltip.hide();
-			GCTooltip.hide();
-			HDDTooltip.hide();
+			$(".tipsy").remove();
 
 			var minExtent = sx.domain()[0];
 			var maxExtent = sx.domain()[1];
@@ -165,7 +162,6 @@ function SwimLane() {
 			spans.enter().append("rect").classed("waiting", function(d){return d.waiting;})
 			.attr('y', function(d) { return sy(d) + .1 * sy.laneHeight() + 0.5; })
 			.attr('height', function(d) { return .8 * sy.laneHeight(); })
-			.attr("fill", function(d) { return d.thread.process.color; });
 			spans.attr('x', function(d) { return sx(d.Start()); })
 			.attr('width', function(d) { return sx(d.End()) - sx(d.Start()); });
 			spans.exit().remove();
