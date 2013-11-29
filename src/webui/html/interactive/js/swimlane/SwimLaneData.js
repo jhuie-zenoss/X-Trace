@@ -1,9 +1,7 @@
-var workloadIDseed = 0;
-
 var Workload = function(data, gcdata) {
 	this.data = data;
 	this.gcdata = gcdata;
-	this.id = workloadIDseed++;
+	this.id = unique_id();
 
 	// Create the data structures
 	this.tasks = {};
@@ -88,6 +86,10 @@ Workload.prototype.ID = function() {
 	return ""+this.id;
 };
 
+Workload.getID = function(workload) {
+	return workload.ID();
+};
+
 var XTask = function(data) {
 	// Copy the params
 	this.id = data.id;
@@ -140,18 +142,22 @@ XTask.prototype.GCEvents = function() {
 };
 
 XTask.prototype.ID = function() {
-	return "Task("+this.id+")";
+	return "Task-"+this.id;
 };
 
 XTask.prototype.Start = function() {
 	return Math.min.apply(this, this.Machines().map(function(process) { return process.Start(); }));
 };
 
+XTask.getID = function(task) {
+	return task.ID();
+};
+
 var XEvent = function(span, report) {
 	this.report = report;
 	this.span = span;
 	this.id = report["X-Trace"][0].substr(18);
-	this.fqid = this.span.ID() + "_Event(" + this.id + ")";
+	this.fqid = this.span.ID() + "_Event-"+this.id;
 	this.timestamp = parseFloat(this.report["Timestamp"][0]);
 	this.type = "event";
 	if (this.report["Operation"])
@@ -190,6 +196,10 @@ XEvent.prototype.ID = function() {
 	return this.fqid;
 };
 
+XEvent.getID = function(event) {
+	return event.ID();
+};
+
 var XSpan = function(thread, id, reports) {
 	this.thread = thread;
 	this.id = id;
@@ -224,11 +234,15 @@ XSpan.prototype.End = function() {
 	return this.end;
 };
 
+XSpan.getID = function(span) {
+	return span.ID();
+};
+
 var XThread = function(process, id, reports) {
 	reports.sort(function(a, b) { return parseFloat(a["Timestamp"][0]) - parseFloat(b["Timestamp"][0]); })
 	this.process = process;
 	this.id = id;
-	this.fqid = this.process.ID() + "_Thread("+this.id+")";
+	this.fqid = this.process.ID() + "_Thread-"+this.id;
 
 	this.spans = [];
 	var span = [];
@@ -310,10 +324,14 @@ XThread.prototype.Start = function() {
 	return Math.min.apply(this, this.Spans().map(function(span) { return span.Start(); }));
 };
 
+XThread.getID = function(thread) {
+	return thread.ID();
+};
+
 var XProcess = function(machine, id, reports) {
 	this.machine = machine;
 	this.id = id;
-	this.fqid = this.machine.ID() + "_Process("+id+")";
+	this.fqid = this.machine.ID() + "_Process-"+id.replace("@","");
 	this.gcevents = [];
 
 	// We want high resolution timestamps, so perform some averaging
@@ -371,16 +389,21 @@ XProcess.prototype.GCEvents = function() {
 	return this.gcevents;
 };
 
+XProcess.getID = function(process) {
+	return process.ID();
+};
+
 var XMachine = function(task, id, reports) {
 	this.task = task;
 	this.id = id;
-	this.fqid = this.task.ID() + "_Machine("+this.id+")";
+	this.fqid = this.task.ID() + "_Machine-"+this.id;
 
 	var reports_by_process = group_reports_by_field(reports, "ProcessID");
 
 	this.processes = {};
-	for (var process_id in reports_by_process)
+	for (var process_id in reports_by_process) {
 		this.processes[process_id] = new XProcess(this, process_id, reports_by_process[process_id]);
+	}
 };
 
 XMachine.prototype.ID = function() {
@@ -415,6 +438,10 @@ XMachine.prototype.GCEvents = function() {
 	return [].concat.apply([], this.Processes().map(function(process) { return process.GCEvents(); }));
 };
 
+XMachine.getID = function(machine) {
+	return machine.ID();
+};
+
 function group_reports_by_field(reports, field) {
 	var grouping = {};
 	for (var i = 0; i < reports.length; i++) {
@@ -434,7 +461,7 @@ var GCEvent = function(process, report) {
 	this.report = report;
 	this.process = process;
 	this.id = report["X-Trace"][0].substr(18);
-	this.fqid = this.process.ID() + "_GC(" + this.id + ")";
+	this.fqid = this.process.ID() + "_GC-" + this.id;
 
 	this.start = Number(this.report["GcStart"][0])+1;
 	this.duration = Number(this.report["GcDuration"][0])-1;
@@ -444,4 +471,8 @@ var GCEvent = function(process, report) {
 
 GCEvent.prototype.ID = function() {
 	return this.fqid;
+};
+
+GCEvent.getID = function(event) {
+	return event.ID();
 };

@@ -22,9 +22,6 @@ function SwimLane() {
 	var EventTooltip = makeEventTooltip(ttGravity);
 	var GCTooltip = makeGCTooltip(ttGravity);
 	var HDDTooltip = makeHDDTooltip(ttGravity);
-	
-	// Process lane
-	var process = ProcessLane();
 
 	/* Main rendering function */
 	function swimlane(selection) {
@@ -33,7 +30,7 @@ function SwimLane() {
 
 			// For spacing out the threads
 			sx.range([0, width]);
-			var sy = d3.scale.linear().domain([0, process.heightOf(data.Processes())]).range(0, height);
+			var sy = layout(data, height);
 
 			// Create the clip def
 			var defs = d3.select(this).selectAll(".clipdef").data([data]);
@@ -57,18 +54,18 @@ function SwimLane() {
 			main.exit().remove();
 
 			// Draw the thread backgrounds
-//			console.log("lanes are: " + sy.lanes());
-//			var lanes = main.select(".lane-background").selectAll("rect").data(sy.lanes());
-//			lanes.enter().append('rect').attr('fill', function(d) { return d.color; });
-//			lanes.attr('x', 0).attr('y', function(d) { return d.offset + 0.5; }).attr('width', width).attr('height', sy.laneHeight() - 0.5);
-//			lanes.exit().remove();
+			console.log("lanes are: " + sy.lanes());
+			var lanes = main.select(".lane-background").selectAll("rect").data(sy.lanes());
+			lanes.enter().append('rect').attr('fill', function(d) { return d.color; });
+			lanes.attr('x', 0).attr('y', function(d) { return d.offset + 0.5; }).attr('width', width).attr('height', sy.laneHeight() - 0.5);
+			lanes.exit().remove();
 
 			// Draw the lane labels
-//			var lanelabels = main.select(".lane-labels").selectAll("text").data(sy.lanes());
-//			lanelabels.enter().append("text").attr('text-anchor', 'end').attr('fill', function(d) { return d.color.darker(1); })
-//			.text(function(d) { return d.title; }).call(layout.tooltip());
-//			lanelabels.attr('x', -5).attr('y', function(d) { return d.offset + sy.laneHeight() * 0.5; }).attr("dominant-baseline", "middle");
-//			lanelabels.exit().remove();
+			var lanelabels = main.select(".lane-labels").selectAll("text").data(sy.lanes());
+			lanelabels.enter().append("text").attr('text-anchor', 'end').attr('fill', function(d) { return d.color.darker(1); })
+			.text(function(d) { return d.title; }).call(layout.tooltip());
+			lanelabels.attr('x', -5).attr('y', function(d) { return d.offset + sy.laneHeight() * 0.5; }).attr("dominant-baseline", "middle");
+			lanelabels.exit().remove();
 
 			// Place the time axis
 			main.select(".axis").attr("transform", "translate(0,"+height+")");
@@ -135,8 +132,6 @@ function SwimLane() {
 			main.select(".edges").selectAll("line").remove();
 			main.select(".gc").selectAll("rect").remove();
 			main.select(".hdd").selectAll("rect").remove();
-
-			process.call(this, data.Processes());
 		});
 
 	};
@@ -145,86 +140,78 @@ function SwimLane() {
 		selection.each(function(data) {
 			var main = d3.select(this).select(".main");
 
-
 			// Update the x scale from the brush, create a y scale
 			sx.domain(brush.extent());
-			var sy = d3.scale.linear().domain([0, process.heightOf(data.Processes())]).range([0, height]);
+			var sy = layout(data, height);
 
-			console.log("sy is", sy, sy(0));
-			
 			// Hide open tooltips
 			$(".tipsy").remove();
-			
-			process.refresh.call(this, data.Processes(), sx, sy, 0);
-//			processdata, sx, sy, offsety
 
-//			var minExtent = sx.domain()[0];
-//			var maxExtent = sx.domain()[1];
-//
-//			// Figure out which data should be drawn
-//			var spandata = data.Spans().filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent; });
-//			var eventdata = data.Events().filter(function(d) { return d.Timestamp() > minExtent && d.Timestamp() < maxExtent; });
-//			var edgedata = data.Edges().filter(function(d) { return d.parent.Timestamp() < maxExtent && d.child.Timestamp() > minExtent; });
-//			var gcdata = data.GCEvents().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
-//			var hdddata = data.HDDEvents().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
-//
-//			
-//			
-//			// Update the span rects
-//			var spans = main.select(".spans").selectAll("rect").data(spandata, function(d){return d.ID();});
-//			spans.enter().append("rect").classed("waiting", function(d){return d.waiting;})
-//			.attr('y', function(d) { return sy(d) + .1 * sy.laneHeight() + 0.5; })
-//			.attr('height', function(d) { return .8 * sy.laneHeight(); })
-//			spans.attr('x', function(d) { return sx(d.Start()); })
-//			.attr('width', function(d) { return sx(d.End()) - sx(d.Start()); });
-//			spans.exit().remove();
-//
-//			// Update the event dots
-//			var events = main.select(".events").selectAll("circle").data(eventdata, function(d){return d.ID();});
-//			events.enter().append('circle').attr("class", function(d) { return d.type; })
-//			.attr('cy', function(d) { return sy(d) + .5 * sy.laneHeight(); })
-//			.attr('r', function(d) { return d.type=="event" ? 5 : 2; })
-//			.attr('id', function(d) { return d.ID(); })
-//			.call(EventTooltip);
-//			events.attr('cx', function(d) { return sx(d.Timestamp()); });
-//			events.exit().remove();
-//
-//			// update the causality edges
-//			var edges = main.select(".edges").selectAll("line").data(edgedata, function(d) {return d.id;});
-//			edges.enter().append("line")
-//			.attr('y1', function(d) { return sy(d.parent) + .5 * sy.laneHeight(); })
-//			.attr('y2', function(d) { return sy(d.child) + .5 * sy.laneHeight(); })
-//			.attr('class', function(d) {
-//				if (d.parent.span.thread.process!=d.child.span.thread.process)
-//					return "interprocess";
-//				else if (d.parent.span.thread!=d.child.span.thread)
-//					return "interthread";
-//				else
-//					return "internal";
-//			});
-//			edges.attr('x1', function(d) { return sx(d.parent.Timestamp()); })
-//			.attr('x2', function(d) { return sx(d.child.Timestamp()); });
-//			edges.exit().remove();
-//
-//			// Update the GC blocks
-//			var gc = main.select(".gc").selectAll("rect").data(gcdata, function(d) { return d.ID(); });
-//			gc.enter().append("rect")
-//			.attr('y', function(d) { return sy(d); })
-//			.attr('height', function(d) { return sy.laneHeight() * d.process.Threads().length; })
-//			.call(GCTooltip);
-//			gc.attr('x', function(d) { return sx(d.start); })
-//			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
-//			gc.exit().remove();
-//
-//			// Update the HDD blocks
-//			var hdd = main.select(".hdd").selectAll("rect").data(hdddata, function(d) { return d.ID(); });
-//			hdd.enter().append('rect').attr('class', function(d) { return d.type; })
-//			.attr('y', function(d) { return sy(d) + sy.laneHeight() * 0.25; })
-//			.attr('height', function(d) { return sy.laneHeight() * 0.5; })
-//			.call(HDDTooltip);
-//			hdd.attr('x', function(d) { return sx(d.start); })
-//			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
-//			hdd.exit().remove();
+			var minExtent = sx.domain()[0];
+			var maxExtent = sx.domain()[1];
+
+			// Figure out which data should be drawn
+			var spandata = data.Spans().filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent; });
+			var eventdata = data.Events().filter(function(d) { return d.Timestamp() > minExtent && d.Timestamp() < maxExtent; });
+			var edgedata = data.Edges().filter(function(d) { return d.parent.Timestamp() < maxExtent && d.child.Timestamp() > minExtent; });
+			var gcdata = data.GCEvents().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
+			var hdddata = data.HDDEvents().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
+
+			// Update the span rects
+			var spans = main.select(".spans").selectAll("rect").data(spandata, function(d){return d.ID();});
+			spans.enter().append("rect").classed("waiting", function(d){return d.waiting;})
+			.attr('y', function(d) { return sy(d) + .1 * sy.laneHeight() + 0.5; })
+			.attr('height', function(d) { return .8 * sy.laneHeight(); })
+			spans.attr('x', function(d) { return sx(d.Start()); })
+			.attr('width', function(d) { return sx(d.End()) - sx(d.Start()); });
+			spans.exit().remove();
+
+			// Update the event dots
+			var events = main.select(".events").selectAll("circle").data(eventdata, function(d){return d.ID();});
+			events.enter().append('circle').attr("class", function(d) { return d.type; })
+			.attr('cy', function(d) { return sy(d) + .5 * sy.laneHeight(); })
+			.attr('r', function(d) { return d.type=="event" ? 5 : 2; })
+			.attr('id', function(d) { return d.ID(); })
+			.call(EventTooltip);
+			events.attr('cx', function(d) { return sx(d.Timestamp()); });
+			events.exit().remove();
+
+			// update the causality edges
+			var edges = main.select(".edges").selectAll("line").data(edgedata, function(d) {return d.id;});
+			edges.enter().append("line")
+			.attr('y1', function(d) { return sy(d.parent) + .5 * sy.laneHeight(); })
+			.attr('y2', function(d) { return sy(d.child) + .5 * sy.laneHeight(); })
+			.attr('class', function(d) {
+				if (d.parent.span.thread.process!=d.child.span.thread.process)
+					return "interprocess";
+				else if (d.parent.span.thread!=d.child.span.thread)
+					return "interthread";
+				else
+					return "internal";
+			});
+			edges.attr('x1', function(d) { return sx(d.parent.Timestamp()); })
+			.attr('x2', function(d) { return sx(d.child.Timestamp()); });
+			edges.exit().remove();
+
+			// Update the GC blocks
+			var gc = main.select(".gc").selectAll("rect").data(gcdata, function(d) { return d.ID(); });
+			gc.enter().append("rect")
+			.attr('y', function(d) { return sy(d); })
+			.attr('height', function(d) { return sy.laneHeight() * d.process.Threads().length; })
+			.call(GCTooltip);
+			gc.attr('x', function(d) { return sx(d.start); })
+			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
+			gc.exit().remove();
+
+			// Update the HDD blocks
+			var hdd = main.select(".hdd").selectAll("rect").data(hdddata, function(d) { return d.ID(); });
+			hdd.enter().append('rect').attr('class', function(d) { return d.type; })
+			.attr('y', function(d) { return sy(d) + sy.laneHeight() * 0.25; })
+			.attr('height', function(d) { return sy.laneHeight() * 0.5; })
+			.call(HDDTooltip);
+			hdd.attr('x', function(d) { return sx(d.start); })
+			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
+			hdd.exit().remove();
 
 			// Update the axis
 			var norm = d3.scale.linear().range([0, width]).domain([brush.extent()[0] - data.min, brush.extent()[1] - data.min]);
