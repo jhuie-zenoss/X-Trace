@@ -437,4 +437,26 @@ var critical_path = function(reports, finalreport) {
 	}
 	
 	return cpath;
+};
+
+// generates numeric ids starting from 0, never reuses same number
+var unique_id = function(){
+	var seed = 0;
+	return function() { 
+		return seed++;
+	};
+}();
+
+// generates random strings of default length 8 consisting of only letters
+var random_string = function(/*optional*/ length)
+{
+	if (!length)
+		length = 8;
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    for( var i=0; i < length; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
 }
