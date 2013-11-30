@@ -161,7 +161,7 @@ var makeHDDTooltip = function(gravity) {
 var makeThreadTooltip = function(gravity) {
 
 	var tooltip = Tooltip(gravity).title(function(data) {
-		var events = data.thread.Events();
+		var events = data.Events();
 
 		// gets the value for this key from any one report
 		var getOne = function(key) {

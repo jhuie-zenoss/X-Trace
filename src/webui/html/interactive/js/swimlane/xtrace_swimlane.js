@@ -61,8 +61,8 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 		brush.extent(brush.extent());
 		
 		// Update the vizes
-		overview.width(width).height(miniHeight).x(margin.left).y(mainHeight+60);
-		swimlane.width(width).height(mainHeight).x(margin.left).y(margin.top);
+		overview.width(width).height(miniHeight).margin(margin.left).y(mainHeight+60);
+		swimlane.width(width).height(mainHeight).margin(margin.left).y(margin.top);
 		
 		// Update the placement of the viz
 		chart.datum(workload).call(swimlane);

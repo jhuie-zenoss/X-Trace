@@ -5,6 +5,7 @@ function SwimLaneOverview() {
 	var y = 0;
 	var width = 500;
 	var height = 100;
+	var margin = 120;
 
 	/* event callbacks */
 	var callbacks = {
@@ -26,18 +27,19 @@ function SwimLaneOverview() {
 			// Add or remove the swimlane viz
 			var mini = d3.select(this).selectAll(".mini").data([data]);
 			var newmini = mini.enter().append("g").attr("class", "mini");
-			newmini.append("g").attr("class", "lane-lines");
-			newmini.append("g").attr("class", "lane-labels");
-			newmini.append("g").attr("class", "spans");
-			newmini.append("g").attr("class", "axis");
-			newmini.append("rect").attr("class", "hitarea");
-			newmini.append("g").attr("class", "brush").attr('clip-path', 'url(#clip)');
+			var newlanes = newmini.append("g").attr("class", "lanes");
+      newlanes.append("g").attr("class", "lane-lines");
+      newlanes.append("g").attr("class", "spans");
+      newlanes.append("g").attr("class", "axis");
+      newlanes.append("rect").attr("class", "hitarea");
+      newlanes.append("g").attr("class", "brush").attr('clip-path', 'url(#clip)');
+			var newmargin = newmini.append("g").attr("class", "margin");
+      newmargin.append("g").attr("class", "lane-labels");
 			mini.exit().remove();
-
+			
 			// Update the size of the swimlane
-			mini.attr("transform", "translate(" + x + "," + y + ")");
-			mini.attr("width", width);
-			mini.attr("height", height);      
+			mini.attr("transform", "translate("+x+","+y+")").attr("width", width).attr("height", height);      
+			mini.selectAll(".lanes").attr("transform", "translate("+margin+","+0+")");
 
 			// Get the thread data
 			var threads = data.Threads();
@@ -61,7 +63,7 @@ function SwimLaneOverview() {
 			// Add and remove lane text
 			var lanetext = mini.select(".lane-labels").selectAll("text").data(threads);
 			lanetext.enter().append("text").text(function(d) { return d.ShortName(); }).attr('dy', '0.5ex').attr('text-anchor', 'end');
-			lanetext.attr('x', -10).attr('y', function(d) { return sy(d) + sy.laneHeight() * 0.5; });
+			lanetext.attr('x', margin-10).attr('y', function(d) { return sy(d) + sy.laneHeight() * 0.5; });
 			lanetext.exit().remove();
 
 			// Add and remove the spans
@@ -116,7 +118,8 @@ function SwimLaneOverview() {
 	overview.x = function(_) { if (!arguments.length) return x; x = _; return overview; };
 	overview.y = function(_) { if (!arguments.length) return y; y = _; return overview; };
 	overview.width = function(_) { if (!arguments.length) return width; width = _; return overview; };
-	overview.height = function(_) { if (!arguments.length) return height; height = _; return overview; };
+  overview.height = function(_) { if (!arguments.length) return height; height = _; return overview; };
+  overview.margin = function(_) { if (!arguments.length) return margin; margin = _; return overview; };
 	overview.layout = function(_) { if (!arguments.length) return layout; layout = _; return overview; };
 
 

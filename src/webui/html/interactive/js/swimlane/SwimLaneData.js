@@ -243,6 +243,7 @@ var XThread = function(process, id, reports) {
 	this.process = process;
 	this.id = id;
 	this.fqid = this.process.ID() + "_Thread-"+this.id;
+	this.llid = this.process.llid + "_Thread-"+this.id;
 
 	this.spans = [];
 	var span = [];
@@ -328,10 +329,15 @@ XThread.getID = function(thread) {
 	return thread.ID();
 };
 
+XThread.sharedID = function(thread) {
+  return thread.llid;
+};
+
 var XProcess = function(machine, id, reports) {
 	this.machine = machine;
 	this.id = id;
 	this.fqid = this.machine.ID() + "_Process-"+id.replace("@","");
+	this.llid = this.machine.llid + "_Process-"+id.replace("@","");
 	this.gcevents = [];
 
 	// We want high resolution timestamps, so perform some averaging
@@ -393,10 +399,15 @@ XProcess.getID = function(process) {
 	return process.ID();
 };
 
+XProcess.sharedID = function(process) {
+  return process.llid;
+};
+
 var XMachine = function(task, id, reports) {
 	this.task = task;
 	this.id = id;
 	this.fqid = this.task.ID() + "_Machine-"+this.id;
+	this.llid = "Machine-"+this.id;
 
 	var reports_by_process = group_reports_by_field(reports, "ProcessID");
 
@@ -440,6 +451,10 @@ XMachine.prototype.GCEvents = function() {
 
 XMachine.getID = function(machine) {
 	return machine.ID();
+};
+
+XMachine.sharedID = function(machine) {
+  return machine.llid;
 };
 
 function group_reports_by_field(reports, field) {
