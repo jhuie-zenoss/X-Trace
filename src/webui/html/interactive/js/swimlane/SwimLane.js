@@ -5,6 +5,7 @@ function SwimLane() {
 	var y = 0;
 	var width = 500;
 	var height = 100;
+	var margin = 120;
 
 	/* event callbacks */
 	var callbacks = {
@@ -24,7 +25,7 @@ function SwimLane() {
 	var HDDTooltip = makeHDDTooltip(ttGravity);
 	
 	// Process lane
-	var process = ProcessLane();
+	var process = GroupByProcess(swimlane);
 
 	/* Main rendering function */
 	function swimlane(selection) {
@@ -44,18 +45,23 @@ function SwimLane() {
 			// Add all of the containers for the viz
 			var main = d3.select(this).selectAll(".main").data([data]);
 			var newmain = main.enter().append('g').attr("class", "main");
-			newmain.append("g").attr("class", "lane-background");
-			newmain.append("g").attr("class", "lane-labels");
-			newmain.append("g").attr("class", "axis");
-			newmain.append("g").attr("class", "spans");
-			newmain.append("g").attr("class", "timeindicator").append("line");
-			newmain.append("g").attr("class", "edges");
-			newmain.append("g").attr("class", "gc");
-			newmain.append("g").attr("class", "hdd");
-			newmain.append("g").attr("class", "events");
+			var newlanes = newmain.append('g').attr("class", "lanes");
+			newlanes.append("g").attr("class", "lane-background");
+			newlanes.append("g").attr("class", "axis");
+			newlanes.append("g").attr("class", "spans");
+			newlanes.append("g").attr("class", "timeindicator").append("line");
+			newlanes.append("g").attr("class", "edges");
+			newlanes.append("g").attr("class", "gc");
+			newlanes.append("g").attr("class", "hdd");
+			newlanes.append("g").attr("class", "events");
+      var newmargin = newmain.append('g').attr("class", "margin");
+      newmargin.append("g").attr("class", "lane-labels");
+      main.exit().remove();
+      
+      // Position the containers
 			main.attr("transform", "translate("+x+","+y+")").attr("width", width).attr("height", height);
-			main.exit().remove();
-
+			main.selectAll(".lanes").attr("transform", "translate("+margin+",0)");
+			
 			// Draw the thread backgrounds
 //			console.log("lanes are: " + sy.lanes());
 //			var lanes = main.select(".lane-background").selectAll("rect").data(sy.lanes());
@@ -244,6 +250,7 @@ function SwimLane() {
 	swimlane.y = function(_) { if (!arguments.length) return y; y = _; return swimlane; };
 	swimlane.width = function(_) { if (!arguments.length) return width; width = _; return swimlane; };
 	swimlane.height = function(_) { if (!arguments.length) return height; height = _; return swimlane; };
+	swimlane.margin = function(_) { if (!arguments.length) return margin; margin = _; return swimlane; };
 	swimlane.layout = function(_) { if (!arguments.length) return layout; layout = _; return swimlane; };
 
 	return swimlane;    
