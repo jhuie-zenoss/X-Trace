@@ -19,13 +19,13 @@ function SwimLaneOverview() {
 	var brush = d3.svg.brush();
 
 	// Determines vertical lane placements
-	var layout = PerThreadLayout();
+//	var layout = PerThreadLayout();
 
 	/* Main rendering function */
 	function overview(selection) {
-		selection.each(function(data) {   
+		selection.each(function(layout) {   
 			// Add or remove the swimlane viz
-			var mini = d3.select(this).selectAll(".mini").data([data]);
+			var mini = d3.select(this).selectAll(".mini").data([layout]);
 			var newmini = mini.enter().append("g").attr("class", "mini");
 			var newlanes = newmini.append("g").attr("class", "lanes");
       newlanes.append("g").attr("class", "lane-lines");
@@ -41,40 +41,36 @@ function SwimLaneOverview() {
 			mini.attr("transform", "translate("+x+","+y+")").attr("width", width).attr("height", height);      
 			mini.selectAll(".lanes").attr("transform", "translate("+margin+","+0+")");
 
-			// Get the thread data
-			var threads = data.Threads();
-
 			// Used to translate lane positions to co-ordinates
+			var data = layout.workload;
 			var datalen = data.max - data.min;
 			var rangemin = data.min - datalen / 10.0;
 			var rangemax = data.max + datalen / 10.0;
 			var norm = d3.scale.linear().domain([rangemin - data.min, rangemax - data.min]).range([0, width]);
 			var sx = d3.scale.linear().domain([rangemin, rangemax]).range([0, width]);
-			var sy = layout(data, height);
+      var sy = d3.scale.linear().domain([0, layout.Height()]).range([0, height]);
 
 			// Add and remove new and old lanes
-			var lanes = mini.select(".lane-lines").selectAll("line").data(threads);
+			var lanes = mini.select(".lane-lines").selectAll("line").data(layout.Lanes());
 			lanes.enter().append("line");
 			lanes.attr('x1', 0).attr('x2', width)
-			.attr('y1', function(d) { return d3.round(sy(d)) + 0.5; })
-			.attr('y2', function(d) { return d3.round(sy(d)) + 0.5; });
+			.attr('y1', function(d) { return d3.round(sy(d.Offset())) + 0.5; })
+			.attr('y2', function(d) { return d3.round(sy(d.Offset())) + 0.5; });
 			lanes.exit().remove();
 
 			// Add and remove lane text
-			var lanetext = mini.select(".lane-labels").selectAll("text").data(threads);
-			lanetext.enter().append("text").text(function(d) { return d.ShortName(); }).attr('dy', '0.5ex').attr('text-anchor', 'end');
-			lanetext.attr('x', margin-10).attr('y', function(d) { return sy(d) + sy.laneHeight() * 0.5; });
+			var lanetext = mini.select(".lane-labels").selectAll("text").data(layout.Lanes());
+			lanetext.enter().append("text").text(Lane.Label).attr('dy', '0.5ex').attr('text-anchor', 'end');
+			lanetext.attr('x', margin-10).attr('y', function(d) { return sy(d.Offset()+d.Height()*0.5); });
 			lanetext.exit().remove();
 
 			// Add and remove the spans
-			var spans = mini.select(".spans").selectAll("path").data(threads);
+			var spans = mini.select(".spans").selectAll("path").data(layout.Lanes());
 			spans.enter().append('path');
-			spans.attr('d', function(thread) { 
-				var path = [], offset = .5 * sy.laneHeight() + 0.5;
-				thread.Spans().forEach(function(span) { 
-					path = path.concat(['M',sx(span.Start()),(sy(thread) + offset),'H',sx(span.End())]); 
-				});
-				return path.join(" ");
+			spans.attr('d', function(lane) { 
+				return lane.Spans().map(function(span) {
+				  return ['M',sx(span.Start()),(sy(lane.Offset()+lane.Height()*0.5)+0.5),'H',sx(span.End())];
+				}).reduce(function(a, b) { return a.concat(b); }).join(" ");
 			});
 			spans.exit().remove();
 
@@ -102,8 +98,8 @@ function SwimLaneOverview() {
 	};
 
 	overview.refresh = function(selection) {
-		selection.each(function(data) {
-			d3.select(this).selectAll(".mini").data([data]).select(".brush").call(brush);
+		selection.each(function(layout) {
+			d3.select(this).selectAll(".mini").data([layout]).select(".brush").call(brush);
 		});
 	};
 

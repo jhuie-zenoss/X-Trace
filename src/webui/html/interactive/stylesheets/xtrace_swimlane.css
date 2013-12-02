@@ -27,17 +27,17 @@
 	opacity: 0.5;
 }
 
-.main .edges line.internal {
+.main .edges line.lane {
 	stroke: blue;
 	opacity: 0.2;
 }
 
-.main .edges line.interthread {
+.main .edges line.group {
 	stroke: blue;
 	opacity: 0.3;
 }
 
-.main .edges line.interprocess {
+.main .edges line.layout {
 	stroke: red;
 }
 
