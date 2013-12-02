@@ -6,6 +6,7 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	
 	// Create the data representation
 	var workload = new Workload(tasksdata, gcdata);
+	var vizdata = new PerTaskLayout(workload);
 
 	// Preprocess: determine extent of the data
 	var datalen = workload.max - workload.min;
@@ -27,7 +28,7 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 //	var main_layout = ReusableLaneLayout().spacing(10);
 
 	// Create the visualization components
-	var overview = SwimLaneOverview().brush(brush).on("refresh", refresh).layout(overview_layout);
+	var overview = SwimLaneOverview().brush(brush).on("refresh", refresh).on("redraw", draw).layout(overview_layout);
 	var swimlane = SwimLane().brush(brush).on("refresh", refresh).layout(main_layout);
 	
 	/* When the viewing area is scaled with the brush */
@@ -40,8 +41,8 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	/* Refreshes what's displayed after zooming in/out or panning around */
 	function refresh() {
 		// Refresh the viz components
-		chart.datum(workload).call(swimlane.refresh);
-		chart.datum(workload).call(overview.refresh);
+		chart.datum(vizdata).call(swimlane.refresh);
+//		chart.datum(vizdata).call(overview.refresh);
 	}
 	
 	/* Redraws the whole viz, for example when the parameters change or screen is resized */
@@ -49,7 +50,7 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 		// Determine the new widths and heights
 		var width = window.width() - margin.left - margin.right;
 		var height = window.height() - margin.top - margin.bottom;
-		var miniHeight = Math.min(workload.Threads().length * 12 + 50, 150);
+		var miniHeight = Math.min(vizdata.Lanes().length * 10, height/4);
 		var mainHeight = height - miniHeight - 50;
 		
 		// Resize the chart
@@ -65,8 +66,8 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 		swimlane.width(width).height(mainHeight).margin(margin.left).y(margin.top);
 		
 		// Update the placement of the viz
-		chart.datum(workload).call(swimlane);
-		chart.datum(workload).call(overview);
+		chart.datum(vizdata).call(swimlane);
+//		chart.datum(vizdata).call(overview);
 		
 		// Refresh the contents
 		refresh();

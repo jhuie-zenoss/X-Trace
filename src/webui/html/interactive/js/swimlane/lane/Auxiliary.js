@@ -14,13 +14,13 @@ function ThreadBackground(swimlane) {
     backgrounds.exit().remove();
     backgrounds.attr("x", 0).attr("y", function(d, i) { return offsety + height * i + 0.5; })
                .attr("width", sx.range()[1]).attr("height", height - 0.5);
-    backgrounds.on("click", cbs["click"]);
+  };
+  
+  background.exit = function(groupid) {
+    d3.select(this).selectAll("rect."+groupid).remove();
   };
 
   background.fill = function(_) { if (!arguments.length) return fill; fill = _; return lane; };
-  
-  cbs = {"click": function(){}};
-  background.on = function(evt, cb) { if (cb) cbs[evt] = cb; else return cbs[evt]; return background; };
   
   return background;
 };
@@ -39,11 +39,50 @@ function ThreadLabels(swimlane) {
     labels.enter().append("text").classed(groupid, true);
     labels.exit().remove();
     labels.attr("text-anchor", "end").attr("fill", fill).text(function(d) { return d.ShortName(); }).call(tooltip);
-    labels.attr('x', swimlane.margin()-5).attr('y', function(d, i) { return offsety + (i+.5) * height; }).attr("dominant-baseline", "middle");
+    labels.attr('x', swimlane.margin()-10).attr('y', function(d, i) { return offsety + (i+.5) * height; }).attr("dominant-baseline", "middle");
+  };
+  
+  label.exit = function(groupid) {
+    d3.select(this).selectAll("text."+groupid).remove();
   };
 
   label.fill = function(_) { if (!arguments.length) return fill; fill = _; return label; };
   label.tooltip = function(_) { if (!arguments.length) return tooltip; tooltip = _; return label; };
   
   return label;  
+};
+
+function ExpandContract(swimlane) {
+
+  /* event callbacks */
+  var callbacks = {
+      "expand": function(){},
+      "contract": function(){}
+  };
+
+  function button(groupid) {
+    d3.select(this).selectAll("g.control").data([groupid]).attr("class", "control").classed(groupid, true);       
+  };
+  
+  button.refresh = function(groupid, offsety, size) {
+    var buttons = d3.select(this).selectAll("g.control").filter("."+groupid).data([groupid]);
+    buttons.enter().append("g").attr("class", "control").classed(groupid, true).append("rect");
+    buttons.exit().remove();
+    buttons.select("rect")
+      .attr("x", swimlane.margin() - size / 2 - 1)
+      .attr("y", offsety - size / 2)
+      .attr("width", size)
+      .attr("height", size)
+      .attr("fill", "green")
+      .on("click", function(d) { callbacks["contract"].call(this, d); });
+  };
+
+  button.exit = function(groupid) {
+    d3.select(this).selectAll("g.control."+groupid).remove();
+  };
+
+  button.on = function(evt, cb) { if (cb==null) return callbacks[evt]; callbacks[evt] = cb; return button; };
+
+  return button;
+  
 };

@@ -226,6 +226,10 @@ XSpan.prototype.Events = function() {
 	return this.events;
 };
 
+XSpan.prototype.Edges = function() {
+  return [].concat.apply([], this.Events().map(function(event) { return event.Edges(); }));
+};
+
 XSpan.prototype.Start = function() {
 	return this.start;
 };
@@ -318,7 +322,11 @@ XThread.prototype.Spans = function() {
 };
 
 XThread.prototype.Events = function() {
-	return [].concat.apply([], this.Spans().map(function(span) { return span.Events(); }));
+  return [].concat.apply([], this.Spans().map(function(span) { return span.Events(); }));
+};
+
+XThread.prototype.Edges = function() {
+  return [].concat.apply([], this.Spans().map(function(span) { return span.Edges(); }));
 };
 
 XThread.prototype.Start = function() {
@@ -384,7 +392,11 @@ XProcess.prototype.Spans = function() {
 };
 
 XProcess.prototype.Events = function() {
-	return [].concat.apply([], this.Threads().map(function(thread) { return thread.Events(); }));
+  return [].concat.apply([], this.Threads().map(function(thread) { return thread.Events(); }));
+};
+
+XProcess.prototype.Edges = function() {
+  return [].concat.apply([], this.Threads().map(function(thread) { return thread.Edges(); }));
 };
 
 XProcess.prototype.Start = function() {
@@ -446,7 +458,11 @@ XMachine.prototype.Start = function() {
 };
 
 XMachine.prototype.GCEvents = function() {
-	return [].concat.apply([], this.Processes().map(function(process) { return process.GCEvents(); }));
+  return [].concat.apply([], this.Processes().map(function(process) { return process.GCEvents(); }));
+};
+
+XMachine.prototype.Edges = function() {
+  return [].concat.apply([], this.Processes().map(function(process) { return process.Edges(); }));
 };
 
 XMachine.getID = function(machine) {

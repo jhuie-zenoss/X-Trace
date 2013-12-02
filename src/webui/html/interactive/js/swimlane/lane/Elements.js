@@ -30,7 +30,10 @@ function EventDot(swimlane) {
     .call(tooltip);
     events.attr('cx', function(d) { return sx(d.Timestamp()); });
     events.exit().remove();
-    
+  };
+  
+  render.exit = function(laneid) {
+    d3.select(this).selectAll("circle").filter("."+laneid).remove();
   };
 
   render.radius = function(_) { if (!arguments.length) return radius; radius = _; return render; };
@@ -58,6 +61,10 @@ function SpanRect(swimlane) {
     spans.attr('x', function(d) { return sx(d.Start()); })
     .attr('width', function(d) { return sx(d.End()) - sx(d.Start()); });
     spans.exit().remove();
+  };
+
+  render.exit = function(laneid) {
+    d3.select(this).selectAll("rect").filter("."+laneid).remove();
   };
 
   return render;
