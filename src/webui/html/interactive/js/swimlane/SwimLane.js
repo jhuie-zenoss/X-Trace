@@ -84,7 +84,7 @@ function SwimLane() {
 			// Add a mouse marker if drawing for the first time
 			newmain.select(".timeindicator line").attr('y1', 0).attr('y2', height);
 			newmain.on("mousemove", function(e) {
-				var mousex = d3.mouse(this)[0];
+				var mousex = d3.mouse(this)[0]-margin;
 				d3.select(this).select(".timeindicator line").attr('x1', mousex).attr('x2', mousex);				
 			});
 
@@ -101,12 +101,11 @@ function SwimLane() {
 				var rangemin = data.min - datalen / 10.0;
 				var rangemax = data.max + datalen / 10.0;
 
-				var mousex = sx.invert(d3.mouse(this)[0]);
-				var brushExtent = brush.extent();
+				var mousex = sx.invert(d3.mouse(this)[0]-margin);
 
 				// do the zoom in or out, clamping if necessary
-				var newx0 = mousex +  ((brushExtent[0] - mousex) / d3.event.scale);
-				var newx1 = mousex + ((brushExtent[1] - mousex) / d3.event.scale);
+				var newx0 = mousex +  ((brush.extent()[0] - mousex) / d3.event.scale);
+				var newx1 = mousex + ((brush.extent()[1] - mousex) / d3.event.scale);
 				newx0 = Math.max(newx0, rangemin);
 				newx1 = Math.min(newx1, rangemax);
 
