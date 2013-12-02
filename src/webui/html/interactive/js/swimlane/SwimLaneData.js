@@ -341,6 +341,10 @@ XThread.sharedID = function(thread) {
   return thread.llid;
 };
 
+XThread.prototype.HDDEvents = function() {
+  return this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 4)=="file"; });
+};
+
 var XProcess = function(machine, id, reports) {
 	this.machine = machine;
 	this.id = id;

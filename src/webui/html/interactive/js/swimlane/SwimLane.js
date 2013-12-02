@@ -1,5 +1,4 @@
 function SwimLane() {
-
 	/* Default values for placement of the swimlane.  User should pass these */
 	var x = 0;
 	var y = 0;
@@ -16,7 +15,6 @@ function SwimLane() {
 	var sx = d3.scale.linear(); // scale between global / zoomed
 	var brush = d3.svg.brush(); // specifies the active draw area
 	var axis = d3.svg.axis().orient("bottom").ticks(10).tickSize(6, 0, 0); // time axis at bottom of viz
-//	var layout = PerThreadLayout();
 
 	// Tooltips
 	var ttGravity = $.fn.tipsy.autoBounds(Math.min(window.width(), window.height()) / 3, "s");
@@ -30,7 +28,6 @@ function SwimLane() {
 		selection.each(function(layout) {  
 			// For spacing out the threads
 			sx.range([0, width]);
-//			var sy = layout(data, height);
 			var sy = d3.scale.linear().domain([0, layout.Height()]).range([0, height]);
 
 			// Create the clip def
@@ -61,7 +58,6 @@ function SwimLane() {
       main.selectAll(".lanes").attr("transform", "translate("+margin+",0)");
 
 			// Draw the thread backgrounds
-			console.log("lanes are: ", layout.Lanes());
 			var lanes = main.select(".lane-background").selectAll("rect").data(layout.Lanes());
 			lanes.enter().append('rect').attr('fill', Lane.Fill);
 			lanes.attr('x', 0).attr('y', Lane.Scale(sy).Offset).attr('width', width).attr('height', Lane.Scale(sy).Height);
@@ -150,7 +146,6 @@ function SwimLane() {
 
 			// Update the x scale from the brush, create a y scale
 			sx.domain(brush.extent());
-//			var sy = layout(data, height);
       var sy = d3.scale.linear().domain([0, layout.Height()]).range([0, height]);
 
 			// Hide open tooltips
@@ -158,14 +153,17 @@ function SwimLane() {
 
 			var minExtent = sx.domain()[0];
 			var maxExtent = sx.domain()[1];
+			
+			var start = new Date().getTime();
 
 			// Figure out which data should be drawn
 			var spandata = layout.Spans().filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent; });
 			var eventdata = layout.Events().filter(function(d) { return d.Timestamp() > minExtent && d.Timestamp() < maxExtent; });
-//			var edgedata = data.Edges().filter(function(d) { return d.parent.Timestamp() < maxExtent && d.child.Timestamp() > minExtent; });
-//			var gcdata = data.GCEvents().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
-//			var hdddata = data.HDDEvents().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
+			var edgedata = layout.Edges().filter(function(d) { return d.parent.Timestamp() < maxExtent && d.child.Timestamp() > minExtent; });
+			var gcdata = layout.GC().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
+			var hdddata = layout.HDD().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
 
+			start = new Date().getTime();
 			// Update the span rects
 			var spans = main.select(".spans").selectAll("rect").data(spandata, XSpan.getID);
 			spans.enter().append("rect").classed("waiting", function(d){return d.waiting;})
@@ -185,41 +183,35 @@ function SwimLane() {
 			events.attr('cx', function(d) { return sx(d.Timestamp()); });
 			events.exit().remove();
 
-			// update the causality edges
-			var lane_edges = [].concat.apply([], layout.Lanes().map(function(lane) { return lane.Edges(); }));
-			var process_edges = [].concat.apply([], layout.Groups().map(function(group) { return group.Edges(); }));
-			var ipc_edges = layout.Edges();
-			var edgeid = function(d) { return d.id; };
-			var edges = main.select(".edges").selectAll("line").data(lane_edges.concat(process_edges, ipc_edges), edgeid);
+			// Update the causality edges
+			var edges = main.select(".edges").selectAll("line").data(edgedata, function(d) { return d.id; });
 			edges.enter().append("line")
 			.attr('y1', function(d) { return sy(d.parent.lane.Offset() + 0.5 * d.parent.lane.Height()); })
 			.attr('y2', function(d) { return sy(d.child.lane.Offset() + 0.5 * d.child.lane.Height()); });
       edges.exit().remove();
 			edges.attr('x1', function(d) { return sx(d.parent.Timestamp()); })
-			.attr('x2', function(d) { return sx(d.child.Timestamp()); });
-      main.select(".edges").selectAll("line").data(lane_edges, edgeid).attr("class", "internal");
-      main.select(".edges").selectAll("line").data(process_edges, edgeid).attr("class", "interthread");
-      main.select(".edges").selectAll("line").data(ipc_edges, edgeid).attr("class", "interprocess");
-//
-//			// Update the GC blocks
-//			var gc = main.select(".gc").selectAll("rect").data(gcdata, function(d) { return d.ID(); });
-//			gc.enter().append("rect")
-//			.attr('y', function(d) { return sy(d); })
-//			.attr('height', function(d) { return sy.laneHeight() * d.process.Threads().length; })
-//			.call(GCTooltip);
-//			gc.attr('x', function(d) { return sx(d.start); })
-//			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
-//			gc.exit().remove();
-//
-//			// Update the HDD blocks
-//			var hdd = main.select(".hdd").selectAll("rect").data(hdddata, function(d) { return d.ID(); });
-//			hdd.enter().append('rect').attr('class', function(d) { return d.type; })
-//			.attr('y', function(d) { return sy(d) + sy.laneHeight() * 0.25; })
-//			.attr('height', function(d) { return sy.laneHeight() * 0.5; })
-//			.call(HDDTooltip);
-//			hdd.attr('x', function(d) { return sx(d.start); })
-//			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
-//			hdd.exit().remove();
+			.attr('x2', function(d) { return sx(d.child.Timestamp()); })
+			.attr('class', function(d) { return d.type; });
+
+			// Update the GC blocks
+			var gc = main.select(".gc").selectAll("rect").data(gcdata, GCEvent.getID);
+			gc.enter().append("rect")
+			.attr('y', function(d) { return sy(d.group.Offset()); })
+			.attr('height', function(d) { return sy(d.group.Height()); })
+			.call(GCTooltip);
+			gc.attr('x', function(d) { return sx(d.start); })
+			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
+			gc.exit().remove();
+
+			// Update the HDD blocks
+			var hdd = main.select(".hdd").selectAll("rect").data(hdddata, XEvent.getID);
+			hdd.enter().append('rect').attr('class', function(d) { return d.type; })
+			.attr('y', function(d) { return sy(d.lane.Offset() + d.lane.Height() * 0.25); })
+			.attr('height', function(d) { return sy(d.lane.Height() * 0.5); })
+			.call(HDDTooltip);
+			hdd.attr('x', function(d) { return sx(d.start); })
+			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
+			hdd.exit().remove();
 
 			// Update the axis
 			var norm = d3.scale.linear().range([0, width]).domain([brush.extent()[0] - layout.workload.min, brush.extent()[1] - layout.workload.min]);

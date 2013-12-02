@@ -6,7 +6,9 @@ Group.prototype.Spans = function() { return [].concat.apply([], this.Lanes().map
 Group.prototype.Threads = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.Threads(); })); };
 Group.prototype.Processes = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.Processes(); })); };
 Group.prototype.Tasks = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.Tasks(); })); };
-Group.prototype.Edges = function() { return []; };
+Group.prototype.Edges = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.Edges(); })); };
+Group.prototype.GC = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.GC(); }));};
+Group.prototype.HDD = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.HDD(); }));};
 
 Group.prototype.Height = function(_) { var s=this.Spacing(); return this.Lanes().map(function(l) { return l.Height(); }).reduce(function(a,b) { return a+b+s; }); };
 Group.prototype.Offset = function(_) { 
@@ -40,7 +42,14 @@ var ProcessGroup = function(layout, process) {
   
   // Set initial spacing and offset for lanes
   this.Spacing(1).Offset(0);
+  
+  // Save the group on the GC events
+  var group = this;
+  this.Events().forEach(function(evt) { evt.group = group; });
+  this.Spans().forEach(function(spn) { spn.group = group; });
+  this.GC().forEach(function(gc) { gc.group = group; });
+  this.Edges().filter(function(edge) { return edge.parent.lane!=edge.child.lane && edge.parent.group==group; }).forEach(function(edge) { edge.type = "group"; });
 };
 ProcessGroup.prototype = new Group();
 ProcessGroup.prototype.Lanes = function() { return this.lanes; };
-ProcessGroup.prototype.Edges = function() { return this.process.Edges().filter(function(edge) { return edge.parent.span.thread.process==edge.child.span.thread.process && edge.parent.span.thread!=edge.child.span.thread; }); };
+ProcessGroup.prototype.GC = function() { return this.process.GCEvents(); };

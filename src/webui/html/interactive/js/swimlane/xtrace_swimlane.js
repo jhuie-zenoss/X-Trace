@@ -22,14 +22,9 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	var brush_scale = d3.scale.linear().domain([rangemin, rangemax]);
 	var brush = d3.svg.brush().x(brush_scale).on("brush", onbrush).extent([initialmin, initialmax]);
 	
-	// Set up the lane generator that determines how elements are placed on screen
-	var overview_layout = PerThreadLayout().spacing(0);
-	var main_layout = PerThreadLayout().spacing(10);
-//	var main_layout = ReusableLaneLayout().spacing(10);
-
 	// Create the visualization components
-	var overview = SwimLaneOverview().brush(brush).on("refresh", refresh).on("redraw", draw).layout(overview_layout);
-	var swimlane = SwimLane().brush(brush).on("refresh", refresh).layout(main_layout);
+	var overview = SwimLaneOverview().brush(brush).on("refresh", refresh);
+	var swimlane = SwimLane().brush(brush).on("refresh", refresh);
 	
 	/* When the viewing area is scaled with the brush */
 	function onbrush() {
@@ -42,7 +37,7 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	function refresh() {
 		// Refresh the viz components
 		chart.datum(vizdata).call(swimlane.refresh);
-//		chart.datum(vizdata).call(overview.refresh);
+		chart.datum(vizdata).call(overview.refresh);
 	}
 	
 	/* Redraws the whole viz, for example when the parameters change or screen is resized */
@@ -67,7 +62,7 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 		
 		// Update the placement of the viz
 		chart.datum(vizdata).call(swimlane);
-//		chart.datum(vizdata).call(overview);
+		chart.datum(vizdata).call(overview);
 		
 		// Refresh the contents
 		refresh();
