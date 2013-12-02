@@ -330,7 +330,11 @@ XThread.prototype.Edges = function() {
 };
 
 XThread.prototype.Start = function() {
-	return Math.min.apply(this, this.Spans().map(function(span) { return span.Start(); }));
+  return Math.min.apply(this, this.Spans().map(function(span) { return span.Start(); }));
+};
+
+XThread.prototype.End = function() {
+  return Math.max.apply(this, this.Spans().map(function(span) { return span.End(); }));
 };
 
 XThread.getID = function(thread) {
