@@ -6,31 +6,51 @@ function GroupByProcess(swimlane) {
   var padding = 10;
   // At this level, we have one renderer per process, rather than one shared
   var renderer = function() {
-    var renderers = {};
-    return function(process, r) {
-      if (r)
-        renderers[process.ID()] = r;
-      else if (!renderers[process.ID()])
-        renderers[process.ID()] = RenderThread(swimlane);
-      return renderers[process.ID()];
+    var cache = {};
+    var get = function(id) {
+      if (!cache[id]) cache[id] = thread_renderer();
+      cache[id].set = function(r) { cache[id] = r; };
+      return cache[id];
     };
+    return get;
   }();
+    
+  var thread_renderer = function() {
+    var r = RenderThread(swimlane);
+    r.button().on("contract", function(d) {
+      console.log("a");
+      r.set(compacted_renderer());
+      console.log("redrawing");
+      swimlane.on("redraw").call(this);
+      console.log("exiting");
+      r.exit(d);
+    }); 
+    return r;
+  };
   
-  var lane = function(processdata) {
+  var compacted_renderer = function() {
+    var r = RenderSpans(swimlane);
+    r.button().on("contract", function(d) {
+      console.log("b");
+      r.set(thread_renderer());
+      swimlane.on("redraw").call(this);
+      r.exit(d);
+    }); 
+    return r;
+  };
+  
+  var group = function(processdata) {
     for (var i = 0; i < processdata.length; i++) {
       var process = processdata[i];
-      renderer(process).on("click", function() {
-        renderer(process, RenderSpans(swimlane));
-      });
-      renderer(process).call(this, process.Threads(), process.ID());
+      renderer(process.ID()).call(this, process.Threads(), process.ID());
     }
   };
   
   // Refreshes the events and spans of the lane
-  lane.refresh = function(processdata, sx, sy, offsety) {
+  group.refresh = function(processdata, sx, sy, offsety) {
     for (var i = 0; i < processdata.length; i++) {
       var process = processdata[i];
-      offsety = renderer(process).refresh.call(this, process.Threads(), process.ID(), sx, sy, offsety);
+      offsety = renderer(process.ID()).refresh.call(this, process.Threads(), process.ID(), sx, sy, offsety);
       offsety += padding;
     }
     
@@ -38,16 +58,16 @@ function GroupByProcess(swimlane) {
   };
   
   // Returns the vertical height of the lanes that would be drawn for the specified process data
-  lane.heightOf = function(processdata) {
+  group.heightOf = function(processdata) {
     return processdata.map(function(process) { 
-      return renderer(process).heightOf(process.Threads()); 
+      return renderer(process.ID()).heightOf(process.Threads()); 
     }).reduce(function(prev, cur) {
       return prev + cur + padding;
     });
   };
 
   // Sets the amount of padding that will be drawn between processes
-  lane.padding = function(_) { if (!arguments.length) return padding; padding = _; return lane; };
+  group.padding = function(_) { if (!arguments.length) return padding; padding = _; return group; };
     
-  return lane;
+  return group;
 }

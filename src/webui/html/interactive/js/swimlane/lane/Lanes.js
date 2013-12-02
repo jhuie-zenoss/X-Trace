@@ -9,27 +9,46 @@ function RenderThread(swimlane) {
 	// Background for this thread
 	var background = ThreadBackground(swimlane);
 	var labels = ThreadLabels(swimlane).fill(background.fill().darker(1));
+	var button = ExpandContract(swimlane);
 
 	function lane(threaddata, groupid) {
+	  console.log("up");
 		background.call(d3.select(this).select(".lane-background").node(), threaddata, groupid);
 		labels.call(d3.select(this).select(".lane-labels").node(), threaddata, groupid);
+		button.call(d3.select(this).select(".lane-buttons").node(), groupid);
 		for (var i = 0; i < threaddata.length; i++) {
 			var thread = threaddata[i];
 			events.call(d3.select(this).select(".events").node(), thread.Events(), thread.ID());
 			spans.call(d3.select(this).select(".spans").node(), thread.Spans(), thread.ID());
 		}
+		var ctx = this;
+    lane.exit(groupid, function() {
+      background.exit.call(d3.select(ctx).select(".lane-background").node(), groupid);
+      labels.exit.call(d3.select(ctx).select(".lane-labels").node(), groupid);
+      button.exit.call(d3.select(ctx).select(".lane-buttons").node(), groupid);
+      var evtnode = d3.select(ctx).select(".events").node(), spannode = d3.select(ctx).select(".spans").node();
+      threaddata.forEach(function(thread) { events.exit.call(evtnode, thread.ID()); spans.exit.call(spannode, thread.ID()); });
+    });
 	};
+  
+  lane.exit = function() {
+    var handlers = {};
+    return function(groupid, handler) {
+      console.log("exiting", groupid);
+      if (handler) handlers[groupid] = handler; else handlers[groupid].call(this); return lane;
+    };
+  }(); 
 	
 	lane.refresh = function(threaddata, groupid, sx, sy, offsety) {
     background.refresh.call(d3.select(this).select(".lane-background").node(), threaddata, groupid, sy(offsety), sy(height), sx);
     labels.refresh.call(d3.select(this).select(".lane-labels").node(), threaddata, groupid, sy(offsety), sy(height));
+    button.refresh.call(d3.select(this).select(".lane-buttons").node(), groupid, sy(offsety + height * threaddata.length / 2.0), sy(height));
 		for (var i = 0; i < threaddata.length; i++) {
 			var thread = threaddata[i];
 			events.refresh.call(d3.select(this).select(".events").node(), thread.Events(), thread.ID(), sy(offsety), sy(height), sx);
 			spans.refresh.call(d3.select(this).select(".spans").node(), thread.Spans(), thread.ID(), sy(offsety), sy(height), sx);
 			offsety += height;
 		}
-		background.on("click", cbs["click"]);
 		
 		return offsety;
 	};
@@ -42,10 +61,9 @@ function RenderThread(swimlane) {
 	lane.height = function(_) { if (!arguments.length) return height; height = _; return lane; };
 	lane.events = function(_) { if (!arguments.length) return events; events = _; return lane; };
 	lane.spans = function(_) { if (!arguments.length) return spans; spans = _; return lane; };
-	lane.background = function(_) { if (!arguments.length) return background; background = _; return lane; };
-  
-  cbs = {"click": function(){}};
-  lane.on = function(evt, cb) { if (cb) cbs[evt] = cb; else return cbs[evt]; return lane; };
+  lane.background = function(_) { if (!arguments.length) return background; background = _; return lane; };
+  lane.labels = function(_) { if (!arguments.length) return labels; labels = _; return lane; };
+  lane.button = function(_) { if (!arguments.length) return button; button = _; return lane; };
 	
 	return lane;
 };
@@ -60,24 +78,35 @@ function RenderSpans(swimlane) {
   var spans = SpanRect(swimlane);
   // Background for this thread
   var background = ThreadBackground(swimlane);
+  var button = ExpandContract(swimlane);
   
   // Cache for grouped spans
   var cache = {};
 
   function lane(threaddata, groupid) {
+    console.log("down")
     var groupings = lane.group.call(this, groupid, threaddata);
     background.call(d3.select(this).select(".lane-background").node(), groupings, groupid);
-//    labels.call(d3.select(this).select(".lane-labels").node(), threaddata, groupid);
+    button.call(d3.select(this).select(".lane-buttons").node(), groupid);
     for (var i = 0; i < groupings.length; i++) {
       var group = groupings[i];
       events.call(d3.select(this).select(".events").node(), group.Events(), group.ID());
       spans.call(d3.select(this).select(".spans").node(), group.Spans(), group.ID());
     }
+    var ctx = this;
+    console.log("exiting for", groupid);
+    lane.exit(groupid, function() {
+      background.exit.call(d3.select(ctx).select(".lane-background").node(), groupid);
+      button.exit.call(d3.select(ctx).select(".lane-buttons").node(), groupid);
+      var evtnode = d3.select(ctx).select(".events").node(), spannode = d3.select(ctx).select(".spans").node();
+      groupings.forEach(function(group) { events.exit.call(evtnode, group.ID()); spans.exit.call(spannode, group.ID()); });
+    });
   };
   
   lane.refresh = function(threaddata, groupid, sx, sy, offsety) {
     var groupings = lane.group.call(this, groupid, threaddata);
     background.refresh.call(d3.select(this).select(".lane-background").node(), groupings, groupid, sy(offsety), sy(height), sx);
+    button.refresh.call(d3.select(this).select(".lane-buttons").node(), groupid, sy(offsety + height * groupings.length / 2.0), sy(height));
     for (var i = 0; i < groupings.length; i++) {
       var group = groupings[i];
       events.refresh.call(d3.select(this).select(".events").node(), group.Events(), group.ID(), sy(offsety), sy(height), sx);
@@ -87,6 +116,14 @@ function RenderSpans(swimlane) {
     
     return offsety;
   };
+  
+  lane.exit = function() {
+    var handlers = {};
+    return function(groupid, handler) {
+      console.log(groupid, handlers);
+      if (handler) handlers[groupid] = handler; else handlers[groupid].call(this); return lane;
+    };
+  }(); 
   
   // Returns the vertical height of the lanes that would be drawn for the specified thread data
   lane.heightOf = function(threaddata) {
@@ -123,10 +160,8 @@ function RenderSpans(swimlane) {
   lane.height = function(_) { if (!arguments.length) return height; height = _; return lane; };
   lane.events = function(_) { if (!arguments.length) return events; events = _; return lane; };
   lane.spans = function(_) { if (!arguments.length) return spans; spans = _; return lane; };
-  lane.background = function(_) { if (!arguments.length) return background; background = _; return lane; };
-  
-  cbs = {"click": function(){}};
-  lane.on = function(evt, cb) { if (cb) cbs[evt] = cb; else return cbs[evt]; return lane; };
+  lane.background = function(_) { if (!arguments.length) return background; background = _; return lane; };;
+  lane.button = function(_) { if (!arguments.length) return button; button = _; return lane; };
   
   return lane;
 };

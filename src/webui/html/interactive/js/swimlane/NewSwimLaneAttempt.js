@@ -9,70 +9,74 @@ function SwimLane() {
 
 	/* event callbacks */
 	var callbacks = {
-		"refresh": function(){}
+			"refresh": function(){},
+	    "redraw": function(){}
 	};
 
 	// For internal use
 	var sx = d3.scale.linear(); // scale between global / zoomed
 	var brush = d3.svg.brush(); // specifies the active draw area
 	var axis = d3.svg.axis().orient("bottom").ticks(10).tickSize(6, 0, 0); // time axis at bottom of viz
-//	var layout = PerThreadLayout();
+	var layout = PerThreadLayout();
 
 	// Tooltips
 	var ttGravity = $.fn.tipsy.autoBounds(Math.min(window.width(), window.height()) / 3, "s");
 	var EventTooltip = makeEventTooltip(ttGravity);
 	var GCTooltip = makeGCTooltip(ttGravity);
 	var HDDTooltip = makeHDDTooltip(ttGravity);
-	var ThreadTooltip = makeThreadTooltip($.fn.tipsy.autoWE);
+
+	// Process lane
+	var process = GroupByProcess(swimlane);
 
 	/* Main rendering function */
 	function swimlane(selection) {
-		selection.each(function(layout) {  
+		selection.each(function(data) {   
+			var threads = data.Threads();
+
 			// For spacing out the threads
 			sx.range([0, width]);
-//			var sy = layout(data, height);
-			var sy = d3.scale.linear().domain([0, layout.Height()]).range([0, height]);
+			var sy = d3.scale.linear().domain([0, process.heightOf(data.Processes())]).range(0, height);
 
 			// Create the clip def
-			var defs = d3.select(this).selectAll(".clipdef").data([layout]);
+			var defs = d3.select(this).selectAll(".clipdef").data([data]);
 			defs.enter().append("defs").attr("class", "clipdef").append("clipPath").attr("id", "clip").append("rect");
 			defs.select("rect").attr("width", width).attr("height", height);
 			defs.exit().remove();
 
-      // Add all of the containers for the viz
-      var main = d3.select(this).selectAll(".main").data([layout]);
-      var newmain = main.enter().append('g').attr("class", "main");
-      var newlanes = newmain.append('g').attr("class", "lanes");
-      newlanes.append("g").attr("class", "lane-background");
-      newlanes.append("g").attr("class", "axis");
-      newlanes.append("g").attr("class", "spans");
-      newlanes.append("g").attr("class", "timeindicator").append("line");
-      newlanes.append("g").attr("class", "edges");
-      newlanes.append("g").attr("class", "gc");
-      newlanes.append("g").attr("class", "hdd");
-      newlanes.append("g").attr("class", "events");
-      var newmargin = newmain.append('g').attr("class", "margin");
+			// Add all of the containers for the viz
+			var main = d3.select(this).selectAll(".main").data([data]);
+			var newmain = main.enter().append('g').attr("class", "main");
+			var newlanes = newmain.append('g').attr("class", "lanes");
+			newlanes.append("g").attr("class", "lane-background");
+			newlanes.append("g").attr("class", "axis");
+			newlanes.append("g").attr("class", "spans");
+			newlanes.append("g").attr("class", "timeindicator").append("line");
+			newlanes.append("g").attr("class", "edges");
+			newlanes.append("g").attr("class", "gc");
+			newlanes.append("g").attr("class", "hdd");
+			newlanes.append("g").attr("class", "events");
+			var newmargin = newmain.append('g').attr("class", "margin");
       newmargin.append("g").attr("class", "lane-labels");
       newmargin.append("g").attr("class", "lane-buttons");
-      main.exit().remove();
+			main.exit().remove();
 
-      // Position the containers
-      main.attr("transform", "translate("+x+","+y+")").attr("width", width).attr("height", height);
-      main.selectAll(".lanes").attr("transform", "translate("+margin+",0)");
+			// Position the containers
+			main.attr("transform", "translate("+x+","+y+")").attr("width", width).attr("height", height);
+			main.selectAll(".lanes").attr("transform", "translate("+margin+",0)");
 
 			// Draw the thread backgrounds
-			console.log("lanes are: ", layout.Lanes());
-			var lanes = main.select(".lane-background").selectAll("rect").data(layout.Lanes());
-			lanes.enter().append('rect').attr('fill', Lane.Fill);
-			lanes.attr('x', 0).attr('y', Lane.Scale(sy).Offset).attr('width', width).attr('height', Lane.Scale(sy).Height);
-			lanes.exit().remove();
+//			console.log("lanes are: " + sy.lanes());
+//			var lanes = main.select(".lane-background").selectAll("rect").data(sy.lanes());
+//			lanes.enter().append('rect').attr('fill', function(d) { return d.color; });
+//			lanes.attr('x', 0).attr('y', function(d) { return d.offset + 0.5; }).attr('width', width).attr('height', sy.laneHeight() - 0.5);
+//			lanes.exit().remove();
 
 			// Draw the lane labels
-			var lanelabels = main.select(".lane-labels").selectAll("text").data(layout.Lanes());
-			lanelabels.enter().append("text").attr('text-anchor', 'end').attr('fill', function(d) { return d.Fill().darker(1); })
-			.text(Lane.Label).call(ThreadTooltip);
-			lanelabels.attr('x', margin-5).attr('y', function(d) { return sy(d.Offset()+d.Height()*0.5); }).attr("dominant-baseline", "middle");
-			lanelabels.exit().remove();
+//			var lanelabels = main.select(".lane-labels").selectAll("text").data(sy.lanes());
+//			lanelabels.enter().append("text").attr('text-anchor', 'end').attr('fill', function(d) { return d.color.darker(1); })
+//			.text(function(d) { return d.title; }).call(layout.tooltip());
+//			lanelabels.attr('x', -5).attr('y', function(d) { return d.offset + sy.laneHeight() * 0.5; }).attr("dominant-baseline", "middle");
+//			lanelabels.exit().remove();
 
 			// Place the time axis
 			main.select(".axis").attr("transform", "translate(0,"+height+")");
@@ -100,7 +104,6 @@ function SwimLane() {
 
 			var zoom = d3.behavior.zoom();
 			zoom.on("zoom", function() {
-			  var data = layout.workload;
 				var datalen = data.max - data.min;
 				var rangemin = data.min - datalen / 10.0;
 				var rangemax = data.max + datalen / 10.0;
@@ -140,67 +143,77 @@ function SwimLane() {
 			main.select(".edges").selectAll("line").remove();
 			main.select(".gc").selectAll("rect").remove();
 			main.select(".hdd").selectAll("rect").remove();
+
+			process.call(this, data.Processes());
 		});
 
 	};
 
 	swimlane.refresh = function(selection) {
-		selection.each(function(layout) {
+		selection.each(function(data) {
 			var main = d3.select(this).select(".main");
+
 
 			// Update the x scale from the brush, create a y scale
 			sx.domain(brush.extent());
-//			var sy = layout(data, height);
-      var sy = d3.scale.linear().domain([0, layout.Height()]).range([0, height]);
+			var sy = d3.scale.linear().domain([0, process.heightOf(data.Processes())]).range([0, height]);
+
+			console.log("sy is", sy, sy(0));
 
 			// Hide open tooltips
 			$(".tipsy").remove();
 
-			var minExtent = sx.domain()[0];
-			var maxExtent = sx.domain()[1];
+			process.refresh.call(this, data.Processes(), sx, sy, 0);
+//			processdata, sx, sy, offsety
 
-			// Figure out which data should be drawn
-			var spandata = layout.Spans().filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent; });
-			var eventdata = layout.Events().filter(function(d) { return d.Timestamp() > minExtent && d.Timestamp() < maxExtent; });
+//			var minExtent = sx.domain()[0];
+//			var maxExtent = sx.domain()[1];
+
+//			// Figure out which data should be drawn
+//			var spandata = data.Spans().filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent; });
+//			var eventdata = data.Events().filter(function(d) { return d.Timestamp() > minExtent && d.Timestamp() < maxExtent; });
 //			var edgedata = data.Edges().filter(function(d) { return d.parent.Timestamp() < maxExtent && d.child.Timestamp() > minExtent; });
 //			var gcdata = data.GCEvents().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
 //			var hdddata = data.HDDEvents().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
 
-			// Update the span rects
-			var spans = main.select(".spans").selectAll("rect").data(spandata, XSpan.getID);
-			spans.enter().append("rect").classed("waiting", function(d){return d.waiting;})
-			.attr('y', function(d) { return sy(d.lane.Offset() + 0.1 * d.lane.Height()); })
-			.attr('height', function(d) { return sy(0.8 * d.lane.Height()); });
-			spans.attr('x', function(d) { return sx(d.Start()); })
-			.attr('width', function(d) { return sx(d.End()) - sx(d.Start()); });
-			spans.exit().remove();
 
-			// Update the event dots
-			var events = main.select(".events").selectAll("circle").data(eventdata, XEvent.getID);
-			events.enter().append('circle').attr("class", function(d) { return d.type; })
-			.attr('cy', function(d) { return sy(d.lane.Offset() + 0.5 * d.lane.Height()); })
-			.attr('r', function(d) { return d.type=="event" ? 5 : 2; })
-			.attr('id', function(d) { return d.ID(); })
-			.call(EventTooltip);
-			events.attr('cx', function(d) { return sx(d.Timestamp()); });
-			events.exit().remove();
 
-			// update the causality edges
-			var lane_edges = [].concat.apply([], layout.Lanes().map(function(lane) { return lane.Edges(); }));
-			var process_edges = [].concat.apply([], layout.Groups().map(function(group) { return group.Edges(); }));
-			var ipc_edges = layout.Edges();
-			var edgeid = function(d) { return d.id; };
-			var edges = main.select(".edges").selectAll("line").data(lane_edges.concat(process_edges, ipc_edges), edgeid);
-			edges.enter().append("line")
-			.attr('y1', function(d) { return sy(d.parent.lane.Offset() + 0.5 * d.parent.lane.Height()); })
-			.attr('y2', function(d) { return sy(d.child.lane.Offset() + 0.5 * d.child.lane.Height()); });
-      edges.exit().remove();
-			edges.attr('x1', function(d) { return sx(d.parent.Timestamp()); })
-			.attr('x2', function(d) { return sx(d.child.Timestamp()); });
-      main.select(".edges").selectAll("line").data(lane_edges, edgeid).attr("class", "internal");
-      main.select(".edges").selectAll("line").data(process_edges, edgeid).attr("class", "interthread");
-      main.select(".edges").selectAll("line").data(ipc_edges, edgeid).attr("class", "interprocess");
-//
+//			// Update the span rects
+//			var spans = main.select(".spans").selectAll("rect").data(spandata, function(d){return d.ID();});
+//			spans.enter().append("rect").classed("waiting", function(d){return d.waiting;})
+//			.attr('y', function(d) { return sy(d) + .1 * sy.laneHeight() + 0.5; })
+//			.attr('height', function(d) { return .8 * sy.laneHeight(); })
+//			spans.attr('x', function(d) { return sx(d.Start()); })
+//			.attr('width', function(d) { return sx(d.End()) - sx(d.Start()); });
+//			spans.exit().remove();
+
+//			// Update the event dots
+//			var events = main.select(".events").selectAll("circle").data(eventdata, function(d){return d.ID();});
+//			events.enter().append('circle').attr("class", function(d) { return d.type; })
+//			.attr('cy', function(d) { return sy(d) + .5 * sy.laneHeight(); })
+//			.attr('r', function(d) { return d.type=="event" ? 5 : 2; })
+//			.attr('id', function(d) { return d.ID(); })
+//			.call(EventTooltip);
+//			events.attr('cx', function(d) { return sx(d.Timestamp()); });
+//			events.exit().remove();
+
+//			// update the causality edges
+//			var edges = main.select(".edges").selectAll("line").data(edgedata, function(d) {return d.id;});
+//			edges.enter().append("line")
+//			.attr('y1', function(d) { return sy(d.parent) + .5 * sy.laneHeight(); })
+//			.attr('y2', function(d) { return sy(d.child) + .5 * sy.laneHeight(); })
+//			.attr('class', function(d) {
+//			if (d.parent.span.thread.process!=d.child.span.thread.process)
+//			return "interprocess";
+//			else if (d.parent.span.thread!=d.child.span.thread)
+//			return "interthread";
+//			else
+//			return "internal";
+//			});
+//			edges.attr('x1', function(d) { return sx(d.parent.Timestamp()); })
+//			.attr('x2', function(d) { return sx(d.child.Timestamp()); });
+//			edges.exit().remove();
+
 //			// Update the GC blocks
 //			var gc = main.select(".gc").selectAll("rect").data(gcdata, function(d) { return d.ID(); });
 //			gc.enter().append("rect")
@@ -210,7 +223,7 @@ function SwimLane() {
 //			gc.attr('x', function(d) { return sx(d.start); })
 //			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
 //			gc.exit().remove();
-//
+
 //			// Update the HDD blocks
 //			var hdd = main.select(".hdd").selectAll("rect").data(hdddata, function(d) { return d.ID(); });
 //			hdd.enter().append('rect').attr('class', function(d) { return d.type; })
@@ -222,24 +235,19 @@ function SwimLane() {
 //			hdd.exit().remove();
 
 			// Update the axis
-			var norm = d3.scale.linear().range([0, width]).domain([brush.extent()[0] - layout.workload.min, brush.extent()[1] - layout.workload.min]);
+			var norm = d3.scale.linear().range([0, width]).domain([brush.extent()[0] - data.min, brush.extent()[1] - data.min]);
 			main.select(".axis").call(axis.scale(norm));
 		});
 	};
 
-	swimlane.on = function(evt, cb) {
-		if (cb==null)
-			return callbacks[evt];
-		callbacks[evt] = cb;
-		return swimlane;
-	};
+	swimlane.on = function(evt, cb) { if (cb==null)	return callbacks[evt]; callbacks[evt] = cb; return swimlane; };
 
 	swimlane.brush = function(_) { if (!arguments.length) return brush; brush = _; return swimlane; };
 	swimlane.x = function(_) { if (!arguments.length) return x; x = _; return swimlane; };
 	swimlane.y = function(_) { if (!arguments.length) return y; y = _; return swimlane; };
 	swimlane.width = function(_) { if (!arguments.length) return width; width = _; return swimlane; };
 	swimlane.height = function(_) { if (!arguments.length) return height; height = _; return swimlane; };
-  swimlane.margin = function(_) { if (!arguments.length) return margin; margin = _; return swimlane; };
+	swimlane.margin = function(_) { if (!arguments.length) return margin; margin = _; return swimlane; };
 	swimlane.layout = function(_) { if (!arguments.length) return layout; layout = _; return swimlane; };
 
 	return swimlane;    
