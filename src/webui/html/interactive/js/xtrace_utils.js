@@ -166,7 +166,7 @@ function getGCReports(ids, callback, errback) {
 			var reports = data[i].reports;
 			for (var j = 0; j < reports.length; j++) {
 				var report = reports[j];
-				if (report["Operation"] && report["Operation"][0]=="GarbageCollection" || report["Operation"][0]=="GC") {
+				if (report["Operation"] && report["Operation"][0]=="GC") {
 					var processID = report["ProcessID"][0];
 					if (!GCReportsByProcess[processID])
 						GCReportsByProcess[processID] = [report];

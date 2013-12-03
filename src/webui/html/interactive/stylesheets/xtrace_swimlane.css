@@ -60,8 +60,7 @@
 }
 
 .main .hdd rect.fileflush,.main .hdd rect.fileclose {
-	stroke-width: 2px;
-	stroke: black;
+	fill: #808;
 }
 
 .main .gc rect {
@@ -88,6 +87,22 @@
 
 .mini .lane-lines line {
 	stroke: lightgray;
+}
+
+.controlpanel .button {
+	cursor: pointer;
+}
+
+.controlpanel .button rect {
+	stroke: black;
+	stroke-width: 1px;
+	fill: red;
+}
+
+.controlpanel .button rect.enabled {
+	stroke: black;
+	stroke-width: 1px;
+	fill: green;
 }
 
 .axis line,.axis path {

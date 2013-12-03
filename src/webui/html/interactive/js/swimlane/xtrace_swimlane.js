@@ -1,7 +1,7 @@
 //lightweight is an optional argument that will try to draw the graph as fast as possible
 function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {	
 	// Parameters
-	var margin = { top: 20, right: 15, bottom: 15, left: 120 };		// Margins around the visualization
+	var margin = { top: 30, right: 15, bottom: 15, left: 120 };		// Margins around the visualization
 	var overlap = 0.1;												// Extra space inside the viz
 	
 	// Create the data representation
@@ -25,6 +25,7 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	// Create the visualization components
 	var overview = SwimLaneOverview().brush(brush).on("refresh", refresh);
 	var swimlane = SwimLane().brush(brush).on("refresh", refresh);
+  var controlpanel = SwimLaneControlPanel().on("property", swimlane.property);
 	
 	/* When the viewing area is scaled with the brush */
 	function onbrush() {
@@ -37,7 +38,8 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	function refresh() {
 		// Refresh the viz components
 		chart.datum(vizdata).call(swimlane.refresh);
-		chart.datum(vizdata).call(overview.refresh);
+    chart.datum(vizdata).call(overview.refresh);
+    chart.datum(vizdata).call(controlpanel.refresh);
 	}
 	
 	/* Redraws the whole viz, for example when the parameters change or screen is resized */
@@ -59,10 +61,12 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 		// Update the vizes
 		overview.width(width).height(miniHeight).margin(margin.left).y(mainHeight+60);
 		swimlane.width(width).height(mainHeight).margin(margin.left).y(margin.top);
+		controlpanel.width(window.width(0)).height(margin.top).x(margin.left).y(0);
 		
 		// Update the placement of the viz
 		chart.datum(vizdata).call(swimlane);
-		chart.datum(vizdata).call(overview);
+    chart.datum(vizdata).call(overview);
+    chart.datum(vizdata).call(controlpanel);
 		
 		// Refresh the contents
 		refresh();

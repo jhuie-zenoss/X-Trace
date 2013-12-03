@@ -18,9 +18,6 @@ function SwimLaneOverview() {
 	// The brush.  Ought to be overridden for useful behavior
 	var brush = d3.svg.brush();
 
-	// Determines vertical lane placements
-//	var layout = PerThreadLayout();
-
 	/* Main rendering function */
 	function overview(selection) {
 		selection.each(function(layout) {   
@@ -116,8 +113,6 @@ function SwimLaneOverview() {
 	overview.width = function(_) { if (!arguments.length) return width; width = _; return overview; };
   overview.height = function(_) { if (!arguments.length) return height; height = _; return overview; };
   overview.margin = function(_) { if (!arguments.length) return margin; margin = _; return overview; };
-	overview.layout = function(_) { if (!arguments.length) return layout; layout = _; return overview; };
-
 
 	return overview;    
 }

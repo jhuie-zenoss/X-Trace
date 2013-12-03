@@ -5,6 +5,14 @@ function SwimLane() {
 	var width = 500;
 	var height = 100;
 	var margin = 120;
+	
+	/* turns on or off key components of the viz */
+	var properties = {
+	    "showevents": true,
+	    "showedges": true,
+	    "showgc": true,
+	    "showspans": true
+	};
 
 	/* event callbacks */
 	var callbacks = {
@@ -50,7 +58,7 @@ function SwimLane() {
       newlanes.append("g").attr("class", "events");
       var newmargin = newmain.append('g').attr("class", "margin");
       newmargin.append("g").attr("class", "lane-labels");
-      newmargin.append("g").attr("class", "lane-buttons");
+      newmargin.append("g").attr("class", "lane-controls");
       main.exit().remove();
 
       // Position the containers
@@ -67,8 +75,15 @@ function SwimLane() {
 			var lanelabels = main.select(".lane-labels").selectAll("text").data(layout.Lanes());
 			lanelabels.enter().append("text").attr('text-anchor', 'end').attr('fill', function(d) { return d.Fill().darker(1); })
 			.text(Lane.Label).call(ThreadTooltip);
-			lanelabels.attr('x', margin-5).attr('y', function(d) { return sy(d.Offset()+d.Height()*0.5); }).attr("dominant-baseline", "middle");
+			lanelabels.attr('x', margin-12).attr('y', function(d) { return sy(d.Offset()+d.Height()*0.5); }).attr("dominant-baseline", "middle");
 			lanelabels.exit().remove();
+			
+			// Add the hit area
+			var lanecontrols = main.select(".lane-controls").selectAll("rect.groupcontrols").data(layout.Groups());
+			lanecontrols.enter().append("rect").attr("class", "groupcontrols");
+			lanecontrols.attr("x", margin-6).attr("y", Group.Scale(sy).Offset).attr("width", 4).attr("height", Group.Scale(sy).Height)
+			.attr("fill", function(d) { return d.Fill().darker(1); });
+			lanecontrols.exit().remove();
 
 			// Place the time axis
 			main.select(".axis").attr("transform", "translate(0,"+height+")");
@@ -164,43 +179,56 @@ function SwimLane() {
 
 			start = new Date().getTime();
 			// Update the span rects
-			var spans = main.select(".spans").selectAll("rect").data(spandata, XSpan.getID);
-			spans.enter().append("rect").classed("waiting", function(d){return d.waiting;})
-			.attr('y', function(d) { return sy(d.lane.Offset() + 0.1 * d.lane.Height()); })
-			.attr('height', function(d) { return sy(0.8 * d.lane.Height()); });
-			spans.attr('x', function(d) { return sx(d.Start()); })
-			.attr('width', function(d) { return sx(d.End()) - sx(d.Start()); });
-			spans.exit().remove();
+			if (properties.showspans==true) {
+  			var spans = main.select(".spans").selectAll("rect").data(spandata, XSpan.getID);
+  			spans.enter().append("rect").classed("waiting", function(d){return d.waiting;})
+  			.attr('y', function(d) { return sy(d.lane.Offset() + 0.1 * d.lane.Height()); })
+  			.attr('height', function(d) { return sy(0.8 * d.lane.Height()); });
+  			spans.attr('x', function(d) { return sx(d.Start()); })
+  			.attr('width', function(d) { return sx(d.End()) - sx(d.Start()); });
+  			spans.exit().remove();
+			} else {
+			  main.select(".spans").selectAll("rect").remove();
+			}
 
 			// Update the event dots
-			var events = main.select(".events").selectAll("circle").data(eventdata, XEvent.getID);
-			events.enter().append('circle').attr("class", function(d) { return d.type; })
-			.attr('cy', function(d) { return sy(d.lane.Offset() + 0.5 * d.lane.Height()); })
-			.attr('r', function(d) { return d.type=="event" ? 5 : 2; })
-			.attr('id', function(d) { return d.ID(); })
-			.call(EventTooltip);
-			events.attr('cx', function(d) { return sx(d.Timestamp()); });
-			events.exit().remove();
+			if (properties.showevents==true) {
+    		var events = main.select(".events").selectAll("circle").data(eventdata, XEvent.getID);
+    		events.enter().append('circle').attr("class", function(d) { return d.type; })
+    		.attr('cy', function(d) { return sy(d.lane.Offset() + 0.5 * d.lane.Height()); })
+    		.attr('r', function(d) { return d.type=="event" ? 5 : 2; })
+    		.attr('id', function(d) { return d.ID(); })
+    		.call(EventTooltip);
+    		events.attr('cx', function(d) { return sx(d.Timestamp()); });
+    		events.exit().remove();
+			} else {
+			  main.select(".events").selectAll("circle").remove();
+			}
 
 			// Update the causality edges
-			var edges = main.select(".edges").selectAll("line").data(edgedata, function(d) { return d.id; });
-			edges.enter().append("line")
-			.attr('y1', function(d) { return sy(d.parent.lane.Offset() + 0.5 * d.parent.lane.Height()); })
-			.attr('y2', function(d) { return sy(d.child.lane.Offset() + 0.5 * d.child.lane.Height()); });
-      edges.exit().remove();
-			edges.attr('x1', function(d) { return sx(d.parent.Timestamp()); })
-			.attr('x2', function(d) { return sx(d.child.Timestamp()); })
-			.attr('class', function(d) { return d.type; });
+      if (properties.showedges==true) {
+  			var edges = main.select(".edges").selectAll("line").data(edgedata, function(d) { return d.id; });
+  			edges.enter().append("line")
+  			.attr('y1', function(d) { return sy(d.parent.lane.Offset() + 0.5 * d.parent.lane.Height()); })
+  			.attr('y2', function(d) { return sy(d.child.lane.Offset() + 0.5 * d.child.lane.Height()); });
+        edges.exit().remove();
+  			edges.attr('x1', function(d) { return sx(d.parent.Timestamp()); })
+  			.attr('x2', function(d) { return sx(d.child.Timestamp()); })
+  			.attr('class', function(d) { return d.type; });
+			} else {
+			  main.select(".edges").selectAll("line").remove();
+			}
 
 			// Update the GC blocks
-			var gc = main.select(".gc").selectAll("rect").data(gcdata, GCEvent.getID);
-			gc.enter().append("rect")
-			.attr('y', function(d) { return sy(d.group.Offset()); })
-			.attr('height', function(d) { return sy(d.group.Height()); })
-			.call(GCTooltip);
-			gc.attr('x', function(d) { return sx(d.start); })
-			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
-			gc.exit().remove();
+      if (properties.showgc==true) {
+  			var gc = main.select(".gc").selectAll("rect").data(gcdata, GCEvent.getID);
+  			gc.enter().append("rect").attr('y', function(d) { return sy(d.group.Offset()); })
+  			.attr('height', function(d) { return sy(d.group.Height()); }).call(GCTooltip);
+  			gc.attr('x', function(d) { return sx(d.start); }).attr('width', function(d) { return sx(d.end) - sx(d.start); });
+  			gc.exit().remove();
+      } else {
+        main.select(".gc").selectAll("rect").remove();        
+      }
 
 			// Update the HDD blocks
 			var hdd = main.select(".hdd").selectAll("rect").data(hdddata, XEvent.getID);
@@ -231,7 +259,7 @@ function SwimLane() {
 	swimlane.width = function(_) { if (!arguments.length) return width; width = _; return swimlane; };
 	swimlane.height = function(_) { if (!arguments.length) return height; height = _; return swimlane; };
   swimlane.margin = function(_) { if (!arguments.length) return margin; margin = _; return swimlane; };
-	swimlane.layout = function(_) { if (!arguments.length) return layout; layout = _; return swimlane; };
+  swimlane.property = function(key, value) { properties[key] = value; swimlane.on("refresh").call(this); };
 
 	return swimlane;    
 }
