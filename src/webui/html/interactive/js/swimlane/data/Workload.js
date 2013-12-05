@@ -167,6 +167,18 @@ var XEvent = function(span, report) {
 		this.start = this.timestamp - this.duration;
 		this.end = this.timestamp;
 	}
+	if (this.report["Operation"] && this.report["Operation"][0].substr(0, 4)=="file" && this.report["Class"][0].indexOf("ScheduledFileIO")!=-1) {
+//	if (this.report["Operation"] && this.report["Class"][0].startsWith("edu.brown.cs.systems.xtrace.resourcetracing.events.ScheduledFileIO")!=-1) {
+	  var keys = ["PreWait", "PreDuration", "IOWait", "IODuration", "PostWait", "PostDuration"];
+	  this.duration = 0;
+	  for (var i = 0; i < keys.length; i++) {
+	    if (this.report[keys[i]])
+	      this.duration += Number(this.report[keys[i]][0]);
+	  }
+	  this.duration = this.duration / 1000000.0;
+	  this.start = this.timestamp - this.duration;
+	  this.end = this.timestamp;
+	}
 
 	this.span.thread.process.machine.task.reports_by_id[this.id] = this;
 };
