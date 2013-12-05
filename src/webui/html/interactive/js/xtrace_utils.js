@@ -200,19 +200,27 @@ function getGCReports(ids, callback, errback) {
 
 var sanitizeReports = function(reports) {
     var i = 0;
+    var erroneous = { "edges": [], "ids": []};
     while (i < reports.length) {
         var report = reports[i];
         if (!report.hasOwnProperty("Edge") || report["Edge"].length==0) {
-        	console.warn("Warning: report has no edges", report);
+          erroneous.edges.push(report);
         	report["Edge"] = [];
-        	i++;
         } else if (!report.hasOwnProperty("X-Trace") || report["X-Trace"].length!=1) {
+          erroneous.ids.push(report);
         	reports.splice(i, 1);
-            console.error("Warning: excluding report with no/bad id:", report);
-        } else {
-            i++;
+        	i--;
         }
+        i++;
     }
+    if (erroneous.edges.length>0 || erroneous.ids.length>0) {
+      if (erroneous.edges.length>0)
+        console.warn("Warning: "+erroneous.edges.length+" reports with no edges");
+      if (erroneous.ids.length>0)
+        console.warn("Warning: "+erroneous.ids.length+" reports with no or bad ID");
+      console.warn("Erroneous reports: ", erroneous);
+    }
+    
     return reports;    
 };
 

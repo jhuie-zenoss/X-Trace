@@ -6,7 +6,11 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	
 	// Create the data representation
 	var workload = new Workload(tasksdata, gcdata);
-	var vizdata = new PerTaskLayout(workload);
+  var vizdata;
+	if (params["mode"]=="hdd")
+	  vizdata = new PerTenantLayout(workload);
+	else
+	  vizdata = new PerTaskLayout(workload);
 
 	// Preprocess: determine extent of the data
 	var datalen = workload.max - workload.min;

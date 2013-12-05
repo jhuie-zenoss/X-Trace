@@ -25,6 +25,7 @@ Layout.prototype.Spacing = function(_) {
 };
 
 var PerTaskLayout = function(workload) {
+//  new PerTenantLayout(workload);
   // Save the arguments
   this.workload = workload;
   
@@ -39,3 +40,36 @@ var PerTaskLayout = function(workload) {
 PerTaskLayout.prototype = new Layout();
 PerTaskLayout.prototype.Groups = function() { return this.groups; };
 PerTaskLayout.prototype.Height = function() { var s=this.Spacing(); return this.Groups().map(function(g) { return g.Height(); }).reduce(function(a,b) { return a+b+s; }); };
+
+var PerTenantLayout = function(workload) {
+  this.workload = workload;
+  
+  // First, we determine the tenants of the workload
+  var tenant_id_tag_prefix = "Worker_";
+  var groupings = {};
+  var tasks = workload.Tasks();
+  for (var i=0; i<tasks.length; i++) {
+    var task = tasks[i];
+    var tags = task.Tags();
+    var workerid = "(No worker ID set)";
+    for (var j = 0; j < tags.length; j++) {
+      var tag = tags[j];
+      if (tag.substr(0, tenant_id_tag_prefix.length)==tenant_id_tag_prefix) {
+        workerid = tag;
+        break;
+      }
+    }
+    if (!groupings[workerid])
+      groupings[workerid] = [];
+    groupings[workerid].push(task);
+  }
+  
+  // Create one group per tenant
+  var layout = this;
+  this.groups = Object.keys(groupings).map(function(tenantid) { return new TenantGroup(layout, groupings[tenantid]); });
+
+  // Set the process spacing initially to, say, 5
+  this.Spacing(5);
+};
+PerTenantLayout.prototype = new Layout();
+PerTenantLayout.prototype.Groups = function() { return this.groups; };

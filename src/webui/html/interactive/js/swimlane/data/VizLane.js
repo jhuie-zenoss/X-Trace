@@ -42,3 +42,18 @@ ThreadLane.prototype.Events = function() { return this.thread.Events(); };
 ThreadLane.prototype.Spans = function() { return this.thread.Spans(); };
 ThreadLane.prototype.Edges = function() { return this.thread.Edges(); };
 ThreadLane.prototype.HDD = function() { return this.thread.HDDEvents(); };
+
+var TaskLane = function(group, task) {
+  this.group = group;
+  this.task = task;
+  
+  this.Label(task.ID());
+
+  // Save the lane on the events and spans, in this case just the task
+  var lane = this;
+  this.task.lane = lane;
+  this.HDD().forEach(function(evt) { evt.lane = lane; });
+};
+TaskLane.prototype = new Lane();
+TaskLane.prototype.Spans = function() { return [this.task]; };
+TaskLane.prototype.HDD = function(){ return this.task.HDDEvents(); };

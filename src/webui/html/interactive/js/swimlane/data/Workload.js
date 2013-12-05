@@ -107,7 +107,16 @@ var XTask = function(data) {
 	var reports_by_machine = group_reports_by_field(data.reports, "Host");
 	for (var machine_id in reports_by_machine)
 		this.machines[machine_id] = new XMachine(this, machine_id, reports_by_machine[machine_id]);
-}
+	
+	// Extract the tags
+	var tags = {};
+	for (var i = 0; i < this.reports.length; i++) {
+	  if (this.reports[i]["Tag"])
+	    for (var j = 0; j < this.reports[i]["Tag"].length; j++)
+	      tags[this.reports[i]["Tag"][j]] = true;
+	}
+	this.tags = Object.keys(tags);
+};
 
 XTask.prototype.Machines = function() {
 	var machines = this.machines;
@@ -141,12 +150,24 @@ XTask.prototype.GCEvents = function() {
 	return [].concat.apply([], this.Machines().map(function(machine) { return machine.GCEvents(); }));
 };
 
+XTask.prototype.HDDEvents = function() {
+  return this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 4)=="file"; });
+};
+
 XTask.prototype.ID = function() {
 	return "Task-"+this.id;
 };
 
 XTask.prototype.Start = function() {
-	return Math.min.apply(this, this.Machines().map(function(process) { return process.Start(); }));
+	return Math.min.apply(this, this.Machines().map(function(machine) { return machine.Start(); }));
+};
+
+XTask.prototype.End = function() {
+  return Math.max.apply(this, this.Machines().map(function(machine) { return machine.End(); }));  
+};
+
+XTask.prototype.Tags = function() {
+  return this.tags;
 };
 
 XTask.getID = function(task) {
@@ -408,7 +429,11 @@ XProcess.prototype.Edges = function() {
 };
 
 XProcess.prototype.Start = function() {
-	return Math.min.apply(this, this.Threads().map(function(thread) { return thread.Start(); }));
+  return Math.min.apply(this, this.Threads().map(function(thread) { return thread.Start(); }));
+};
+
+XProcess.prototype.End = function() {
+  return Math.max.apply(this, this.Threads().map(function(thread) { return thread.End(); }));
 };
 
 XProcess.prototype.GCEvents = function() {
@@ -462,7 +487,11 @@ XMachine.prototype.Events = function() {
 };
 
 XMachine.prototype.Start = function() {
-	return Math.min.apply(this, this.Processes().map(function(process) { return process.Start(); }));
+  return Math.min.apply(this, this.Processes().map(function(process) { return process.Start(); }));
+};
+
+XMachine.prototype.End = function() {
+  return Math.max.apply(this, this.Processes().map(function(process) { return process.End(); }));
 };
 
 XMachine.prototype.GCEvents = function() {
