@@ -1,195 +1,97 @@
-var Workload = function(data, gcdata) {
-	this.data = data;
-	this.gcdata = gcdata;
-	this.id = unique_id();
+var PrototypeBuilder = function() {
+  var getter = null;
+  var accessors = [];
+  var mappers = [];
+  var id = true;
+  var times = true;
+  
+  var build = function(cls) {
+    // First, add the ID and getID methods if requested
+    if (id) {
+      cls.prototype.ID = function() { return this.fqid; };
+      cls.prototype.globalID = function() { return this.id; };
+      cls.getID = function(obj) { return obj.ID(); };
+      cls.getGlobalID = function(obj) { return obj.globalID(); };
+    }
+    
+    // The getter is just an accessor
+    if (getter!=null) {
+      cls.prototype.getter = getter;
+      accessors.push(getter);
+    }
+    
+    // Accessors access data fields
+    for (var i = 0; i < accessors.length; i++) {
+      var accessor = accessors[i];
+      var accessor_data_field = accessor.toLowerCase();
+      cls.prototype[accessor] = function(field) { return function() { return this[field]; }; }(accessor_data_field);
+    }
 
-	// Create the data structures
-	this.tasks = {};
-	for (var i = 0; i < data.length; i++) {
-		this.tasks[data[i]["id"]] = new XTask(data[i]);
-	}
+    // At this point, remaining methods need a getter.  If no getter, return
+    if (getter==null)
+      return;
+    
+    // Mappers simply call the mapper method on each of the elements returned by the getter
+    for (var i = 0; i < mappers.length; i++) {
+      cls.prototype[mappers[i]] = function(mapper) {
+        return function(/*optional*/dontcache) {
+          if (this[mapper.toLowerCase()])
+            return this[mapper.toLowerCase()];
+          var ret = [].concat.apply([], this[this.getter]().map(function(elem) { return elem[mapper](true); }));
+          if (!dontcache)
+            this[mapper.toLowerCase()] = ret;
+          return ret;
+        };
+      }(mappers[i]);
+    };
+    
+    // Times call the max/min of the times of the getter
+    if (times) {
+      cls.prototype.Start = function() {
+        if (this.start==null)
+          this.start = Math.min.apply(this, this[this.getter]().map(function(elem) { return elem.Start(); }));
+        return this.start;
+      };
+      cls.prototype.End = function() {
+        if (this.end==null)
+          this.end = Math.max.apply(this, this[this.getter]().map(function(elem) { return elem.End(); })); 
+        return this.end; 
+      };
+      cls.prototype.Duration = function() {
+        return this.End() - this.Start();
+      };
+    }
+  };
 
-	// Determine the timestamp extents of the data
-	var minTimestamp = Infinity;
-	var maxTimestamp = -Infinity;
-	var events = this.Events();
-	for (var i = 0; i < events.length; i++) {
-		var timestamp = events[i].Timestamp();
-		if (timestamp < minTimestamp)
-			minTimestamp = timestamp;
-		if (timestamp > maxTimestamp)
-			maxTimestamp = timestamp;
-	}
-
-	this.min = minTimestamp;
-	this.max = maxTimestamp;
-
-	// Now create the GC events, if possible.  Even though two tasks may technically share the same process,
-	// they will actually have separate process objects, so we create a GCEvent for each of them.
-	if (gcdata) {
-		var processes = this.Processes();
-		for (var i = 0; i < processes.length; i++) {
-			var process = processes[i];
-			var gcreports = gcdata[process.id];
-			if (gcreports) {
-				process.gcevents = gcreports.map(function(report) { return new GCEvent(process, report); });
-				process.gcevents = process.gcevents.filter(function(gcevent) { 
-					return gcevent.start <= maxTimestamp && gcevent.end >= minTimestamp && gcevent.duration > 0; 
-				});
-			}
-		}
-	}
+  build.getter = function(_) { if (!arguments.length) return getter; getter = _; return build; };
+  build.accessors = function(_) { if (!arguments.length) return accessors; accessors = _; return build; };
+  build.mappers = function(_) { if (!arguments.length) return mappers; mappers = _; return build; };
+  build.id = function(_) { if (!arguments.length) return id; id = _; return build; };
+  build.times = function(_) { if (!arguments.length) return times; times = _; return build; };
+  
+  return build;
 };
 
-Workload.prototype.Tasks = function() {
-	var tasks = this.tasks;
-	var keys = Object.keys(this.tasks);
-	var values = keys.map(function(k) { return tasks[k]; });
-	values.sort(function(a, b) { return a.Start() - b.Start(); });
-	return values;	
-};
 
-Workload.prototype.Machines = function() {
-	return [].concat.apply([], this.Tasks().map(function(task) { return task.Machines(); }));   
-};
-
-Workload.prototype.Processes = function() {
-	return [].concat.apply([], this.Tasks().map(function(task) { return task.Processes(); }));   
-};
-
-Workload.prototype.Threads = function() {
-	var threads = [].concat.apply([], this.Tasks().map(function(task) { return task.Threads(); }));
-	return threads;
-};
-
-Workload.prototype.Spans = function() {
-	return [].concat.apply([], this.Tasks().map(function(task) { return task.Spans(); }));   
-};
-
-Workload.prototype.Events = function() {
-	return [].concat.apply([], this.Tasks().map(function(task) { return task.Events(); }));   
-};
-
-Workload.prototype.Edges = function() {
-	return [].concat.apply([], this.Tasks().map(function(task) { return task.Edges(); }));
-};
-
-Workload.prototype.GCEvents = function() {
-	return [].concat.apply([], this.Tasks().map(function(task) { return task.GCEvents(); }));
-};
-
-Workload.prototype.HDDEvents = function() {
-	return this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 4)=="file"; });
-};
-
-Workload.prototype.ID = function() {
-	return ""+this.id;
-};
-
-Workload.getID = function(workload) {
-	return workload.ID();
-};
-
-var XTask = function(data) {
-	// Copy the params
-	this.id = data.id;
-	this.reports = data.reports;
-	this.reports_by_id = {};
-
-	for (var i = 0; i < this.reports.length; i++) {
-		var report = this.reports[i];
-		var reportid = report["X-Trace"][0].substr(18);
-		this.reports_by_id[reportid] = report;
-	}
-
-	// Create the data structures
-	this.machines = {};
-	var reports_by_machine = group_reports_by_field(data.reports, "Host");
-	for (var machine_id in reports_by_machine)
-		this.machines[machine_id] = new XMachine(this, machine_id, reports_by_machine[machine_id]);
-	
-	// Extract the tags
-	var tags = {};
-	for (var i = 0; i < this.reports.length; i++) {
-	  if (this.reports[i]["Tag"])
-	    for (var j = 0; j < this.reports[i]["Tag"].length; j++)
-	      tags[this.reports[i]["Tag"][j]] = true;
-	}
-	this.tags = Object.keys(tags);
-};
-
-XTask.prototype.Machines = function() {
-	var machines = this.machines;
-	var keys = Object.keys(this.machines);
-	var values = keys.map(function(k) { return machines[k]; });
-	values.sort(function(a, b) { return a.Start() - b.Start(); });
-	return values;
-};
-
-XTask.prototype.Processes = function() {
-	return [].concat.apply([], this.Machines().map(function(machine) { return machine.Processes(); }));   
-};
-
-XTask.prototype.Threads = function() {
-	return [].concat.apply([], this.Machines().map(function(machine) { return machine.Threads(); }));
-};
-
-XTask.prototype.Spans = function() {
-	return [].concat.apply([], this.Machines().map(function(machine) { return machine.Spans(); }));   
-};
-
-XTask.prototype.Events = function() {
-	return [].concat.apply([], this.Spans().map(function(span) { return span.Events(); }));   
-};
-
-XTask.prototype.Edges = function() {
-	return [].concat.apply([], this.Events().map(function(event) { return event.Edges(); }));
-};
-
-XTask.prototype.GCEvents = function() {
-	return [].concat.apply([], this.Machines().map(function(machine) { return machine.GCEvents(); }));
-};
-
-XTask.prototype.HDDEvents = function() {
-  return this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 4)=="file"; });
-};
-
-XTask.prototype.ID = function() {
-	return "Task-"+this.id;
-};
-
-XTask.prototype.Start = function() {
-	return Math.min.apply(this, this.Machines().map(function(machine) { return machine.Start(); }));
-};
-
-XTask.prototype.End = function() {
-  return Math.max.apply(this, this.Machines().map(function(machine) { return machine.End(); }));  
-};
-
-XTask.prototype.Tags = function() {
-  return this.tags;
-};
-
-XTask.getID = function(task) {
-	return task.ID();
-};
 
 var XEvent = function(span, report) {
 	this.report = report;
 	this.span = span;
 	this.id = report["X-Trace"][0].substr(18);
-	this.fqid = this.span.ID() + "_Event-"+this.id;
+	this.fqid = this.id;
 	this.timestamp = parseFloat(this.report["Timestamp"][0]);
 	this.type = "event";
 	if (this.report["Operation"])
 		this.type = "operation " + this.report["Operation"][0];
+	this.start = this.timestamp;
+	this.end = this.timestamp;
+	this.duration = 0;
 	if (this.report["Duration"]) {
 		this.duration = Number(this.report["Duration"][0]) / 1000000.0;
 		this.start = this.timestamp - this.duration;
 		this.end = this.timestamp;
 	}
 	if (this.report["Operation"] && this.report["Operation"][0].substr(0, 4)=="file" && this.report["Class"][0].indexOf("ScheduledFileIO")!=-1) {
-//	if (this.report["Operation"] && this.report["Class"][0].startsWith("edu.brown.cs.systems.xtrace.resourcetracing.events.ScheduledFileIO")!=-1) {
 	  var keys = ["PreWait", "PreDuration", "IOWait", "IODuration", "PostWait", "PostDuration"];
 	  this.duration = 0;
 	  for (var i = 0; i < keys.length; i++) {
@@ -202,41 +104,32 @@ var XEvent = function(span, report) {
 	}
 
 	this.span.thread.process.machine.task.reports_by_id[this.id] = this;
+	
 };
-
 XEvent.prototype.Edges = function() {
-	if (this.edges==null) {
-		this.edges = [];
-		var parents = this.report["Edge"];
-		for (var i = 0; i < parents.length; i++) {
-			var edge = {
-					id: this.id+parents[i],
-					parent: this.span.thread.process.machine.task.reports_by_id[parents[i]],
-					child: this
-			};
-			if (edge.parent && edge.child) 
-				this.edges.push(edge);
-		}
-	}
-	return this.edges;    
+  if (this.edges==null) {
+    this.edges = [];
+    var parents = this.report["Edge"];
+    for (var i = 0; i < parents.length; i++) {
+      var edge = {
+          id: this.id+parents[i],
+          parent: this.span.thread.process.machine.task.reports_by_id[parents[i]],
+          child: this
+      };
+      if (edge.parent && edge.child) 
+        this.edges.push(edge);
+    }
+  }
+  return this.edges;    
 };
+PrototypeBuilder().accessors(["Timestamp"])(XEvent);
 
-XEvent.prototype.Timestamp = function() {
-	return this.timestamp;
-};
 
-XEvent.prototype.ID = function() {
-	return this.fqid;
-};
-
-XEvent.getID = function(event) {
-	return event.ID();
-};
 
 var XSpan = function(thread, id, reports) {
 	this.thread = thread;
-	this.id = id;
-	this.fqid = this.thread.ID() + "_Span(" + this.id + ")";
+	this.id = this.thread.fqid + "_Span-" + id;
+	this.fqid = this.id;
 	this.events = [];
 	this.waiting = false; // is this a span where a thread is waiting?
 	for (var i = 0; i < reports.length; i++) {
@@ -249,38 +142,17 @@ var XSpan = function(thread, id, reports) {
 	this.events.sort(function(a, b) { return a.timestamp - b.timestamp; });
 	this.start = this.events[0].Timestamp();
 	this.end = this.events[this.events.length-1].Timestamp();
+	this.hddevents = this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 4)=="file"; }); 
 };
+PrototypeBuilder().getter("Events").accessors(["HDDEvents"]).mappers(["Edges"])(XSpan);
 
-XSpan.prototype.ID = function() {
-	return this.fqid;
-};
 
-XSpan.prototype.Events = function() {
-	return this.events;
-};
-
-XSpan.prototype.Edges = function() {
-  return [].concat.apply([], this.Events().map(function(event) { return event.Edges(); }));
-};
-
-XSpan.prototype.Start = function() {
-	return this.start;
-};
-
-XSpan.prototype.End = function() {
-	return this.end;
-};
-
-XSpan.getID = function(span) {
-	return span.ID();
-};
 
 var XThread = function(process, id, reports) {
-	reports.sort(function(a, b) { return parseFloat(a["Timestamp"][0]) - parseFloat(b["Timestamp"][0]); })
+	reports.sort(function(a, b) { return parseFloat(a["Timestamp"][0]) - parseFloat(b["Timestamp"][0]); });
 	this.process = process;
-	this.id = id;
-	this.fqid = this.process.ID() + "_Thread-"+this.id;
-	this.llid = this.process.llid + "_Thread-"+this.id;
+  this.id = this.process.id + "_Thread-"+ id;
+  this.fqid = this.process.fqid + "_Thread-"+ id;
 
 	this.spans = [];
 	var span = [];
@@ -323,70 +195,35 @@ var XThread = function(process, id, reports) {
 	if (span.length > 0)
 		this.spans.push(new XSpan(this, this.spans.length, span));
 	this.spans.sort(function(a, b) { return a.Start() - b.Start(); });
+	
+	// Now set the short name of this thread
+  this.shortname = "Thread-"+this.id;
+  var names = {};
+  names[this.shortname] = true;
+  var events = this.Events();
+  for (var i = 0; i < events.length; i++) {
+    if (events[i].report["ThreadName"])
+      names[events[i].report["ThreadName"][0]] = true;
+  }
+  delete names[this.shortname];
+  var othernames = Object.keys(names);
+  if (othernames.length > 0) {
+    var selected = othernames[0];
+    if (selected.length > 20)
+      this.shortname = selected.substring(0, 20)+"...";
+    else
+      this.shortname = selected;
+  }
 };
+PrototypeBuilder().getter("Spans").accessors(["ShortName"]).mappers(["Events", "Edges", "HDDEvents"])(XThread);
 
-XThread.prototype.ID = function() {
-	return this.fqid;
-};
 
-XThread.prototype.ShortName = function() {
-	var defaultName = "Thread-"+this.id;
-	var names = {};
-	names[defaultName] = true;
-	var events = this.Events();
-	for (var i = 0; i < events.length; i++) {
-		if (events[i].report["ThreadName"])
-			names[events[i].report["ThreadName"][0]] = true;
-	}
-	delete names[defaultName];
-	var othernames = Object.keys(names);
-	if (othernames.length > 0) {
-		var selected = othernames[0];
-		if (selected.length > 20)
-			return selected.substring(0, 20)+"...";
-		else
-			return selected;
-	}
-	return "Thread-"+this.id;
-};
-
-XThread.prototype.Spans = function() {
-	return this.spans;
-};
-
-XThread.prototype.Events = function() {
-  return [].concat.apply([], this.Spans().map(function(span) { return span.Events(); }));
-};
-
-XThread.prototype.Edges = function() {
-  return [].concat.apply([], this.Spans().map(function(span) { return span.Edges(); }));
-};
-
-XThread.prototype.Start = function() {
-  return Math.min.apply(this, this.Spans().map(function(span) { return span.Start(); }));
-};
-
-XThread.prototype.End = function() {
-  return Math.max.apply(this, this.Spans().map(function(span) { return span.End(); }));
-};
-
-XThread.getID = function(thread) {
-	return thread.ID();
-};
-
-XThread.sharedID = function(thread) {
-  return thread.llid;
-};
-
-XThread.prototype.HDDEvents = function() {
-  return this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 4)=="file"; });
-};
 
 var XProcess = function(machine, id, reports) {
 	this.machine = machine;
-	this.id = id;
-	this.fqid = this.machine.ID() + "_Process-"+id.replace("@","");
-	this.llid = this.machine.llid + "_Process-"+id.replace("@","");
+	this.processid = id;
+	this.id = this.machine.id + "_Process-" + id.replace("@","");
+	this.fqid = this.machine.fqid + "_Process-"+id.replace("@","");
 	this.gcevents = [];
 
 	// We want high resolution timestamps, so perform some averaging
@@ -411,148 +248,119 @@ var XProcess = function(machine, id, reports) {
 
 	var reports_by_thread = group_reports_by_field(reports, "ThreadID");
 
-	this.threads = {};
+	this.threads = [];
 	for (var thread_id in reports_by_thread)
-		this.threads[thread_id] = new XThread(this, thread_id, reports_by_thread[thread_id]);
+		this.threads.push(new XThread(this, thread_id, reports_by_thread[thread_id]));
+	this.threads.sort(function(a, b) { return a.Start() - b.Start(); });
 };
+XProcess.prototype.addGCData = function(gcdata) {
+  var gcreports = gcdata[this.processid];
+  if (gcreports) {
+    var process = this;
+    this.gcevents = gcreports.map(function(report) { return new GCEvent(process, report); });
+    this.gcevents = this.gcevents.filter(function(gcevent) { 
+      return gcevent.start <= process.End() && gcevent.end >= process.Start() && gcevent.duration > 0; 
+    });
+  };
+}
+PrototypeBuilder().getter("Threads").accessors(["GCEvents"]).mappers(["Spans", "Events", "Edges", "HDDEvents"])(XProcess);
 
-XProcess.prototype.ID = function() {
-	return this.fqid;
-};
 
-XProcess.prototype.Threads = function() {
-	var threads = this.threads;
-	var keys = Object.keys(this.threads);
-	var values = keys.map(function(k) { return threads[k]; });
-	values.sort(function(a, b) { return a.Start() - b.Start(); });
-	return values;
-};
-
-XProcess.prototype.Spans = function() {
-	return [].concat.apply([], this.Threads().map(function(thread) { return thread.Spans(); }));
-};
-
-XProcess.prototype.Events = function() {
-  return [].concat.apply([], this.Threads().map(function(thread) { return thread.Events(); }));
-};
-
-XProcess.prototype.Edges = function() {
-  return [].concat.apply([], this.Threads().map(function(thread) { return thread.Edges(); }));
-};
-
-XProcess.prototype.Start = function() {
-  return Math.min.apply(this, this.Threads().map(function(thread) { return thread.Start(); }));
-};
-
-XProcess.prototype.End = function() {
-  return Math.max.apply(this, this.Threads().map(function(thread) { return thread.End(); }));
-};
-
-XProcess.prototype.GCEvents = function() {
-	return this.gcevents;
-};
-
-XProcess.getID = function(process) {
-	return process.ID();
-};
-
-XProcess.sharedID = function(process) {
-  return process.llid;
-};
 
 var XMachine = function(task, id, reports) {
 	this.task = task;
-	this.id = id;
-	this.fqid = this.task.ID() + "_Machine-"+this.id;
+	this.id = "Machine-"+id;
+	this.fqid = this.task.ID() + "_" + this.id;
 	this.llid = "Machine-"+this.id;
 
 	var reports_by_process = group_reports_by_field(reports, "ProcessID");
 
-	this.processes = {};
+	this.processes = [];
 	for (var process_id in reports_by_process) {
-		this.processes[process_id] = new XProcess(this, process_id, reports_by_process[process_id]);
+		this.processes.push(new XProcess(this, process_id, reports_by_process[process_id]));
 	}
+	this.processes.sort(function(a, b) { return a.Start() - b.Start(); });
 };
+PrototypeBuilder().getter("Processes").mappers(["Threads", "Spans", "Events", "Edges", "HDDEvents", "GCEvents"])(XMachine);
 
-XMachine.prototype.ID = function() {
-	return this.fqid;
+
+
+var XTask = function(data) {
+  // Copy the params
+  this.id = data.id;
+  this.fqid = "Task-"+this.id;
+  this.reports = data.reports;
+  this.reports_by_id = {};
+
+  for (var i = 0; i < this.reports.length; i++) {
+    var report = this.reports[i];
+    var reportid = report["X-Trace"][0].substr(18);
+    this.reports_by_id[reportid] = report;
+  }
+
+  // Create the data structures
+  this.machines = [];
+  var reports_by_machine = group_reports_by_field(data.reports, "Host");
+  for (var machine_id in reports_by_machine)
+    this.machines.push(new XMachine(this, machine_id, reports_by_machine[machine_id]));
+  this.machines.sort(function(a, b) { return a.Start() - b.Start(); });
+  
+  // Extract the tags
+  var tags = {};
+  for (var i = 0; i < this.reports.length; i++) {
+    if (this.reports[i]["Tag"])
+      for (var j = 0; j < this.reports[i]["Tag"].length; j++)
+        tags[this.reports[i]["Tag"][j]] = true;
+  }
+  this.tags = Object.keys(tags);
 };
+PrototypeBuilder().getter("Machines").accessors(["Tags"]).mappers(["Processes", "Threads", "Spans", "Events", "Edges", "GCEvents", "HDDEvents"])(XTask);
 
-XMachine.prototype.Processes = function() {
-	var processes = this.processes;
-	var keys = Object.keys(this.processes);
-	var values = keys.map(function(k) { return processes[k]; });
-	values.sort(function(a, b) { return a.Start() - b.Start(); });
-	return values;
+
+
+var Workload = function(data, gcdata) {
+  this.data = [];
+  this.gcdata = gcdata;
+  this.id = unique_id();
+  this.fqid = this.id;
+
+  // Create the data structures
+  this.tasks = [];
+  for (var i = 0; i < data.length; i++) {
+    this.addTask(data[i]);
+  }
 };
-
-XMachine.prototype.Threads = function() {
-	return [].concat.apply([], this.Processes().map(function(process) { return process.Threads(); }));
+Workload.prototype.addTask = function(data) {
+  this.data.push(data);
+  var task = new XTask(data);
+  this.tasks.push(task);
+  this.tasks.sort(function(a, b) { return a.Start() - b.Start(); });
+  this.start=null; this.end=null;
+  this.min = this.Start();
+  this.max = this.End();
+  var gcdata = this.gcdata;
+  if (gcdata)
+    task.Processes().forEach(function(process) { process.addGCData(gcdata); });
 };
-
-XMachine.prototype.Spans = function() {
-	return [].concat.apply([], this.Processes().map(function(process) { return process.Spans(); }));    
+Workload.prototype.addGC = function(gcdata) {
+  this.gcdata = gcdata;
+  if (this.gcdata)
+    this.Processes().forEach(function(process) { process.addGCData(gcdata); });
 };
+PrototypeBuilder().getter("Tasks").mappers(["Machines", "Processes", "Threads", "Spans", "Events", "Edges", "GCEvents", "HDDEvents"])(Workload);
 
-XMachine.prototype.Events = function() {
-	return [].concat.apply([], this.Processes().map(function(process) { return process.Events(); }));    
-};
 
-XMachine.prototype.Start = function() {
-  return Math.min.apply(this, this.Processes().map(function(process) { return process.Start(); }));
-};
-
-XMachine.prototype.End = function() {
-  return Math.max.apply(this, this.Processes().map(function(process) { return process.End(); }));
-};
-
-XMachine.prototype.GCEvents = function() {
-  return [].concat.apply([], this.Processes().map(function(process) { return process.GCEvents(); }));
-};
-
-XMachine.prototype.Edges = function() {
-  return [].concat.apply([], this.Processes().map(function(process) { return process.Edges(); }));
-};
-
-XMachine.getID = function(machine) {
-	return machine.ID();
-};
-
-XMachine.sharedID = function(machine) {
-  return machine.llid;
-};
-
-function group_reports_by_field(reports, field) {
-	var grouping = {};
-	for (var i = 0; i < reports.length; i++) {
-		try {
-			var value = reports[i][field][0];
-			if (!(value in grouping))
-				grouping[value] = [];
-			grouping[value].push(reports[i]);
-		} catch (e) {
-			console.log(e);
-		}
-	}
-	return grouping;
-}
 
 var GCEvent = function(process, report) {
-	this.report = report;
-	this.process = process;
-	this.id = report["X-Trace"][0].substr(18);
-	this.fqid = this.process.ID() + "_GC-" + this.id;
+  this.report = report;
+  this.process = process;
+  this.xtraceid = report["X-Trace"][0].substr(18);
+  this.id = this.process.fqid + "_GC-" + this.xtraceid;
+  this.fqid = this.id;
 
-	this.start = Number(this.report["GcStart"][0])+1;
-	this.duration = Number(this.report["GcDuration"][0])-1;
-	this.end = this.start + this.duration;
-	this.name = this.report["GcName"][0];
+  this.start = Number(this.report["GcStart"][0])+1;
+  this.duration = Number(this.report["GcDuration"][0])-1;
+  this.end = this.start + this.duration;
+  this.name = this.report["GcName"][0];
 };
-
-GCEvent.prototype.ID = function() {
-	return this.fqid;
-};
-
-GCEvent.getID = function(event) {
-	return event.ID();
-};
+PrototypeBuilder().accessors(["Start", "Duration", "Name"])(GCEvent);

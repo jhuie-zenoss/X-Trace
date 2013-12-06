@@ -11,7 +11,7 @@ Group.prototype.GC = function() { return [].concat.apply([], this.Lanes().map(fu
 Group.prototype.HDD = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.HDD(); }));};
 
 Group.prototype.Fill = function(_) { if (!arguments.length) return this.fill ? this.fill : 0; this.fill = _; return this; };
-Group.prototype.Height = function(_) { var s=this.Spacing(); return this.Lanes().map(function(l) { return l.Height(); }).reduce(function(a,b) { return a+b+s; }); };
+Group.prototype.Height = function(_) { var s=this.Spacing(); if (this.Lanes().length==0) return 0; return this.Lanes().map(function(l) { return l.Height(); }).reduce(function(a,b) { return a+b+s; }); };
 Group.prototype.Offset = function(_) { 
   if (!arguments.length) 
     return this.offset ? this.offset : 0; 

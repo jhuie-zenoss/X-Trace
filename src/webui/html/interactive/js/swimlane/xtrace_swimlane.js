@@ -5,12 +5,17 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	var overlap = 0.1;												// Extra space inside the viz
 	
 	// Create the data representation
+	console.log("have data, creating workload");
+	var start = new Date().getTime();
 	var workload = new Workload(tasksdata, gcdata);
+	console.log("creating workload took " + (new Date().getTime()-start));
+	start = new Date().getTime();
   var vizdata;
 	if (params["mode"]=="hdd")
 	  vizdata = new PerTenantLayout(workload);
 	else
 	  vizdata = new PerTaskLayout(workload);
+	console.log("Creating layout took "+(new Date().getTime()-start));
 
 	// Preprocess: determine extent of the data
 	var datalen = workload.max - workload.min;
@@ -80,4 +85,6 @@ function XTraceSwimLane(attachPoint, tasksdata, gcdata, /*optional*/ params) {
 	$(window).resize(draw);
 	
 	draw(); // Finally, draw it
+	
+	return workload;
 }

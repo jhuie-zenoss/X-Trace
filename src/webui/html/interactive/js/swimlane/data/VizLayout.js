@@ -14,7 +14,7 @@ Layout.prototype.Edges = function() { return [].concat.apply([], this.Groups().m
 Layout.prototype.GC = function() { return [].concat.apply([], this.Groups().map(function(group) { return group.GC(); }));};
 Layout.prototype.HDD = function() { return [].concat.apply([], this.Groups().map(function(group) { return group.HDD(); }));};
 
-Layout.prototype.Height = function() { var spacing = this.Spacing(); return this.Groups().map(function(g) { return g.Height(); }).reduce(function(a,b) { return a+b+spacing; }); };
+Layout.prototype.Height = function() { var spacing = this.Spacing(); if (this.Groups().length==0) return 0; return this.Groups().map(function(g) { return g.Height(); }).reduce(function(a,b) { return a+b+spacing; }); };
 Layout.prototype.Spacing = function(_) {
   if (!arguments.length)
     return this.spacing ? this.spacing : 0;
@@ -39,7 +39,7 @@ var PerTaskLayout = function(workload) {
 };
 PerTaskLayout.prototype = new Layout();
 PerTaskLayout.prototype.Groups = function() { return this.groups; };
-PerTaskLayout.prototype.Height = function() { var s=this.Spacing(); return this.Groups().map(function(g) { return g.Height(); }).reduce(function(a,b) { return a+b+s; }); };
+PerTaskLayout.prototype.Height = function() { var s=this.Spacing(); if (this.Groups().length==0) return 0; return this.Groups().map(function(g) { return g.Height(); }).reduce(function(a,b) { return a+b+s; }); };
 
 var PerTenantLayout = function(workload) {
   this.workload = workload;

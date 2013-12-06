@@ -1,4 +1,5 @@
 
+var window = window ? window : {};
 // Problems with resizing and jquery and chrome and this stuff is so dumb.
 window.width = function() {
 	return document.body.clientWidth;
@@ -107,6 +108,26 @@ var getAllReports = function(ids, callback, errback) {
     };
     
     xhr.send(null);    
+};
+
+var getRawReports = function(id, callback, errback) {
+  var report_url = "reports/" + id;
+  
+  var xhr = new XMLHttpRequest();
+  
+  xhr.open("GET", report_url, true);
+  
+  xhr.onreadystatechange = function() {
+      if (xhr.readyState==4) {
+          if (xhr.status = 200) {
+              callback(xhr.responseText);
+          } else {
+              errback(xhr.status, xhr);
+          }
+      }
+  };
+  
+  xhr.send(null);    
 };
 
 function getRelated(ids, callback, errback) {
@@ -467,4 +488,21 @@ var random_string = function(/*optional*/ length)
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
-}
+};
+
+
+
+function group_reports_by_field(reports, field) {
+  var grouping = {};
+  for (var i = 0; i < reports.length; i++) {
+    try {
+      var value = reports[i][field][0];
+      if (!(value in grouping))
+        grouping[value] = [];
+      grouping[value].push(reports[i]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  return grouping;
+};
