@@ -47,13 +47,12 @@ public class TraceRunnable implements Runnable {
     public void run() {
         if (parent != null) {
             XTraceContext.joinContext(XTraceMetadata.createFromBytes(parent, 0, parent.length));
-            // TODO: set the context here or trace will be lost
-            XTraceSpanTrace.startSpan(getDescription());
+            XTraceSpan chunk = XTraceSpanTrace.startSpan(getDescription());
 
             try {
                 runnable.run();
             } finally {
-                XTraceSpanTrace.stopSpan();
+                chunk.stop();
             }
         } else {
             runnable.run();
