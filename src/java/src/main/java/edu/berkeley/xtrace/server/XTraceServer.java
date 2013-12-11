@@ -156,7 +156,7 @@ public final class XTraceServer {
 	}
 
 	private static void setupReportStore() {
-		reportsToStorageQueue = new LinkedBlockingQueue<String>();
+		reportsToStorageQueue = new LinkedBlockingQueue<String>(100);
 
 		String storeStr = "edu.berkeley.xtrace.server.FileTreeReportStore";
 		if (System.getProperty("xtrace.server.store") != null) {
@@ -220,7 +220,7 @@ public final class XTraceServer {
 						LOG.warn("Interrupted", e);
 						continue;
 					}
-					reportsToStorageQueue.offer(msg);
+					while (!reportsToStorageQueue.offer(msg)) {}
 				}
 			}
 		}).start();

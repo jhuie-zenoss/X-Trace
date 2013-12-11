@@ -113,7 +113,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		}
 
 		// 25-element LRU file handle cache. The report data is stored here
-		fileCache = new LRUFileHandleCache(25, dataRootDir);
+		fileCache = new LRUFileHandleCache(100, dataRootDir);
 
 		// the embedded database keeps metadata about the reports
 		initializeDatabase();
@@ -258,6 +258,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 					fout.write(msg);
 					fout.newLine();
 					fout.newLine();
+					fout.flush();
 					LOG.debug("Wrote " + msg.length() + " bytes to the stream");
 				} catch (IOException e) {
 					LOG.warn("I/O error while writing the report", e);
@@ -767,6 +768,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 			// a 25-entry, LRU file handle cache
 			fCache = new LinkedHashMap<String, BufferedWriter>(CACHE_SIZE,
 					.75F, true) {
+			    @Override
 				protected boolean removeEldestEntry(
 						java.util.Map.Entry<String, BufferedWriter> eldest) {
 					if (size() > CACHE_SIZE) {
