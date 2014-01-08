@@ -435,39 +435,6 @@ var report_id = function(report) {
 	return report["X-Trace"][0].substr(18);
 }
 
-var critical_path = function(reports, finalreport) {
-	if (finalreport==null)
-		finalreport = reports[reports.length-1];
-	
-	var reportmap = {};
-	for (var i = 0; i < reports.length; i++) {
-		reportmap[report_id(reports[i])] = reports[i];
-	}
-	console.log(reportmap);
-	
-	var cpath = [];
-	var next = finalreport;
-	while (next && next["Edge"]) {
-		cpath.push(next);
-		var parents = next["Edge"];
-		next = reportmap[parents[0]];
-		for (var i = 1; next==null && i < parents.length; i++) {
-			next = reportmap[parents[i]];
-		}
-		for (var i = 1; i < parents.length; i++) {
-			var candidate = reportmap[parents[i]];
-			if (reportmap[parents[i]] && Number(candidate["Timestamp"][0]) > Number(next["Timestamp"][0]))
-				next = candidate;
-		}
-	}
-	
-	for (var i = 0; i < cpath.length; i++) {
-		cpath[i].criticalpath = ["true"];
-	}
-	
-	return cpath;
-};
-
 // generates numeric ids starting from 0, never reuses same number
 var unique_id = function(){
 	var seed = 0;
