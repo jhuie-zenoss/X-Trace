@@ -23,30 +23,24 @@ function critical_path(reports, finalreport) {
 				next = candidate;
 		}
 	}
-	
 	return cpath;
 };
 
-function draw_critical_path(reports) {
-	var oncpath = {};
-	for (var i = 0; i < reports.length; i++) {
-		oncpath[report_id(reports[i])] = true;
-	}
-	window.viz.Events().forEach(function(event) {
-	  event.cp = oncpath[event.id];
-	});
-	
-	
-	d3.select(".events").selectAll("circle").attr("display", function(d) { 
-	  if (d.cp) 
-	    return "block"; 
-	  else 
-	    return "none"; 
-	});
-  d3.select(".edges").selectAll("line").attr("display", function(d) { 
-    if (d.cp) 
-      return "block"; 
-    else 
-      return "none"; 
-  });
+function filter_criticalpath_events(events) {
+  var reports = events.map(function(event) { return event.report; });
+  
+  var finalevent = events[0];
+  events.forEach(function(event) {
+    if (event.Timestamp() > finalevent.Timestamp())
+      finalevent = event;
+  });  
+  
+  var cpath = critical_path(reports, finalevent.report);
+
+  var oncpath = {};
+  for (var i = 0; i < cpath.length; i++) {
+    oncpath[report_id(cpath[i])] = true;
+  }
+  
+  return events.filter(function(event) { return oncpath[event.id]; });  
 }

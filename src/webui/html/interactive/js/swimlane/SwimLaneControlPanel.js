@@ -57,6 +57,12 @@ function SwimLaneControlPanel() {
       "ldisabled": "Spans: Off",
       "property": "showspans",
       "enabled": true
+    },
+    {
+      "lenabled": "CriticalPath: On",
+      "ldisabled": "CriticalPath: Off",
+      "property": "showcpath",
+      "enabled": false
     }
 	];
 

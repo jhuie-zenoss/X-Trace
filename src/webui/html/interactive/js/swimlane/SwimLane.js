@@ -11,7 +11,8 @@ function SwimLane() {
 	    "showevents": true,
 	    "showedges": true,
 	    "showgc": true,
-	    "showspans": true
+	    "showspans": true,
+	    "showcpath": false
 	};
 
 	/* event callbacks */
@@ -172,10 +173,19 @@ function SwimLane() {
 
 			// Figure out which data should be drawn
 			var spandata = layout.Spans().filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent; });
-			var eventdata = layout.Events().filter(function(d) { return d.Timestamp() > minExtent && d.Timestamp() < maxExtent; });
-			var edgedata = layout.Edges().filter(function(d) { return d.parent.Timestamp() < maxExtent && d.child.Timestamp() > minExtent; });
 			var gcdata = layout.GC().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
 			var hdddata = layout.HDD().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
+			
+			var eventdata = layout.Events();
+			if (properties.showcpath==true)
+			  eventdata = filter_criticalpath_events(eventdata);
+			eventdata = eventdata.filter(function(d) { return d.Timestamp() > minExtent && d.Timestamp() < maxExtent; });
+			
+			var edgedata = layout.Edges();
+			if (properties.showcpath==true)
+			  edgedata = edgedata.filter(function(edge) { return $.inArray(edge.parent, eventdata)!=-1 && $.inArray(edge.child, eventdata)!=-1;});
+			edgedata = edgedata.filter(function(d) { return d.parent.Timestamp() < maxExtent && d.child.Timestamp() > minExtent; });
+			
 
 			start = new Date().getTime();
 			// Update the span rects
