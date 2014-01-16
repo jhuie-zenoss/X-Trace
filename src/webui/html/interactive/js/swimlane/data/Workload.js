@@ -142,9 +142,10 @@ var XSpan = function(thread, id, reports) {
 	this.events.sort(function(a, b) { return a.timestamp - b.timestamp; });
 	this.start = this.events[0].Timestamp();
 	this.end = this.events[this.events.length-1].Timestamp();
-	this.hddevents = this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 4)=="file"; }); 
+  this.hddevents = this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 4)=="file"; });
+  this.networkevents = this.Events().filter(function(event) { return event.report["Operation"] && event.report["Operation"][0].substring(0, 3)=="net"; }); 
 };
-PrototypeBuilder().getter("Events").accessors(["HDDEvents"]).mappers(["Edges"])(XSpan);
+PrototypeBuilder().getter("Events").accessors(["HDDEvents","NetworkEvents"]).mappers(["Edges"])(XSpan);
 
 
 
@@ -215,7 +216,7 @@ var XThread = function(process, id, reports) {
       this.shortname = selected;
   }
 };
-PrototypeBuilder().getter("Spans").accessors(["ShortName"]).mappers(["Events", "Edges", "HDDEvents"])(XThread);
+PrototypeBuilder().getter("Spans").accessors(["ShortName"]).mappers(["Events", "Edges", "HDDEvents", "NetworkEvents"])(XThread);
 
 
 
@@ -263,7 +264,7 @@ XProcess.prototype.addGCData = function(gcdata) {
     });
   };
 }
-PrototypeBuilder().getter("Threads").accessors(["GCEvents"]).mappers(["Spans", "Events", "Edges", "HDDEvents"])(XProcess);
+PrototypeBuilder().getter("Threads").accessors(["GCEvents"]).mappers(["Spans", "Events", "Edges", "HDDEvents", "NetworkEvents"])(XProcess);
 
 
 
@@ -281,7 +282,7 @@ var XMachine = function(task, id, reports) {
 	}
 	this.processes.sort(function(a, b) { return a.Start() - b.Start(); });
 };
-PrototypeBuilder().getter("Processes").mappers(["Threads", "Spans", "Events", "Edges", "HDDEvents", "GCEvents"])(XMachine);
+PrototypeBuilder().getter("Processes").mappers(["Threads", "Spans", "Events", "Edges", "HDDEvents", "NetworkEvents", "GCEvents"])(XMachine);
 
 
 
@@ -314,7 +315,7 @@ var XTask = function(data) {
   }
   this.tags = Object.keys(tags);
 };
-PrototypeBuilder().getter("Machines").accessors(["Tags"]).mappers(["Processes", "Threads", "Spans", "Events", "Edges", "GCEvents", "HDDEvents"])(XTask);
+PrototypeBuilder().getter("Machines").accessors(["Tags"]).mappers(["Processes", "Threads", "Spans", "Events", "Edges", "GCEvents", "HDDEvents", "NetworkEvents"])(XTask);
 
 
 
@@ -347,7 +348,7 @@ Workload.prototype.addGC = function(gcdata) {
   if (this.gcdata)
     this.Processes().forEach(function(process) { process.addGCData(gcdata); });
 };
-PrototypeBuilder().getter("Tasks").mappers(["Machines", "Processes", "Threads", "Spans", "Events", "Edges", "GCEvents", "HDDEvents"])(Workload);
+PrototypeBuilder().getter("Tasks").mappers(["Machines", "Processes", "Threads", "Spans", "Events", "Edges", "GCEvents", "HDDEvents", "NetworkEvents"])(Workload);
 
 
 

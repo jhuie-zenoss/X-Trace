@@ -9,6 +9,7 @@ Group.prototype.Tasks = function() { return [].concat.apply([], this.Lanes().map
 Group.prototype.Edges = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.Edges(); })); };
 Group.prototype.GC = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.GC(); }));};
 Group.prototype.HDD = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.HDD(); }));};
+Group.prototype.Network = function() { return [].concat.apply([], this.Lanes().map(function(lane) { return lane.Network(); }));};
 
 Group.prototype.Fill = function(_) { if (!arguments.length) return this.fill ? this.fill : 0; this.fill = _; return this; };
 Group.prototype.Height = function(_) { var s=this.Spacing(); if (this.Lanes().length==0) return 0; return this.Lanes().map(function(l) { return l.Height(); }).reduce(function(a,b) { return a+b+s; }); };
@@ -80,6 +81,7 @@ var TenantGroup = function(layout, tasks) {
   // Save the group on things
   tasks.forEach(function(task) { task.group = group; });
   this.HDD().forEach(function(evt) { evt.group = group; });
+  this.Network().forEach(function(evt) { evt.group = group; });
 };
 TenantGroup.prototype = new Group();
 TenantGroup.prototype.Lanes = function() { return this.lanes; };

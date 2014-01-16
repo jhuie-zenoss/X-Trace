@@ -29,7 +29,8 @@ function SwimLane() {
 	var ttGravity = $.fn.tipsy.autoBounds(Math.min(window.width(), window.height()) / 3, "s");
 	var EventTooltip = makeEventTooltip(ttGravity);
 	var GCTooltip = makeGCTooltip(ttGravity);
-	var HDDTooltip = makeHDDTooltip(ttGravity);
+  var HDDTooltip = makeHDDTooltip(ttGravity);
+  var NetworkTooltip = makeNetworkTooltip(ttGravity);
 	var ThreadTooltip = makeThreadTooltip($.fn.tipsy.autoWE);
 
 	/* Main rendering function */
@@ -56,6 +57,7 @@ function SwimLane() {
       newlanes.append("g").attr("class", "edges");
       newlanes.append("g").attr("class", "gc");
       newlanes.append("g").attr("class", "hdd");
+      newlanes.append("g").attr("class", "network");
       newlanes.append("g").attr("class", "events");
       var newmargin = newmain.append('g').attr("class", "margin");
       newmargin.append("g").attr("class", "lane-labels");
@@ -94,7 +96,8 @@ function SwimLane() {
 			main.select(".timeindicator").attr("clip-path", "url(#clip)");
 			main.select(".edges").attr("clip-path", "url(#clip)");
 			main.select(".gc").attr("clip-path", "url(#clip)");
-			main.select(".hdd").attr("clip-path", "url(#clip)");
+      main.select(".hdd").attr("clip-path", "url(#clip)");
+      main.select(".network").attr("clip-path", "url(#clip)");
 			main.select(".events").attr("clip-path", "url(#clip)");
 
 			// Add a mouse marker if drawing for the first time
@@ -150,7 +153,8 @@ function SwimLane() {
 			main.select(".events").selectAll("circle").remove();
 			main.select(".edges").selectAll("line").remove();
 			main.select(".gc").selectAll("rect").remove();
-			main.select(".hdd").selectAll("rect").remove();
+      main.select(".hdd").selectAll("rect").remove();
+      main.select(".network").selectAll("rect").remove();
 		});
 
 	};
@@ -174,7 +178,8 @@ function SwimLane() {
 			// Figure out which data should be drawn
 			var spandata = layout.Spans().filter(function (d) { return d.Start() < maxExtent && d.End() > minExtent; });
 			var gcdata = layout.GC().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
-			var hdddata = layout.HDD().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
+      var hdddata = layout.HDD().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
+      var networkdata = layout.Network().filter(function(d) { return d.start < maxExtent && d.end > minExtent; });
 			
 			var eventdata = layout.Events();
 			if (properties.showcpath==true)
@@ -240,15 +245,25 @@ function SwimLane() {
         main.select(".gc").selectAll("rect").remove();        
       }
 
-			// Update the HDD blocks
-			var hdd = main.select(".hdd").selectAll("rect").data(hdddata, XEvent.getID);
-			hdd.enter().append('rect').attr('class', function(d) { return d.type; })
-			.attr('y', function(d) { return sy(d.lane.Offset() + d.lane.Height() * 0.25); })
-			.attr('height', function(d) { return sy(d.lane.Height() * 0.5); })
-			.call(HDDTooltip);
-			hdd.attr('x', function(d) { return sx(d.start); })
-			.attr('width', function(d) { return sx(d.end) - sx(d.start); });
-			hdd.exit().remove();
+      // Update the HDD blocks
+      var hdd = main.select(".hdd").selectAll("rect").data(hdddata, XEvent.getID);
+      hdd.enter().append('rect').attr('class', function(d) { return d.type; })
+      .attr('y', function(d) { return sy(d.lane.Offset() + d.lane.Height() * 0.25); })
+      .attr('height', function(d) { return sy(d.lane.Height() * 0.5); })
+      .call(HDDTooltip);
+      hdd.attr('x', function(d) { return sx(d.start); })
+      .attr('width', function(d) { return sx(d.end) - sx(d.start); });
+      hdd.exit().remove();
+
+      // Update the network blocks
+      var network = main.select(".network").selectAll("rect").data(networkdata, XEvent.getID);
+      network.enter().append('rect').attr('class', function(d) { return d.type; })
+      .attr('y', function(d) { return sy(d.lane.Offset() + d.lane.Height() * 0.25); })
+      .attr('height', function(d) { return sy(d.lane.Height() * 0.5); })
+      .call(NetworkTooltip);
+      network.attr('x', function(d) { return sx(d.start); })
+      .attr('width', function(d) { return sx(d.end) - sx(d.start); });
+      network.exit().remove();
 
 			// Update the axis
 			var norm = d3.scale.linear().range([0, width]).domain([brush.extent()[0] - layout.workload.min, brush.extent()[1] - layout.workload.min]);

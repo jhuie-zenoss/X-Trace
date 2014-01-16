@@ -63,6 +63,11 @@
 	fill: #808;
 }
 
+.main .network rect {
+	fill: #0AA;
+	opacity: 0.7;
+}
+
 .main .gc rect {
 	fill: #AA0;
 	opacity: 0.2;

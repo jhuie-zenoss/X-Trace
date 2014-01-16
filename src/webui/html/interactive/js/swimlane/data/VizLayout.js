@@ -13,6 +13,7 @@ Layout.prototype.Tasks = function() { return [].concat.apply([], this.Groups().m
 Layout.prototype.Edges = function() { return [].concat.apply([], this.Groups().map(function(group) { return group.Edges(); })); };
 Layout.prototype.GC = function() { return [].concat.apply([], this.Groups().map(function(group) { return group.GC(); }));};
 Layout.prototype.HDD = function() { return [].concat.apply([], this.Groups().map(function(group) { return group.HDD(); }));};
+Layout.prototype.Network = function() { return [].concat.apply([], this.Groups().map(function(group) { return group.Network(); }));};
 
 Layout.prototype.Height = function() { var spacing = this.Spacing(); if (this.Groups().length==0) return 0; return this.Groups().map(function(g) { return g.Height(); }).reduce(function(a,b) { return a+b+spacing; }); };
 Layout.prototype.Spacing = function(_) {

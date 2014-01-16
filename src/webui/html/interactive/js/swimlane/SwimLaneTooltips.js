@@ -125,35 +125,70 @@ var makeGCTooltip = function(gravity) {
 //For XTrace Swimlane GC
 var makeHDDTooltip = function(gravity) {
 
-	var tooltip = Tooltip(gravity).title(function(d) {
-		var report = d.report;
+var tooltip = Tooltip(gravity).title(function(d) {
+  var report = d.report;
 
-		function appendRow(key, value, tooltip) {
-			var keyrow = $("<div>").attr("class", "key").append(key);
-			var valrow = $("<div>").attr("class", "value").append(value);
-			var clearrow = $("<div>").attr("class", "clear");
-			tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
-		}
+  function appendRow(key, value, tooltip) {
+    var keyrow = $("<div>").attr("class", "key").append(key);
+    var valrow = $("<div>").attr("class", "value").append(value);
+    var clearrow = $("<div>").attr("class", "clear");
+    tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
+  }
 
-		var tooltip = $("<div>").attr("class", "xtrace-tooltip hdd");
+  var tooltip = $("<div>").attr("class", "xtrace-tooltip hdd");
 
-		appendRow("", "<div style='padding-bottom:10px'><b>HDD Event:  " + report["Operation"][0] + "</b></div>", tooltip);
-		if (report["Bytes"])
-			appendRow("Bytes", Number(report["Bytes"][0]).toLocaleString() + " bytes", tooltip);
-		appendRow("Duration", d.duration.toFixed(2)+" ms", tooltip);
-		appendRow("File", "<div style='padding-bottom:10px'>" + report["File"][0] + "</div>", tooltip);
+  appendRow("", "<div style='padding-bottom:10px'><b>HDD Event:  " + report["Operation"][0] + "</b></div>", tooltip);
+  if (report["Bytes"])
+    appendRow("Bytes", Number(report["Bytes"][0]).toLocaleString() + " bytes", tooltip);
+  appendRow("Duration", d.duration.toFixed(2)+" ms", tooltip);
+  appendRow("File", "<div style='padding-bottom:10px'>" + report["File"][0] + "</div>", tooltip);
 
 
-		appendRow("Source", report["Source"][0], tooltip);
-		appendRow("Call", "<div style='padding-bottom:10px'>" + report["Signature"][0] + "</div>", tooltip);
+  appendRow("Source", report["Source"][0], tooltip);
+  appendRow("Call", "<div style='padding-bottom:10px'>" + report["Signature"][0] + "</div>", tooltip);
 
-		appendRow("Start", timestampToTimeString(d.start), tooltip);
-		appendRow("End", timestampToTimeString(d.end), tooltip);
+  appendRow("Start", timestampToTimeString(d.start), tooltip);
+  appendRow("End", timestampToTimeString(d.end), tooltip);
 
-		return tooltip.outerHTML();
-	});
+  return tooltip.outerHTML();
+});
 
-	return tooltip;
+return tooltip;
+
+};
+
+//For XTrace Swimlane GC
+var makeNetworkTooltip = function(gravity) {
+
+var tooltip = Tooltip(gravity).title(function(d) {
+  var report = d.report;
+
+  function appendRow(key, value, tooltip) {
+    var keyrow = $("<div>").attr("class", "key").append(key);
+    var valrow = $("<div>").attr("class", "value").append(value);
+    var clearrow = $("<div>").attr("class", "clear");
+    tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
+  }
+
+  var tooltip = $("<div>").attr("class", "xtrace-tooltip hdd");
+
+  appendRow("", "<div style='padding-bottom:10px'><b>Network Event:  " + report["Operation"][0] + "</b></div>", tooltip);
+  if (report["Bytes"])
+    appendRow("Bytes", Number(report["Bytes"][0]).toLocaleString() + " bytes", tooltip);
+  appendRow("Duration", d.duration.toFixed(2)+" ms", tooltip);
+  appendRow("Connection", "<div style='padding-bottom:10px'>" + report["Connection"][0] + "</div>", tooltip);
+
+
+  appendRow("Source", report["Source"][0], tooltip);
+  appendRow("Call", "<div style='padding-bottom:10px'>" + report["Signature"][0] + "</div>", tooltip);
+
+  appendRow("Start", timestampToTimeString(d.start), tooltip);
+  appendRow("End", timestampToTimeString(d.end), tooltip);
+
+  return tooltip.outerHTML();
+});
+
+return tooltip;
 
 };
 

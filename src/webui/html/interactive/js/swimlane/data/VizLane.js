@@ -8,6 +8,7 @@ Lane.prototype.Tasks = function() { return []; };
 Lane.prototype.Edges = function() { return []; };
 Lane.prototype.GC = function() { return []; };
 Lane.prototype.HDD = function() { return []; };
+Lane.prototype.Network = function() { return []; };
 
 Lane.prototype.Height = function() { if (!arguments.length) return this.height ? this.height : 10; this.height = _; return this; };
 Lane.prototype.Fill = function(_) { if (!arguments.length) return this.fill ? this.fill : 0; this.fill = _; return this; };
@@ -42,6 +43,7 @@ ThreadLane.prototype.Events = function() { return this.thread.Events(); };
 ThreadLane.prototype.Spans = function() { return this.thread.Spans(); };
 ThreadLane.prototype.Edges = function() { return this.thread.Edges(); };
 ThreadLane.prototype.HDD = function() { return this.thread.HDDEvents(); };
+ThreadLane.prototype.Network = function() { return this.thread.NetworkEvents(); };
 
 var TaskLane = function(group, task) {
   this.group = group;
@@ -53,7 +55,9 @@ var TaskLane = function(group, task) {
   var lane = this;
   this.task.lane = lane;
   this.HDD().forEach(function(evt) { evt.lane = lane; });
+  this.Network().forEach(function(evt) { evt.lane = lane; });
 };
 TaskLane.prototype = new Lane();
 TaskLane.prototype.Spans = function() { return [this.task]; };
 TaskLane.prototype.HDD = function(){ return this.task.HDDEvents(); };
+TaskLane.prototype.Network = function() { return this.task.NetworkEvents(); };
