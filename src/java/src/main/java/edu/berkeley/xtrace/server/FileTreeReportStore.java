@@ -51,7 +51,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.regex.Matcher;
@@ -236,6 +236,61 @@ public final class FileTreeReportStore implements QueryableReportStore {
 			databaseInitialized = false;
 		}
 	}
+	
+	private static final int xtrace_field_offset = Report.REPORT_HEADER_LENGTH + "X-Trace: ".length();
+	void receiveReportFaster(String msg) {
+      // hard-code position of X-Trace
+      int line_end = msg.indexOf('\n', xtrace_field_offset);
+      boolean hasTag = msg.regionMatches(false, line_end+1, "Tag: ", 0, 5);
+      boolean hasTitle = msg.regionMatches(false, line_end+1, "Title: ", 0, 7);
+      
+      // For now, send reports that have tag / title to the old method
+      if (hasTag || hasTitle)
+        receiveReport(msg);
+      
+      XTraceMetadata meta = XTraceMetadata.createFromString(msg.substring(xtrace_field_offset, line_end));
+      
+      if (meta==null) {
+        LOG.warn("Discarding a report due to lack of X-Trace field: " + msg);
+        return;
+      }
+      
+      if (meta.getTaskId()==null) {
+        LOG.warn("Discarding a report due to lack of taskId: " + msg);
+        return;
+      }
+      
+      String taskId = meta.getTaskId().toString();
+      
+      BufferedWriter fout = fileCache.getHandle(taskId);
+      if (fout==null) {
+        LOG.warn("Discarding a report due to internal fileCache error: " + msg);
+        return;
+      }
+      
+      // Write the report to the file
+      try {
+          fout.write(msg);
+          fout.newLine();
+          fout.newLine();
+      } catch (IOException e) {
+          LOG.warn("I/O error while writing report to file: " + msg, e);
+      }
+      
+      // Write the report metadata to the database
+      synchronized(pendingupdates) {
+        // Get an existing update or create a new one
+        DatabaseUpdate update = pendingupdates.get(taskId);
+        if (update==null) {
+          update = new DatabaseUpdate();
+          pendingupdates.put(taskId, update);
+        }
+        
+        // Increment the new report count
+        update.newreportcount++;
+      }
+      
+	}
 
 	void receiveReport(String msg) {
 		Matcher matcher = XTRACE_LINE.matcher(msg);
@@ -247,7 +302,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 			if (meta.getTaskId() != null) {
 				TaskID task = meta.getTaskId();
 				String taskId = task.toString().toUpperCase();
-				BufferedWriter fout = fileCache.getHandle(task);
+				BufferedWriter fout = fileCache.getHandle(taskId);
 				if (fout == null) {
 					LOG
 							.warn("Discarding a report due to internal fileCache error: "
@@ -258,7 +313,6 @@ public final class FileTreeReportStore implements QueryableReportStore {
 					fout.write(msg);
 					fout.newLine();
 					fout.newLine();
-					fout.flush();
 					LOG.debug("Wrote " + msg.length() + " bytes to the stream");
 				} catch (IOException e) {
 					LOG.warn("I/O error while writing the report", e);
@@ -787,10 +841,8 @@ public final class FileTreeReportStore implements QueryableReportStore {
 			};
 		}
 
-		public synchronized BufferedWriter getHandle(TaskID task)
+		public synchronized BufferedWriter getHandle(String taskstr)
 				throws IllegalArgumentException {
-			String taskstr = task.toString();
-			LOG.debug("Getting handle for task: " + taskstr);
 			if (taskstr.length() < 6) {
 				throw new IllegalArgumentException("Invalid task id: "
 						+ taskstr);

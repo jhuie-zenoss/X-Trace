@@ -16,13 +16,12 @@ import java.util.Random;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.varia.NullAppender;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.berkeley.xtrace.XTraceMetadata;
 import edu.berkeley.xtrace.TaskID;
 import edu.berkeley.xtrace.XTraceException;
+import edu.berkeley.xtrace.XTraceMetadata;
 import edu.berkeley.xtrace.reporting.Report;
 
 public class FileTreeReportStoreTest {
@@ -32,12 +31,13 @@ public class FileTreeReportStoreTest {
 	private static final int NUM_STOCHASTIC_TASKS = 100;
 	private static final int NUM_STOCHASTIC_REPORTS_PER_TASK = 10;
 	
-	private boolean canTest = true;
-	private File testDirectory;
-	private FileTreeReportStore fs;
-	private Random r;
+	private static boolean canTest = true;
+	private static File testDirectory;
+	private static FileTreeReportStore fs;
+	private static Random r;
 
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUp() throws Exception {
 		BasicConfigurator.configure(new NullAppender());
 		
 		r = new Random();
@@ -58,6 +58,56 @@ public class FileTreeReportStoreTest {
 		System.setProperty("xtrace.server.storedirectory", testDirectory.toString());
 		fs = new FileTreeReportStore();
 		fs.initialize();
+	}
+	
+	@Test
+	public void testReceiveReportTiming() {
+	  System.out.println("Testing receive report timing");
+	  
+	  int[] concurrency = new int[] { 1,2,4,8,16,32,64,128 };
+	  int numreports = 10000;
+	  for (int i : concurrency) {
+        doReportTimingTest(numreports, i);
+	  }
+	}
+	
+	private void doReportTimingTest(int numReports, int numTaskIDs) {
+      String[] reportstrings = new String[numReports];
+      TaskID[] taskIDs = new TaskID[numTaskIDs];
+      boolean[] faster = new boolean[numReports];
+      long numfaster = 0;
+      for (int i = 0; i < numTaskIDs; i++) {
+        taskIDs[i] = new TaskID(8);
+        // receive one report to initialize file on disk
+        Report r = randomReport(new XTraceMetadata(taskIDs[i], 0));
+        fs.receiveReport(r.toString());
+      }
+      fs.sync();
+      for (int i = 0; i < numReports; i++) {
+        TaskID taskid = taskIDs[r.nextInt(numTaskIDs)];
+        Report report = randomReport(new XTraceMetadata(taskid, 0));
+        reportstrings[i] = report.toString();
+        faster[i] = r.nextBoolean();
+        numfaster += faster[i] ? 1 : 0;
+      }
+      
+      long fast = 0;
+      long slow = 0;
+      long previous = System.nanoTime();
+      for (int i = 0; i < numReports; i++) {
+        if (faster[i]) {
+          fs.receiveReportFaster(reportstrings[i]);
+          fast += System.nanoTime() - previous;
+        } else {
+          fs.receiveReport(reportstrings[i]);
+          slow += System.nanoTime() - previous;
+        }
+        previous = System.nanoTime();
+      }
+      
+      long avg_fast = fast / numfaster;
+      long avg_slow = slow / (numReports - numfaster);
+      System.out.println("fs.receiveReport " + numTaskIDs + " tasks, FAST: " + avg_fast + " SLOW: " + avg_slow + " SPEEDUP: " + String.format("%.1f", avg_slow / (double) avg_fast));
 	}
 	
 	@Test
@@ -604,7 +654,6 @@ public class FileTreeReportStoreTest {
     private Report randomReport(XTraceMetadata md) {
 		Report report = new Report();
 		report.put("X-Trace", md.toString());
-		
 		final int numKeys = r.nextInt(15);
 		for (int i = 0; i < numKeys; i++) {
 			report.put("Key"+i, randomString(10 + r.nextInt(20)));

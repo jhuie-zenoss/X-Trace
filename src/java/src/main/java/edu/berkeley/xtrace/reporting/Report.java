@@ -71,12 +71,15 @@ import edu.berkeley.xtrace.XTraceMetadata;
  * @author George Porter
  */
 public class Report {
+  
+  public static final String REPORT_HEADER = "X-Trace Report ver 1.0\n";
+  public static final int REPORT_HEADER_LENGTH = REPORT_HEADER.length();
 
 	private StringBuilder buf;
 	private HashMap<String, List<String>> map; // lazily-built to enhance performance
 
 	private void initializeBuffer() {
-	  initializeBuffer("X-Trace Report ver 1.0\n");
+	  initializeBuffer(REPORT_HEADER);
 	}
 	
 	private void initializeBuffer(String s) {
@@ -120,10 +123,18 @@ public class Report {
 	 * @param value the value to associate with the given key
 	 * @param append if true, also keep previous values
 	 */
-	public void put(final String key, final String value, boolean append) {
+	public void put(final String key, final String value, boolean append, boolean insertStart) {
 		if (append && map == null) {
-			buf.append(key + ": " + value + "\n");
-			return;
+		  if (insertStart || "Tag".equals(key) || "Title".equals(key)) {
+		    buf.insert(REPORT_HEADER_LENGTH, key + ": " + value + "\n");
+		  } else {
+			buf.append(key);
+			buf.append(':');
+			buf.append(" ");
+			buf.append(value);
+			buf.append('\n');
+		  }
+		  return;
 		}
 
 		if (map == null) {
@@ -141,6 +152,10 @@ public class Report {
 		values.add(value);
 		map.put(key, values);
 	}
+	
+	public void put(final String key, final String value, boolean append) {
+	  put(key, value, append, false);
+	}
 
 	/**
 	 * This put() method sets the given key and value,
@@ -151,6 +166,11 @@ public class Report {
 	 */
 	public void put(final String key, final String value) {
 		put(key, value, true);
+	}
+	
+	// Hacky method for faster parsing of reports at the server.
+	public void putStart(final String key, final String value) {
+	    put(key, value, true, true);
 	}
 
 	public void remove(final String key) {
