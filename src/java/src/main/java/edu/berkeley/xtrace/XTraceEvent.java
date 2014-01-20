@@ -161,7 +161,7 @@ public class XTraceEvent {
 	public void setTaskID(TaskID taskId) {
 	  if (newmd==null) {
       newmd = new XTraceMetadata(taskId, myOpId);
-      report.put("X-Trace", newmd.toString());  // report excluding the options from the string repr	    
+      report.putStart("X-Trace", newmd.toString());  // report excluding the options from the string repr	    
 	  }
 	}
 	

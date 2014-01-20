@@ -96,10 +96,10 @@ public class FileTreeReportStoreTest {
       long previous = System.nanoTime();
       for (int i = 0; i < numReports; i++) {
         if (faster[i]) {
-          fs.receiveReportFaster(reportstrings[i]);
+          fs.receiveReport(reportstrings[i]);
           fast += System.nanoTime() - previous;
         } else {
-          fs.receiveReport(reportstrings[i]);
+          fs.receiveReportOld(reportstrings[i]);
           slow += System.nanoTime() - previous;
         }
         previous = System.nanoTime();

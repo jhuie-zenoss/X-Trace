@@ -238,15 +238,23 @@ public final class FileTreeReportStore implements QueryableReportStore {
 	}
 	
 	private static final int xtrace_field_offset = Report.REPORT_HEADER_LENGTH + "X-Trace: ".length();
-	void receiveReportFaster(String msg) {
+	void receiveReport(String msg) {
+	  // first check if xtrace exists, send to old method if not
+	  if (!msg.regionMatches(false, Report.REPORT_HEADER_LENGTH, "X-Trace:", 0, 8)) {
+	    receiveReportOld(msg);
+	    return;
+	  }
+	  
       // hard-code position of X-Trace
       int line_end = msg.indexOf('\n', xtrace_field_offset);
       boolean hasTag = msg.regionMatches(false, line_end+1, "Tag: ", 0, 5);
       boolean hasTitle = msg.regionMatches(false, line_end+1, "Title: ", 0, 7);
       
       // For now, send reports that have tag / title to the old method
-      if (hasTag || hasTitle)
-        receiveReport(msg);
+      if (hasTag || hasTitle) {
+        receiveReportOld(msg);
+        return;
+      }
       
       XTraceMetadata meta = XTraceMetadata.createFromString(msg.substring(xtrace_field_offset, line_end));
       
@@ -292,7 +300,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
       
 	}
 
-	void receiveReport(String msg) {
+	void receiveReportOld(String msg) {
 		Matcher matcher = XTRACE_LINE.matcher(msg);
 		if (matcher.find()) {
 			Report r = Report.createFromString(msg);
