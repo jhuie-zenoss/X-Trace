@@ -113,7 +113,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		}
 
 		// 25-element LRU file handle cache. The report data is stored here
-		fileCache = new LRUFileHandleCache(100, dataRootDir);
+		fileCache = new LRUFileHandleCache(5000, dataRootDir);
 
 		// the embedded database keeps metadata about the reports
 		initializeDatabase();
@@ -388,38 +388,81 @@ public final class FileTreeReportStore implements QueryableReportStore {
     public void run() {
       LOG.info("Database updater thread started");
       
+//      while (true) {
+//        if (shouldOperate) {
+//          String taskId = null;
+//          DatabaseUpdate update = null;
+//          synchronized(pendingupdates) {
+//            if (pendingupdates.size() > 0) {
+//              taskId = pendingupdates.keySet().iterator().next();
+//              update = pendingupdates.remove(taskId);
+//            }
+//          }
+//          if (taskId==null) {
+//            try {
+//              Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//            }
+//            continue;
+//          }
+//          try {
+//            if (!taskExists(taskId)) {
+//              newTask(taskId, update);
+//              conn.commit();
+//              continue;
+//            }
+//            if (update.title!=null)
+//              updateTitle(taskId, update.title);
+//            if (update.tags!=null)
+//              addTagsToExistingTask(taskId, update.tags);
+//            if (update.newreportcount!=null)
+//              updateExistingTaskReportCount(taskId, update.newreportcount);
+//            conn.commit();
+//          } catch (SQLException e) {
+//            LOG.warn("Error processing database update for task " + taskId + ", dropping database update.  Report will still exist on disk", e);
+//          }
+//        }
+//      }
+
       while (true) {
         if (shouldOperate) {
-          String taskId = null;
-          DatabaseUpdate update = null;
-          synchronized(pendingupdates) {
-            if (pendingupdates.size() > 0) {
-              taskId = pendingupdates.keySet().iterator().next();
-              update = pendingupdates.remove(taskId);
+          Map<String, DatabaseUpdate> toprocess = null;
+          while (toprocess==null) {
+            synchronized(pendingupdates) {
+              if (pendingupdates.size()>0) {
+                toprocess = new HashMap<String, DatabaseUpdate>(pendingupdates);
+                pendingupdates.clear();
+              }
+            }
+            if (toprocess==null) {
+              try {
+                Thread.sleep(10000);
+              } catch (InterruptedException e) {
+                LOG.error("Database updater thread interrupted, ending", e);
+                return;
+              }
             }
           }
-          if (taskId==null) {
+          for (String taskId : toprocess.keySet()) {
+            DatabaseUpdate update = toprocess.get(taskId);
             try {
-              Thread.sleep(1000);
-            } catch (InterruptedException e) {
+                if (!taskExists(taskId)) {
+                  newTask(taskId, update);
+                }
+                if (update.title!=null)
+                  updateTitle(taskId, update.title);
+                if (update.tags!=null)
+                  addTagsToExistingTask(taskId, update.tags);
+                if (update.newreportcount!=null)
+                  updateExistingTaskReportCount(taskId, update.newreportcount);
+            } catch (SQLException e) {
+              LOG.warn("Error processing database update for task " + taskId + ", dropping database update.  Report will still exist on disk", e);
             }
-            continue;
           }
           try {
-            if (!taskExists(taskId)) {
-              newTask(taskId, update);
-              conn.commit();
-              continue;
-            }
-            if (update.title!=null)
-              updateTitle(taskId, update.title);
-            if (update.tags!=null)
-              addTagsToExistingTask(taskId, update.tags);
-            if (update.newreportcount!=null)
-              updateExistingTaskReportCount(taskId, update.newreportcount);
             conn.commit();
           } catch (SQLException e) {
-            LOG.warn("Error processing database update for task " + taskId + ", dropping database update.  Report will still exist on disk", e);
+            LOG.warn("Error committing database updates", e);
           }
         }
       }
@@ -812,135 +855,138 @@ public final class FileTreeReportStore implements QueryableReportStore {
 				title, tags);
 	}
 
-	private final static class LRUFileHandleCache {
+  private final static class LRUFileHandleCache {
 
-		private File dataRootDir;
-		private final int CACHE_SIZE;
+    private File dataRootDir;
+    private final int VALID_FOR;
+    
+    private final class Metadata {
+      public long last_access_time = System.currentTimeMillis();
+      public final BufferedWriter writer;
+      public Metadata(File f) throws IOException {
+        writer = new BufferedWriter(new FileWriter(f, true));
+      }
+      public boolean stale() {
+        return last_access_time+VALID_FOR < System.currentTimeMillis();
+      }
+      public BufferedWriter access() {
+        last_access_time = System.currentTimeMillis();
+        return writer;
+      }
+    }
+    
+    private Map<String, Metadata> fCache = null;
+    private long lastSynched;
 
-		private Map<String, BufferedWriter> fCache = null;
-		private long lastSynched;
+    @SuppressWarnings("serial")
+    public LRUFileHandleCache(int validfor, File dataRootDir)
+        throws XTraceException {
+      this.VALID_FOR = validfor;
+      this.lastSynched = System.currentTimeMillis();
+      this.dataRootDir = dataRootDir;
 
-		@SuppressWarnings("serial")
-		public LRUFileHandleCache(int size, File dataRootDir)
-				throws XTraceException {
-			CACHE_SIZE = size;
-			lastSynched = System.currentTimeMillis();
-			this.dataRootDir = dataRootDir;
+      // a 25-entry, LRU file handle cache
+      
+      fCache = new LinkedHashMap<String, Metadata>(1, 0.75F, true) {        
+        @Override
+        protected boolean removeEldestEntry(java.util.Map.Entry<String, Metadata> eldest) {
+          Metadata m = eldest.getValue();
+          if (m.stale()) {
+            try {
+              m.writer.close();
+            } catch (IOException e) {
+              LOG.warn("Error evicting file for task: " + eldest.getKey(), e);
+            }
+            return true;
+          }
+          return false;
+        }
+      };
+    }
 
-			// a 25-entry, LRU file handle cache
-			fCache = new LinkedHashMap<String, BufferedWriter>(CACHE_SIZE,
-					.75F, true) {
-			    @Override
-				protected boolean removeEldestEntry(
-						java.util.Map.Entry<String, BufferedWriter> eldest) {
-					if (size() > CACHE_SIZE) {
-						BufferedWriter evicted = eldest.getValue();
-						try {
-							evicted.flush();
-							evicted.close();
-						} catch (IOException e) {
-							LOG.warn("Error evicting file for task: "
-									+ eldest.getKey(), e);
-						}
-					}
+    public synchronized BufferedWriter getHandle(String taskstr) throws IllegalArgumentException {
+      if (!fCache.containsKey(taskstr)) {
+        if (taskstr.length() < 6) {
+          throw new IllegalArgumentException("Invalid task id: " + taskstr);
+        }
+        // Create the appropriate three-level directories (l1, l2, and
+        // l3)
+        File l1 = new File(dataRootDir, taskstr.substring(0, 2));
+        File l2 = new File(l1, taskstr.substring(2, 4));
+        File l3 = new File(l2, taskstr.substring(4, 6));
 
-					return size() > CACHE_SIZE;
-				}
-			};
-		}
+        if (!l3.exists()) {
+          LOG.debug("Creating directory for task " + taskstr + ": "
+              + l3.toString());
+          if (!l3.mkdirs()) {
+            LOG.warn("Error creating directory " + l3.toString());
+            return null;
+          }
+        } else {
+          LOG.debug("Directory " + l3.toString()
+              + " already exists; not creating");
+        }
 
-		public synchronized BufferedWriter getHandle(String taskstr)
-				throws IllegalArgumentException {
-			if (taskstr.length() < 6) {
-				throw new IllegalArgumentException("Invalid task id: "
-						+ taskstr);
-			}
+        // create the file
+        File taskFile = new File(l3, taskstr + ".txt");
 
-			if (!fCache.containsKey(taskstr)) {
-				// Create the appropriate three-level directories (l1, l2, and
-				// l3)
-				File l1 = new File(dataRootDir, taskstr.substring(0, 2));
-				File l2 = new File(l1, taskstr.substring(2, 4));
-				File l3 = new File(l2, taskstr.substring(4, 6));
+        // insert the PrintWriter into the cache
+        try {
+          fCache.put(taskstr, new Metadata(taskFile));
+          LOG.debug("Inserting new BufferedWriter into the file cache for task " + taskstr);
+        } catch (IOException e) {
+          LOG.warn("Interal I/O error", e);
+          return null;
+        }
+      } else {
+        LOG.debug("Task " + taskstr + " was already in the cache, no need to insert");
+      }
+      return fCache.get(taskstr).access();
+    }
 
-				if (!l3.exists()) {
-					LOG.debug("Creating directory for task " + taskstr + ": "
-							+ l3.toString());
-					if (!l3.mkdirs()) {
-						LOG.warn("Error creating directory " + l3.toString());
-						return null;
-					}
-				} else {
-					LOG.debug("Directory " + l3.toString()
-							+ " already exists; not creating");
-				}
+    public synchronized void flushAll() {
+      Iterator<Metadata> iter = fCache.values().iterator();
+      while (iter.hasNext()) {
+        Metadata m = iter.next();
+        try {
+          m.writer.flush();
+        } catch (IOException e) {
+          LOG.warn("I/O error while flushing file", e);
+        }
+      }
 
-				// create the file
-				File taskFile = new File(l3, taskstr + ".txt");
+      lastSynched = System.currentTimeMillis();
+    }
 
-				// insert the PrintWriter into the cache
-				try {
-					BufferedWriter writer = new BufferedWriter(new FileWriter(
-							taskFile, true));
-					fCache.put(taskstr, writer);
-					LOG
-							.debug("Inserting new BufferedWriter into the file cache for task "
-									+ taskstr);
-				} catch (IOException e) {
-					LOG.warn("Interal I/O error", e);
-					return null;
-				}
-			} else {
-				LOG.debug("Task " + taskstr
-						+ " was already in the cache, no need to insert");
-			}
+    public synchronized void closeAll() {
+      flushAll();
 
-			return fCache.get(taskstr);
-		}
+      /*
+       * We can't use an iterator since we would be modifying it when we
+       * call fCache.remove()
+       */
+      String[] taskIds = fCache.keySet().toArray(new String[0]);
 
-		public synchronized void flushAll() {
-			Iterator<BufferedWriter> iter = fCache.values().iterator();
-			while (iter.hasNext()) {
-				BufferedWriter writer = iter.next();
-				try {
-					writer.flush();
-				} catch (IOException e) {
-					LOG.warn("I/O error while flushing file", e);
-				}
-			}
+      for (int i = 0; i < taskIds.length; i++) {
+        LOG.debug("Closing handle for file of " + taskIds[i]);
+        Metadata m = fCache.get(taskIds[i]);
+        if (m != null) {
+          try {
+            m.writer.close();
+          } catch (IOException e) {
+            LOG.warn("I/O error closing file for task "
+                + taskIds[i], e);
+          }
+        }
 
-			lastSynched = System.currentTimeMillis();
-		}
+        fCache.remove(taskIds[i]);
+      }
+    }
 
-		public synchronized void closeAll() {
-			flushAll();
-
-			/*
-			 * We can't use an iterator since we would be modifying it when we
-			 * call fCache.remove()
-			 */
-			String[] taskIds = fCache.keySet().toArray(new String[0]);
-
-			for (int i = 0; i < taskIds.length; i++) {
-				LOG.debug("Closing handle for file of " + taskIds[i]);
-				BufferedWriter writer = fCache.get(taskIds[i]);
-				if (writer != null) {
-					try {
-						writer.close();
-					} catch (IOException e) {
-						LOG.warn("I/O error closing file for task "
-								+ taskIds[i], e);
-					}
-				}
-
-				fCache.remove(taskIds[i]);
-			}
-		}
-
-		public long lastSynched() {
-			return lastSynched;
-		}
-	}
+    public long lastSynched() {
+      return lastSynched;
+    }
+  }
 
 	final static class FileTreeIterator implements Iterator<Report> {
 

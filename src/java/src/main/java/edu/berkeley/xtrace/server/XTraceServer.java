@@ -211,7 +211,6 @@ public final class XTraceServer {
 		new Thread(new Runnable() {
 			public void run() {
 				LOG.info("Backplane waiting for packets");
-
 				while (true) {
 					String msg = null;
 					try {
