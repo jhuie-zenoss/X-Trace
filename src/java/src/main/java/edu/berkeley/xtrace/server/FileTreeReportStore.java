@@ -54,6 +54,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,7 +115,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		}
 
 		// 25-element LRU file handle cache. The report data is stored here
-		fileCache = new LRUFileHandleCache(5000, dataRootDir);
+		fileCache = new LRUFileHandleCache(500, dataRootDir);
 
 		// the embedded database keeps metadata about the reports
 		initializeDatabase();
@@ -238,15 +240,19 @@ public final class FileTreeReportStore implements QueryableReportStore {
 	}
 	
 	private static final int xtrace_field_offset = Report.REPORT_HEADER_LENGTH + "X-Trace: ".length();
+	private static final int expected_newline = xtrace_field_offset + 34;
 	void receiveReport(String msg) {
-	  // first check if xtrace exists, send to old method if not
-	  if (!msg.regionMatches(false, Report.REPORT_HEADER_LENGTH, "X-Trace:", 0, 8)) {
-	    receiveReportOld(msg);
-	    return;
-	  }
+	    // first check if xtrace exists, send to old method if not
+	    if (!msg.regionMatches(false, Report.REPORT_HEADER_LENGTH, "X-Trace:", 0, 8)) {
+	      receiveReportOld(msg);
+	      return;
+	    }
 	  
       // hard-code position of X-Trace
-      int line_end = msg.indexOf('\n', xtrace_field_offset);
+	    int line_end = expected_newline;
+	    if (!msg.regionMatches(line_end, "\n", 0, 1))
+	      line_end = msg.indexOf('\n', xtrace_field_offset);
+	  
       boolean hasTag = msg.regionMatches(false, line_end+1, "Tag: ", 0, 5);
       boolean hasTitle = msg.regionMatches(false, line_end+1, "Title: ", 0, 7);
       
@@ -286,16 +292,16 @@ public final class FileTreeReportStore implements QueryableReportStore {
       }
       
       // Write the report metadata to the database
-      synchronized(pendingupdates) {
-        // Get an existing update or create a new one
+      while(!lock.compareAndSet(false, true)) {}
+      try {
         DatabaseUpdate update = pendingupdates.get(taskId);
         if (update==null) {
-          update = new DatabaseUpdate();
+          update = new DatabaseUpdate(taskId);
           pendingupdates.put(taskId, update);
         }
-        
-        // Increment the new report count
         update.newreportcount++;
+      } finally {
+        lock.set(false);
       }
       
 	}
@@ -343,30 +349,21 @@ public final class FileTreeReportStore implements QueryableReportStore {
 					newTags = new TreeSet<String>(list);
 				}
 				
-				synchronized(pendingupdates) {
-				  // Get an existing update or create a new one
-				  DatabaseUpdate update = pendingupdates.get(taskId);
-				  if (update==null)
-				    update = new DatabaseUpdate();
-				  
-				  // Add in the tags
-				  if (newTags!=null) {
-				    if (update.tags==null)
-				      update.tags = new HashSet<String>(newTags);
-				    else
-				      update.tags.addAll(newTags);
-				  }
-				  
-				  // Set the title
-				  if (title!=null)
-				    update.title = title;
-				  
-				  // Increment the new report count
-				  update.newreportcount++;
-				  
-				  // Put the update in the map
-				  pendingupdates.put(taskId, update);
-				}
+        while(!lock.compareAndSet(false, true)) {}
+        try {
+  			  DatabaseUpdate update = pendingupdates.get(taskId);
+  			  if (update==null) {
+  			    update = new DatabaseUpdate(taskId);
+  	        pendingupdates.put(taskId, update);
+  			  }
+  			  
+  			  if (newTags!=null && update.tags!=null) update.tags.addAll(newTags);
+  			  if (newTags!=null && update.tags==null) update.tags = new HashSet<String>(newTags);
+  			  if (title!=null) update.title = title;
+  			  update.newreportcount++;
+        } finally {
+          lock.set(false);
+        }
 
 			} else {
 				LOG
@@ -377,88 +374,67 @@ public final class FileTreeReportStore implements QueryableReportStore {
 	}
 	
 	private class DatabaseUpdate {
+	  public final String taskid;
+	  public DatabaseUpdate(String xtrace) {
+	    this.taskid = xtrace;
+	  }
 	  public String title = null;
 	  public HashSet<String> tags = null;
 	  public Integer newreportcount = 0;
 	}
 
-	private HashMap<String, DatabaseUpdate> pendingupdates = new HashMap<String, DatabaseUpdate>();
+	private AtomicBoolean lock = new AtomicBoolean();
+	private Map<String, DatabaseUpdate> pendingupdates = new HashMap<String, DatabaseUpdate>();
+	
   private class IncomingReportDatabaseUpdater extends Thread {
     @Override
     public void run() {
       LOG.info("Database updater thread started");
-      
-//      while (true) {
-//        if (shouldOperate) {
-//          String taskId = null;
-//          DatabaseUpdate update = null;
-//          synchronized(pendingupdates) {
-//            if (pendingupdates.size() > 0) {
-//              taskId = pendingupdates.keySet().iterator().next();
-//              update = pendingupdates.remove(taskId);
-//            }
-//          }
-//          if (taskId==null) {
-//            try {
-//              Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//            }
-//            continue;
-//          }
-//          try {
-//            if (!taskExists(taskId)) {
-//              newTask(taskId, update);
-//              conn.commit();
-//              continue;
-//            }
-//            if (update.title!=null)
-//              updateTitle(taskId, update.title);
-//            if (update.tags!=null)
-//              addTagsToExistingTask(taskId, update.tags);
-//            if (update.newreportcount!=null)
-//              updateExistingTaskReportCount(taskId, update.newreportcount);
-//            conn.commit();
-//          } catch (SQLException e) {
-//            LOG.warn("Error processing database update for task " + taskId + ", dropping database update.  Report will still exist on disk", e);
-//          }
-//        }
-//      }
 
+      Map<String, DatabaseUpdate> toprocess = new HashMap<String, DatabaseUpdate>();
       while (true) {
-        if (shouldOperate) {
-          Map<String, DatabaseUpdate> toprocess = null;
-          while (toprocess==null) {
-            synchronized(pendingupdates) {
-              if (pendingupdates.size()>0) {
-                toprocess = new HashMap<String, DatabaseUpdate>(pendingupdates);
-                pendingupdates.clear();
-              }
+        if (shouldOperate) {          
+          // Copy out the updates
+          while (!lock.compareAndSet(false, true)) {}
+          try {
+            if (pendingupdates.size()>0) {
+              Map<String, DatabaseUpdate> temp = pendingupdates;
+              pendingupdates = toprocess;
+              toprocess = temp;
             }
-            if (toprocess==null) {
-              try {
-                Thread.sleep(10000);
-              } catch (InterruptedException e) {
-                LOG.error("Database updater thread interrupted, ending", e);
-                return;
-              }
-            }
+          } finally {
+            lock.set(false);
           }
-          for (String taskId : toprocess.keySet()) {
-            DatabaseUpdate update = toprocess.get(taskId);
+          
+          if (toprocess.size()==0) {
+            // Wait if no updates to process
             try {
-                if (!taskExists(taskId)) {
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              LOG.error("Database updater thread interrupted, ending", e);
+              return;
+            }
+          } else {
+            // Otherwise process all updates
+            for (DatabaseUpdate update : toprocess.values()) {
+              String taskId = update.taskid;
+              try {
+                if (!taskExists(taskId))
                   newTask(taskId, update);
-                }
                 if (update.title!=null)
                   updateTitle(taskId, update.title);
                 if (update.tags!=null)
                   addTagsToExistingTask(taskId, update.tags);
                 if (update.newreportcount!=null)
                   updateExistingTaskReportCount(taskId, update.newreportcount);
-            } catch (SQLException e) {
-              LOG.warn("Error processing database update for task " + taskId + ", dropping database update.  Report will still exist on disk", e);
-            }
+              } catch (SQLException e) {
+                LOG.warn("Error processing database update for task " + taskId + ", dropping database update.  Report will still exist on disk", e);
+              }
+            } 
+            toprocess.clear();
           }
+          
+          // Commit the updates
           try {
             conn.commit();
           } catch (SQLException e) {
@@ -831,9 +807,9 @@ public final class FileTreeReportStore implements QueryableReportStore {
 
 	private File taskIdtoFile(String taskId) {
 		File l1 = new File(dataDirName, taskId.substring(0, 2));
-		File l2 = new File(l1, taskId.substring(2, 4));
-		File l3 = new File(l2, taskId.substring(4, 6));
-		File taskFile = new File(l3, taskId + ".txt");
+//		File l2 = new File(l1, taskId.substring(2, 4));
+//		File l3 = new File(l2, taskId.substring(4, 6));
+		File taskFile = new File(l1, taskId + ".txt");
 		return taskFile;
 	}
 
@@ -864,7 +840,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
       public long last_access_time = System.currentTimeMillis();
       public final BufferedWriter writer;
       public Metadata(File f) throws IOException {
-        writer = new BufferedWriter(new FileWriter(f, true));
+        writer = new BufferedWriter(new FileWriter(f, true), 65536);
       }
       public boolean stale() {
         return last_access_time+VALID_FOR < System.currentTimeMillis();
@@ -912,23 +888,24 @@ public final class FileTreeReportStore implements QueryableReportStore {
         // Create the appropriate three-level directories (l1, l2, and
         // l3)
         File l1 = new File(dataRootDir, taskstr.substring(0, 2));
-        File l2 = new File(l1, taskstr.substring(2, 4));
-        File l3 = new File(l2, taskstr.substring(4, 6));
+//        File l2 = new File(l1, taskstr.substring(2, 4));
+//        File l3 = new File(l2, taskstr.substring(4, 6));
 
-        if (!l3.exists()) {
+        if (!l1.exists()) {
           LOG.debug("Creating directory for task " + taskstr + ": "
-              + l3.toString());
-          if (!l3.mkdirs()) {
-            LOG.warn("Error creating directory " + l3.toString());
+              + l1.toString());
+          if (!l1.mkdirs()) {
+            LOG.warn("Error creating directory " + l1.toString());
             return null;
           }
         } else {
-          LOG.debug("Directory " + l3.toString()
+          LOG.debug("Directory " + l1.toString()
               + " already exists; not creating");
         }
 
         // create the file
-        File taskFile = new File(l3, taskstr + ".txt");
+        File taskFile = new File(l1, taskstr + ".txt");
+        
 
         // insert the PrintWriter into the cache
         try {

@@ -211,6 +211,7 @@ public final class XTraceServer {
 		new Thread(new Runnable() {
 			public void run() {
 				LOG.info("Backplane waiting for packets");
+				long previous_log_time = System.currentTimeMillis();
 				while (true) {
 					String msg = null;
 					try {
@@ -218,6 +219,14 @@ public final class XTraceServer {
 					} catch (InterruptedException e) {
 						LOG.warn("Interrupted", e);
 						continue;
+					}
+					if (reportsToStorageQueue.size() >= 99) {
+					  if (previous_log_time + 1000 < System.currentTimeMillis()) {
+  					  previous_log_time = System.currentTimeMillis();
+  					  System.out.println("WARNING: incomingReportQueue="+incomingReportQueue.size()+" reportsToStorageQueue="+reportsToStorageQueue.size());
+					  }
+					} else {
+					  previous_log_time = System.currentTimeMillis();
 					}
 					while (!reportsToStorageQueue.offer(msg)) {}
 				}
