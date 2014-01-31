@@ -226,6 +226,8 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		LOG.info("Shutting down the FileTreeReportStore");
 		if (fileCache != null)
 			fileCache.closeAll();
+		
+		dbupdater.interrupt();
 
 		if (databaseInitialized) {
 			try {
@@ -385,6 +387,8 @@ public final class FileTreeReportStore implements QueryableReportStore {
 
 	private AtomicBoolean lock = new AtomicBoolean();
 	private Map<String, DatabaseUpdate> pendingupdates = new HashMap<String, DatabaseUpdate>();
+
+  private Thread dbupdater;
 	
   private class IncomingReportDatabaseUpdater extends Thread {
     @Override
@@ -411,7 +415,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
             try {
               Thread.sleep(1000);
             } catch (InterruptedException e) {
-              LOG.error("Database updater thread interrupted, ending", e);
+              LOG.error("Database updater thread interrupted, ending");
               return;
             }
           } else {
@@ -432,13 +436,13 @@ public final class FileTreeReportStore implements QueryableReportStore {
               }
             } 
             toprocess.clear();
-          }
-          
-          // Commit the updates
-          try {
-            conn.commit();
-          } catch (SQLException e) {
-            LOG.warn("Error committing database updates", e);
+
+            // Commit the updates
+            try {
+              conn.commit();
+            } catch (SQLException e) {
+              LOG.warn("Error committing database updates", e);
+            }
           }
         }
       }
@@ -504,7 +508,8 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		LOG.info("FileTreeReportStore running with datadir " + dataDirName);
 		
 		// Start the database updater
-		new IncomingReportDatabaseUpdater().start();
+		this.dbupdater = new IncomingReportDatabaseUpdater();
+		this.dbupdater.start();
 
 		while (true) {
 			if (shouldOperate) {
