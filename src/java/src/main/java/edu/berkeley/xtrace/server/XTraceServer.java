@@ -281,7 +281,6 @@ public final class XTraceServer {
 		context.addServlet(cgiHolder, "*.py");
 		context.addServlet(cgiHolder, "*.rb");
 		context.addServlet(cgiHolder, "*.tcl");
-
 		context.addServlet(new ServletHolder(new GetReportsServlet()),
 				"/reports/*");
 		context.addServlet(new ServletHolder(new GetJSONReportsServlet()),

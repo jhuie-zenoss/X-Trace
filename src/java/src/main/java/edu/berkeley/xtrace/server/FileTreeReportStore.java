@@ -420,35 +420,37 @@ public final class FileTreeReportStore implements QueryableReportStore {
             }
           } else {
             // Otherwise process all updates
-            for (DatabaseUpdate update : toprocess.values()) {
-              String taskId = update.taskid;
+            synchronized (conn) {
+              for (DatabaseUpdate update : toprocess.values()) {
+                String taskId = update.taskid;
+                try {
+                  if (!taskExists(taskId))
+                    newTask(taskId, update);
+                  if (update.title!=null)
+                    updateTitle(taskId, update.title);
+                  if (update.tags!=null)
+                    addTagsToExistingTask(taskId, update.tags);
+                  if (update.newreportcount!=null)
+                    updateExistingTaskReportCount(taskId, update.newreportcount);
+                } catch (SQLException e) {
+                  LOG.warn("Error processing database update for task " + taskId + ", dropping database update.  Report will still exist on disk", e);
+                }
+              } 
+              toprocess.clear();
+  
+              // Commit the updates
               try {
-                if (!taskExists(taskId))
-                  newTask(taskId, update);
-                if (update.title!=null)
-                  updateTitle(taskId, update.title);
-                if (update.tags!=null)
-                  addTagsToExistingTask(taskId, update.tags);
-                if (update.newreportcount!=null)
-                  updateExistingTaskReportCount(taskId, update.newreportcount);
+                conn.commit();
               } catch (SQLException e) {
-                LOG.warn("Error processing database update for task " + taskId + ", dropping database update.  Report will still exist on disk", e);
+                LOG.warn("Error committing database updates", e);
               }
-            } 
-            toprocess.clear();
-
-            // Commit the updates
-            try {
-              conn.commit();
-            } catch (SQLException e) {
-              LOG.warn("Error committing database updates", e);
             }
           }
         }
       }
     }
     
-    private boolean taskExists(String taskId) throws SQLException {
+    private synchronized boolean taskExists(String taskId) throws SQLException {
       countTasks.setString(1, taskId);
       ResultSet rs = countTasks.executeQuery();
       rs.next();
@@ -457,7 +459,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
       return exists;
     }
     
-    private void newTask(String taskId, DatabaseUpdate update) throws SQLException {
+    private synchronized void newTask(String taskId, DatabaseUpdate update) throws SQLException {
       String title = update.title == null ? taskId : update.title;
       insert.setString(1, taskId);
       insert.setString(2, joinWithCommas(update.tags));
@@ -466,20 +468,20 @@ public final class FileTreeReportStore implements QueryableReportStore {
       insert.executeUpdate();
     }
     
-    private void updateTitle(String taskId, String title) throws SQLException {
+    private synchronized void updateTitle(String taskId, String title) throws SQLException {
       updateTitle.setString(1, title);
       updateTitle.setString(2, taskId);
       updateTitle.executeUpdate();
     }
     
-    private void updateExistingTaskReportCount(String taskId, Integer reportCount) throws SQLException {
+    private synchronized void updateExistingTaskReportCount(String taskId, Integer reportCount) throws SQLException {
       // Update report count and last-updated date
       update.setInt(1, reportCount);
       update.setString(2, taskId);
       update.executeUpdate();
     }
     
-    private void addTagsToExistingTask(String taskId, HashSet<String> tags) throws SQLException {
+    private synchronized void addTagsToExistingTask(String taskId, HashSet<String> tags) throws SQLException {
       getTags.setString(1, taskId);
       ResultSet tagsRs = getTags.executeQuery();
       tagsRs.next();
@@ -528,7 +530,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		return new FileTreeIterator(taskIdtoFile(task.toString()));
 	}
 
-	public List<TaskRecord> getTasksSince(long milliSecondsSince1970,
+	public synchronized List<TaskRecord> getTasksSince(long milliSecondsSince1970,
 			int offset, int limit) {
 		ArrayList<TaskRecord> lst = new ArrayList<TaskRecord>();
 
@@ -554,21 +556,24 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		return lst;
 	}
 	
-	public Collection<String> getTagsForTask(String taskId) {
-	  try {
-      getTags.setString(1, taskId);
-      getTags.execute();
-      ResultSet rs = getTags.getResultSet();
-      if (rs.next())
-        return Arrays.asList(rs.getString("tags").split(","));
-    } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+	public synchronized Collection<String> getTagsForTask(String taskId) {
+	  int retries = 3; // retry because database updater thread can commit while getting tags for task
+	  SQLException exception;
+	  for (int i = 0; i < retries; i++) {
+  	  try {
+        getTags.setString(1, taskId);
+        getTags.execute();
+        ResultSet rs = getTags.getResultSet();
+        if (rs.next())
+          return Arrays.asList(rs.getString("tags").split(","));
+      } catch (SQLException e) {
+        exception = e;
+      }
+	  }
 	  return new ArrayList<String>(0);
 	}
 
-	public List<TaskRecord> getLatestTasks(int offset, int limit) {
+	public synchronized List<TaskRecord> getLatestTasks(int offset, int limit) {
 		int numToFetch = offset + limit;
 		List<TaskRecord> lst = new ArrayList<TaskRecord>();
 		try {
@@ -592,7 +597,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		return lst;
 	}
 
-	public List<TaskRecord> getTasksByTag(String tag, int offset, int limit) {
+	public synchronized List<TaskRecord> getTasksByTag(String tag, int offset, int limit) {
 		List<TaskRecord> lst = new ArrayList<TaskRecord>();
 		try {
 			if (offset + limit + 1 < 0) {
@@ -620,7 +625,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 	}
 	
 	@Override
-	public Collection<String> getAllOverlappingTasks(String taskId) {
+	public synchronized Collection<String> getAllOverlappingTasks(String taskId) {
 	  HashSet<String> taskids = new HashSet<String>();
 	  List<String> unseen = new ArrayList<String>();
 	  taskids.add(taskId);
@@ -670,7 +675,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 	}
 	
 	@Override
-  public Collection<String> getOverlappingTasks(String taskId) {
+  public synchronized Collection<String> getOverlappingTasks(String taskId) {
 	  HashSet<String> overlaps = new HashSet<String>();
 	  overlaps.add(taskId);
 	  
@@ -702,7 +707,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 	  return overlaps;
 	}
 
-	public int countByTaskId(TaskID taskId) {
+	public synchronized int countByTaskId(TaskID taskId) {
 		try {
 			numByTask.setString(1, taskId.toString().toUpperCase());
 			ResultSet rs = numByTask.executeQuery();
@@ -716,7 +721,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		return 0;
 	}
 
-	public long lastUpdatedByTaskId(TaskID taskId) {
+	public synchronized long lastUpdatedByTaskId(TaskID taskId) {
 		long ret = 0L;
 
 		try {
@@ -746,7 +751,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		return lst;
 	}
 
-	public List<TaskRecord> getTasksByTitle(String title, int offset, int limit) {
+	public synchronized List<TaskRecord> getTasksByTitle(String title, int offset, int limit) {
 		List<TaskRecord> lst = new ArrayList<TaskRecord>();
 		try {
 			if (offset + limit + 1 < 0) {
@@ -762,7 +767,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		return lst;
 	}
 
-	public List<TaskRecord> getTasksByTitleSubstring(String title, int offset,
+	public synchronized List<TaskRecord> getTasksByTitleSubstring(String title, int offset,
 			int limit) {
 		List<TaskRecord> lst = new ArrayList<TaskRecord>();
 		try {
@@ -780,7 +785,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		return lst;
 	}
 
-	public int numReports() {
+	public synchronized int numReports() {
 		int total = 0;
 
 		try {
@@ -795,7 +800,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 		return total;
 	}
 
-	public int numTasks() {
+	public synchronized int numTasks() {
 		int total = 0;
 
 		try {
