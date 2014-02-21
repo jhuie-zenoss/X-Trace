@@ -38,7 +38,6 @@ public class FileTreeReportStoreTest {
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-	  System.out.println("setting up");
 		BasicConfigurator.configure(new NullAppender());
 		
 		r = new Random();
@@ -48,7 +47,6 @@ public class FileTreeReportStoreTest {
 		if ((!tmpdir.exists() && !tmpdir.mkdirs()) || !tmpdir.canWrite()) {
 			LOG.fatal("Unable to open /tmp directory.  Cannot execute these tests");
 			canTest  = false;
-			System.out.println("unable");
 			return;
 		}
 		
@@ -60,7 +58,6 @@ public class FileTreeReportStoreTest {
 		System.setProperty("xtrace.server.storedirectory", testDirectory.toString());
 		fs = new FileTreeReportStore();
 		fs.initialize();
-		System.out.println("Created fs " + fs);
 	}
 	
 	@Test
