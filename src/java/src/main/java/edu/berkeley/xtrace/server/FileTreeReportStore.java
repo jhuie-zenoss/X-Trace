@@ -171,7 +171,7 @@ public final class FileTreeReportStore implements QueryableReportStore {
 				+ "firstSeen timestamp default current_timestamp not null, "
 				+ "lastUpdated timestamp default current_timestamp not null, "
 				+ "numReports integer default 1 not null, "
-				+ "tags varchar(512), " + "title varchar(128))");
+				+ "tags varchar(32672), " + "title varchar(128))");
 		s.executeUpdate("create index idx_tasks on tasks(taskid)");
 		s.executeUpdate("create index idx_firstseen on tasks(firstSeen)");
 		s.executeUpdate("create index idx_lastUpdated on tasks(lastUpdated)");
