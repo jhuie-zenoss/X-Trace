@@ -66,6 +66,7 @@ import org.mortbay.servlet.CGI;
 import edu.berkeley.xtrace.TaskID;
 import edu.berkeley.xtrace.XTraceException;
 import edu.berkeley.xtrace.reporting.Report;
+import edu.brown.cs.systems.pubsub.PubSubServer;
 
 /**
  * @author George Porter
@@ -108,6 +109,7 @@ public final class XTraceServer {
 		setupReportStore();
 		setupBackplane();
 		setupWebInterface();
+		PubSubServer.initialize();
 	}
 
 	private static void setupReportSources() {
