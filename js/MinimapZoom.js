@@ -25,7 +25,8 @@ function MinimapZoom() {
 
     function zoom(mainSVG, minimapSVG) {
         mainSVG.call(mainZoom).on("dblclick.zoom", null);
-        minimapSVG.call(minimapZoom);
+        if (minimapSVG != null)
+            minimapSVG.call(minimapZoom);
     }
 
     zoom.translate = function(_) { 
@@ -52,7 +53,6 @@ function MinimapZoom() {
         if (type!="zoom") { return zoom; }
         if (_==null) { return cb; }
         cb = _;
-        console.log("returning", zoom);
         return zoom;
     }
     

@@ -7,11 +7,11 @@ function DirectedAcyclicGraph() {
      * Main rendering function
      */
     function graph(selection) {
-        selection.each(function(data) {   
+        selection.each(function(data) {
             // Select the g element that we draw to, or add it if it doesn't exist
             var svg = d3.select(this).selectAll("svg").data([data]);
             svg.enter().append("svg").append("g").attr("class", "graph").classed("animate", animate);
-            
+
             // Size the chart
             svg.attr("width", width.call(this, data));
             svg.attr("height", height.call(this, data));            
@@ -23,7 +23,11 @@ function DirectedAcyclicGraph() {
             // Get the existing nodes and edges, and recalculate the node size
             var existing_edges = svg.select(".graph").selectAll(".edge").data(edges, edgeid);
             var existing_nodes = svg.select(".graph").selectAll(".node").data(nodes, nodeid);
-            
+
+            // Capture the "preexisting" nodes before adding enter nodes to existing nodes
+            existing_nodes.classed("pre-existing", true);
+            existing_nodes.each(updatenode);
+
             var removed_edges = existing_edges.exit();
             var removed_nodes = existing_nodes.exit();
             
@@ -33,7 +37,6 @@ function DirectedAcyclicGraph() {
             // Draw new nodes
             new_nodes.each(drawnode);
             existing_nodes.each(sizenode);
-            removed_nodes.each(removenode);
             if (animate) {
                 removed_edges.classed("visible", false).transition().duration(500).remove();
             } else {
@@ -41,10 +44,12 @@ function DirectedAcyclicGraph() {
             }
             
             // Do the layout
-            existing_nodes.classed("pre-existing", true);
             layout.call(svg.select(".graph").node(), nodes, edges);
             existing_nodes.classed("pre-existing", false);
-            
+
+            // Remove nodes after layout, allowing for access to post layout positions for other nodes
+            removed_nodes.each(removenode);
+
             // Animate into new positions
             if (animate) {
                 svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attrTween("d", graph.edgeTween);//attr("d", graph.splineGenerator);
@@ -73,31 +78,58 @@ function DirectedAcyclicGraph() {
     var height = d3.functor("100%");
     var edgeid = function(d) { return d.source.id + d.target.id; }
     var nodeid = function(d) { return d.id; }
-    var nodename = function(d) { return d.report["Agent"] ? d.report["Agent"][0] : ""; }
     var getnodes = function(d) { return d.getVisibleNodes(); }
     var getedges = function(d) { return d.getVisibleLinks(); }
     var bbox = function(d) {
         return d3.select(this).select("rect").node().getBBox();
     }
     var drawnode = function(d) {
-        // Attach the DOM elements
-        var rect = d3.select(this).append("rect");
-        var text = d3.select(this).append("text").attr("text-anchor", "middle").attr("x", 0);
-        text.append("tspan").attr("x", 0).attr("dy", "1em").text(nodeid);
-        text.append("tspan").attr("x", 0).attr("dy", "1.1em").text(nodename);
+        // Attach box
+        d3.select(this).append("rect").attr("rx", 4);
+
+        // Attach node text
+        d3.select(this).append("text").text(nodeid);
+
         var prior_pos = nodepos.call(this, d);
         if (prior_pos!=null) {
             d3.select(this).attr("transform", graph.nodeTranslate);
         }
-    }    
+    }
+    var updatenode = function(d){
+        drawnode(d);
+    }
     var sizenode = function(d) {
         // Because of SVG weirdness, call sizenode as necessary to ensure a node's size is correct
-        var node_bbox = {"height": 50, "width": 200};
-        var rect = d3.select(this).select('rect'), text = d3.select(this).select('text');
-        var text_bbox = {"height": 40, "width": 190};
-        rect.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2)
-        rect.attr("width", node_bbox.width).attr("height", node_bbox.height);
-        text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
+        var node_bbox = {"height": 60, "width": 85};
+        var rect = d3.select(this).select('rect');
+        var policyMarker = d3.select(this).select('.policy rect');
+        var policyMarkerText = d3.select(this).select('.policy text');
+        var collapseMarker = d3.select(this).select(".collapse");
+        var text = d3.select(this).select(".nodeRep");
+        var eventRainbowText = d3.select(this).select(".eventRainbow .eventRep");
+
+        rect.attr("x", -node_bbox.width/2)
+            .attr("y", -node_bbox.height/2)
+            .attr("width", node_bbox.width)
+            .attr("height", node_bbox.height);
+
+        collapseMarker.attr("x1", -20).attr("y1", 45).attr("x2", 20).attr("y2", 45);
+
+        if(!policyMarker.empty()){
+            policyMarker.attr("x", -20).attr("y", node_bbox.height/2 - 5).attr("width", 40).attr("height", 10);
+            policyMarkerText.attr("x", -policyMarkerText.node().getBBox().width/2).attr("y", node_bbox.height/2 + 3);
+        }
+
+        if(!eventRainbowText.empty()){
+            eventRainbowText.attr("width", 35)
+                .attr("height", node_bbox.height - 8)
+                .attr("x", node_bbox.width/2)
+                .attr("y", -node_bbox.height/2 + 7.5);
+
+        }
+
+        text.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2);
+        text.attr("width", node_bbox.width).attr("height", node_bbox.height);
     }
     var removenode = function(d) {
         if (animate) {
@@ -119,22 +151,28 @@ function DirectedAcyclicGraph() {
             d.dagre_prev = d.dagre_id==layout_count ? d.dagre : null;
             d.dagre_id = layout_count+1;
         });
+        d3.select(this).selectAll(".edge").each(function(d) {
+            d.dagre_prev = d.dagre_id==layout_count ? d.dagre : null;
+            d.dagre_id = layout_count+1;
+        });
+
         layout_count++;
         console.log("layout:bbox", (new Date().getTime() - start));
-        
+
         // Call dagre layout.  Store layout data such that calls to x(), y() and points() will return them
         start = new Date().getTime();
-        dagre.layout().nodeSep(20).edgeSep(5).rankSep(20).nodes(nodes_d).edges(edges_d).run(); 
-        console.log("layout:dagre", (new Date().getTime() - start));   
-        
+        dagre.layout().nodeSep(50).edgeSep(30).rankSep(50).nodes(nodes_d).edges(edges_d).run();
+        console.log("layout:dagre", (new Date().getTime() - start));
+
         // Also we want to make sure that the control points for all the edges overlap the nodes nicely
         d3.select(this).selectAll(".edge").each(function(d) {
             var p = d.dagre.points;
             p.push(dagre.util.intersectRect(d.target.dagre, p.length > 0 ? p[p.length - 1] : d.source.dagre));
             p.splice(0, 0, dagre.util.intersectRect(d.source.dagre, p[0]));
-            p[0].y -= 0.5; p[p.length-1].y += 0.5; 
+            p.splice(1, 0, {x: p[0].x, y: p[0].y+15});
+            p[0].y -= 0.5; p[p.length-1].y += 0.5;
         });
-        
+
         // Try to put the graph as close to previous position as possible
         var count = 0, x = 0, y = 0;
         d3.select(this).selectAll(".node.pre-existing").each(function(d) {
@@ -165,36 +203,28 @@ function DirectedAcyclicGraph() {
     }
     var edgepos = function(d) {
         // Returns a list of {x, y} control points of an edge after layout
-        return d.dagre.points; 
+        return d.dagre.points;
     }
-    
-    
+
+
     /*
      * A couple of private non-settable functions
      */
     graph.splineGenerator = function(d) {
-        return d3.svg.line().x(function(d) { return d.x }).y(function(d) { return d.y }).interpolate("basis")(edgepos.call(this, d));
+        return d3.svg.line().x(function(d) { return d.x })
+                            .y(function(d) { return d.y})
+                            .interpolate("basis")(edgepos.call(this, d));
     }
-    
+
     graph.edgeTween = function(d) {
-        var d1 = graph.splineGenerator.call(this, d);
-        var path0 = this, path1 = path0.cloneNode();                           
-        var n0 = path0.getTotalLength(), n1 = (path1.setAttribute("d", d1), path1).getTotalLength();
-
-        // Uniform sampling of distance based on specified precision.
-        var distances = [0], i = 0, dt = Math.max(1/8, 4 / Math.max(n0, n1));
-        while ((i += dt) < 1) distances.push(i);
-        distances.push(1);
-
-        // Compute point-interpolators at each distance.
-        var points = distances.map(function(t) {
-            var p0 = path0.getPointAtLength(t * n0),
-                p1 = path1.getPointAtLength(t * n1);
+        var src = d.dagre_prev ? d.dagre_prev.points : d.dagre.points;
+        var dst = d.dagre.points;
+        var points = d3.range(Math.max(src.length, dst.length)).map(function(i){
+            var p0 = src[Math.min(src.length-1, i)];
+            var p1 = dst[Math.min(dst.length-1, i)];
             return d3.interpolate([p0.x, p0.y], [p1.x, p1.y]);
         });
-
         var line = d3.svg.line().interpolate("basis");
-        
         return function(t) {
             return line(points.map(function(p) { return p(t); }));
         };
@@ -221,13 +251,16 @@ function DirectedAcyclicGraph() {
     graph.nodes = function(_) { if (!arguments.length) return getnodes; getnodes = d3.functor(_); return graph; }
     graph.edges = function(_) { if (!arguments.length) return getedges; getedges = d3.functor(_); return graph; }
     graph.bbox = function(_) { if (!arguments.length) return bbox; bbox = d3.functor(_); return graph; }
+    graph.nodeTemplate = function(_) { if (!arguments.length) return nodeTemplate; nodeTemplate = _; return graph; }
     graph.drawnode = function(_) { if (!arguments.length) return drawnode; drawnode = _; return graph; }
+    graph.updatenode = function(_) { if (!arguments.length) return updatenode; updatenode = _; return graph; }
     graph.removenode = function(_) { if (!arguments.length) return removenode; removenode = _; return graph; }
     graph.newnodetransition = function(_) { if (!arguments.length) return newnodetransition; newnodetransition = _; return graph; }
     graph.layout = function(_) { if (!arguments.length) return layout; layout = _; return graph; }
     graph.nodepos = function(_) { if (!arguments.length) return nodepos; nodepos = _; return graph; }
     graph.edgepos = function(_) { if (!arguments.length) return edgepos; edgepos = _; return graph; }
     graph.animate = function(_) { if (!arguments.length) return animate; animate = _; return graph; }
-    
+    graph.getedges = function(_) { if (!arguments.length) return getedges; getedges = _; return graph;}
+
     return graph;
 }
