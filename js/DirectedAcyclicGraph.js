@@ -55,7 +55,7 @@ function DirectedAcyclicGraph() {
                 svg.select(".graph").selectAll(".edge.visible").transition().duration(800).attrTween("d", graph.edgeTween);//attr("d", graph.splineGenerator);
                 existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
             } else {
-                svg.select(".graph").selectAll(".edge.visible").attr("d", graph.splineGenerator);      
+                svg.select(".graph").selectAll(".edge.visible").attr("d", graph.splineGenerator);
                 existing_nodes.attr("transform", graph.nodeTranslate);         
             }
             

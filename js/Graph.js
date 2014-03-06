@@ -44,11 +44,23 @@ var Graph = function() {
     // Default values for internal variables
     this.nodelist = []
     this.nodes = {};
+    this.edges = {};
 }
 
 Graph.prototype.addNode = function(node) {
     this.nodelist.push(node);
     this.nodes[node.id] = node;
+}
+
+Graph.prototype.addEdges = function(edges){
+    for(var key in edges){
+        edge = edges[key];
+        this.edges[edge.id] = edge;
+    }
+}
+
+Graph.prototype.getEdge = function(id){
+    return this.edges[id];
 }
 
 Graph.prototype.getNode = function(id) {
